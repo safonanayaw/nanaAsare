@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo Names API Demo</title>
+    <link rel="stylesheet" href="libs/css/style.css">
+</head>
+<body>
+    <h1>Geo Names API Demo Practice</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>API Name</th>
+                <th>Description</th>
+                <th>Input Parameters</th>
+                <th>Output</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Country Info</td>
+                <td>Fetch data about a specific country</td>
+                <td>
+                    <label for="countryCode">Country Code: </label>
+                    <input type="text" id="countryCode" placeholder="e.g., US">
+                    <button id="fetchCountryInfo">Fetch</button>
+                </td>
+                <td id="countryInfoOutput"></td>
+            </tr>
+            <tr>
+                <td>Timezone Info</td>
+                <td>Fetch timezone data for a location</td>
+                <td>
+                    <label for="lat">Latitude: </label>
+                    <input type="text" id="lat" placeholder="e.g., 40.7128">
+                    <label for="lng">Longitude: </label>
+                    <input type="text" id="lng" placeholder="e.g., -74.0060">
+                    <button id="fetchTimezoneInfo">Fetch</button>
+                </td>
+                <td id="timezoneInfoOutput"></td>
+            </tr>
+            <tr>
+                <td>Earthquake Info</td>
+                <td>Retrieve recent earthquake data</td>
+                <td>
+                    <label for="north">North: </label>
+                    <input type="text" id="north" placeholder="e.g., 44">
+                    <label for="south">South: </label>
+                    <input type="text" id="south" placeholder="e.g., 40">
+                    <label for="east">East: </label>
+                    <input type="text" id="east" placeholder="e.g., -70">
+                    <label for="west">West: </label>
+                    <input type="text" id="west" placeholder="e.g., -75">
+                    <button id="fetchEarthquakeInfo">Fetch</button>
+                </td>
+                <td id="earthquakeInfoOutput"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script
+  src="libs/js/jquery-3.6.0.min.js"></script>
+    <script src="libs/js/script.js"></script>
+</body>
+</html>
