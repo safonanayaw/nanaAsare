@@ -6,3 +6,5 @@ TODO
 *move the rescountry api call to different php file as all api should be in different php 
 file not directly in the js file
 
+use opencage to search for home address
+if search filled return null switch to opencage

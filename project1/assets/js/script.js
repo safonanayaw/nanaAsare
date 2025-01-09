@@ -12,24 +12,28 @@ $(document).ready(function () {
         attribution: "Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"
     });
 
-    var satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
-        attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
-      }
-    );
+    var googleSteets = L.tileLayer('http://{s}.google.com/vt?lyrs=m&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
 
+    var googleSat =  L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
 
 
     // Initialize Map
     const map = L.map('map',{
-        layers: [road]
+        layers: [googleSteets]
     }).setView([54.5, -4], 6);
 
     //basemap layer button
     var basemaps = {
+        "googleSteets": googleSteets,
+        "googleSat": googleSat,
         "road": road,
         "Streets": streets,
-        "Satellite": satellite,
     };
 
     layerControl = L.control.layers(basemaps).addTo(map);
@@ -63,6 +67,7 @@ $(document).ready(function () {
 
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
+        marker.bindPopup("Current location").openPopup();
 
         //clearing current user zoom after location change
         if(!zoom){
@@ -79,7 +84,6 @@ $(document).ready(function () {
         }
     }
 
-    // const cordinates = userLocation()
 
     // console.log(cordinates.lat, cordinates.lng);
 
@@ -116,18 +120,49 @@ $(document).ready(function () {
         const dropdown = $("#countryDropdown");
         dropdown.empty();
         dropdown.append('<option value="">Select from searched below...</option>');
-
-
+    
+        let matchFound = false;
+    
+        // Check against the country list
         countryList.forEach(country => {
             const countryCode = country.cca2;
             const countryName = country.name.common.toLowerCase();
-            
-
+    
             if (countryName.includes(searchValue) || countryCode.toLowerCase().includes(searchValue)) {
                 dropdown.append(`<option value="${countryCode}">${country.name.common} (${countryCode})</option>`);
+                matchFound = true; // Mark that a match is found
             }
         });
+    
+        // If no match found, use OpenCage API
+        if (!matchFound) {
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: { type: "geocode", query: searchValue },
+                dataType: "json",
+                success: function (response) {
+                    const results = response.results;
+    
+                    if (results && results.length > 0) {
+                        results.forEach(result => {
+                            const formatted = result.formatted;
+                            const coords = result.geometry;
+    
+                            dropdown.append(`<option value="${coords.lat},${coords.lng}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
+                            marker = L.marker([coords.lat, coords.lng]).addTo(map);
+                        });
+                    } else {
+                        dropdown.append('<option value="">No matches found in OpenCage API</option>');
+                    }
+                },
+                error: function () {
+                    dropdown.append('<option value="">Error fetching data from OpenCage API</option>');
+                }
+            });
+        }
     });
+    
 
     //**************Listen and grab changes on the dropdown for weather info****************
     $("#countryDropdown").on("change", function(){
