@@ -88,6 +88,7 @@ $(document).ready(function () {
     // console.log(cordinates.lat, cordinates.lng);
 
     let countryList = []; // Store fetched country data for searching
+    // let 
 
     // Fetch and Populate Country Dropdown
     $.ajax({
@@ -114,7 +115,13 @@ $(document).ready(function () {
         }
     });
 
-    // Filter Dropdown on Search
+
+
+    // ********************Filter Dropdown on Search**************************
+    //opencase response array
+    let openCageCountryList = [];
+
+
     $("#countrySearch").on("input", function () {
         const searchValue = $(this).val().toLowerCase();
         const dropdown = $("#countryDropdown");
@@ -126,10 +133,12 @@ $(document).ready(function () {
         // Check against the country list
         countryList.forEach(country => {
             const countryCode = country.cca2;
+            // console.log(countryCode);
             const countryName = country.name.common.toLowerCase();
     
             if (countryName.includes(searchValue) || countryCode.toLowerCase().includes(searchValue)) {
                 dropdown.append(`<option value="${countryCode}">${country.name.common} (${countryCode})</option>`);
+                console.log(countryCode);
                 matchFound = true; // Mark that a match is found
             }
         });
@@ -142,22 +151,55 @@ $(document).ready(function () {
                 data: { type: "geocode", query: searchValue },
                 dataType: "json",
                 success: function (response) {
-                    const results = response.results;
-    
-                    if (results && results.length > 0) {
-                        results.forEach(result => {
+                    openCageCountryList = response.results;
+                    // console.log(openCageCountryList);
+                    console.log(openCageCountryList);
+        
+                    
+                    if (openCageCountryList && openCageCountryList.length > 0) {
+                        openCageCountryList.forEach(result => {
                             const formatted = result.formatted;
                             const coords = result.geometry;
+                            const countryCode = result.components;
     
-                            dropdown.append(`<option value="${coords.lat},${coords.lng}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
-                            marker = L.marker([coords.lat, coords.lng]).addTo(map);
+                            dropdown.append(`<option value="${countryCode["ISO_3166-1_alpha-2"]}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
+                            
+
+
+                            // after selecting option navigate marker to coordinate of selected option
+                            $("#countryDropdown").on("change", function(){
+                                const selectCountry = $(this).val();
+
+                                const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === selectCountry);
+
+                                const coord = selectValue.geometry;
+                                const couuntryInfo = selectValue.formatted;
+
+                                // //value selected from search option 
+                                // console.log(selectValue);
+
+                                //clearing previous markers
+                                if(marker){
+                                map.removeLayer(marker);
+                                map.removeLayer(circle);
+                                };
+
+                            //add marker after selecting country on dropdown 
+                            marker = L.marker([coord.lat, coord.lng]).addTo(map);
+                            //add pop up to selected country
+                            marker.bindPopup(`<b>Country:</b><br>${couuntryInfo}`).openPopup();
+
+                            map.setView([coord.lat, coord.lng], 15);
+                            
+                            });
+
                         });
                     } else {
-                        dropdown.append('<option value="">No matches found in OpenCage API</option>');
+                        dropdown.append('<option value="">No matches found</option>');
                     }
                 },
                 error: function () {
-                    dropdown.append('<option value="">Error fetching data from OpenCage API</option>');
+                    dropdown.append('<option value="">An error occured</option>');
                 }
             });
         }
@@ -175,8 +217,8 @@ $(document).ready(function () {
                 const selectedCountry = countryList.find(country => country.cca2 === selectedValue);
     
             if(selectedCountry){
-                    console.log("Country details:", selectedCountry.latlng);
-    
+                    console.log("Country details:", selectedCountry);
+                       
                         $.ajax({
                             url: apiUrl,
                             method: "GET",
@@ -188,21 +230,21 @@ $(document).ready(function () {
                                 $("#temparature").text(`${weatherInfo.main.temp} °C`);
                             }
                         });
+
                 }
             }else{
                 console.log("No country selected");
             }
         });
 
-    // Fetch API Country Info on Dropdown Change
+    // Fetch Country Info selected on Dropdown Change
     $("#countryDropdown").on("change", function () {
         const countryCode = $(this).val();
+        console.log(typeof(countryCode));
         if (!countryCode) return;
 
         // Show Loader
         $("#loading").removeClass("d-none");
-
-
 
         $.ajax({
             url: apiUrl,
@@ -213,21 +255,13 @@ $(document).ready(function () {
                 const country = response[0];
 
 
-                //clearing 
-                if(marker){
-                    map.removeLayer(marker);
-                    map.removeLayer(circle);
-                }
+                // //add marker after selecting country on dropdown 
+                // marker = L.marker([country.latlng[0], country.latlng[1]]).addTo(map);
+                // //add pop up to selected country
+                // marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
 
-
-
-                //add marker after selecting country on dropdown 
-                marker = L.marker([country.latlng[0], country.latlng[1]]).addTo(map);
-                //add pop up to selected country
-                marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
-
-                map.setView([country.latlng[0], country.latlng[1]], 5);
-                // console.log(countryList.latlng);
+                // map.setView([country.latlng[0], country.latlng[1]], 5);
+                // // console.log(countryList.latlng);
 
 
 
