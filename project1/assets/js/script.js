@@ -67,7 +67,7 @@ $(document).ready(function () {
 
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-        marker.bindPopup("Current location").openPopup();
+        marker.bindPopup(`Current location, (${lat},${lng}`).openPopup();
 
         //clearing current user zoom after location change
         if(!zoom){
@@ -215,6 +215,21 @@ $(document).ready(function () {
     
             if(selectedValue){
                 const selectedCountry = countryList.find(country => country.cca2 === selectedValue);
+                console.log(selectedCountry);
+
+                            //clearing previous markers
+                            if(marker){
+                                map.removeLayer(marker);
+                                map.removeLayer(circle);
+                            };
+                                
+                            //add marker after selecting country on dropdown 
+                            marker = L.marker([selectedCountry.latlng[0], selectedCountry.latlng[1]]).addTo(map);
+                            //add pop up to selected country
+                            marker.bindPopup(`<b>Country:</b><br>${selectedCountry.name.common}`).openPopup();
+                                
+                            map.setView([selectedCountry.latlng[0], selectedCountry.latlng[1]], 5);
+                                
     
             if(selectedCountry){
                     console.log("Country details:", selectedCountry);
@@ -253,6 +268,8 @@ $(document).ready(function () {
             dataType: "json",
             success: function (response) {
                 const country = response[0];
+                
+                if(country){
 
 
                 // //add marker after selecting country on dropdown 
@@ -279,8 +296,7 @@ $(document).ready(function () {
                 $("#languages").text(languages);
                 $("#currencies").text(currenciesDetail);
                 $("#flag").html(`<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">`);
-
-
+                }
             },
             error: function () {
                 alert("Failed to fetch country info.");
