@@ -48,10 +48,26 @@ $(document).ready(function () {
 
     //declaring marker, circle, zoom
     let marker, circle, zoom, lat, lng;
+    
+    let isManualSelection = false; //tracks is user has manually selected location
+    let watchId;
 
-    navigator.geolocation.watchPosition(userLocation, userErrorLocation);
+    //start watching user location
+    function startGeolocation (){
+        navigator.geolocation.watchPosition(userLocation, userErrorLocation);
+    }
+
+    //stop watching user location
+    function stopGeolocation (){
+        if(watchId !== underfine){
+         navigator.geolocation.clearWatch(watchId);   
+        }     
+    }
+
 
     function userLocation(position){
+        if(isManualSelection) return; //skip is manual location is active
+
         lat = position.coords.latitude;
         lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
@@ -65,7 +81,11 @@ $(document).ready(function () {
 
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
+<<<<<<< HEAD
         marker.bindPopup(`Current location, (${lat}, ${lng})`).openPopup();
+=======
+        marker.bindPopup(`Current location, (${lat},${lng}`).openPopup();
+>>>>>>> refs/remotes/origin/main
 
         //clearing client zoom after location change
         if(!zoom){
@@ -83,8 +103,19 @@ $(document).ready(function () {
     }
 
 
+<<<<<<< HEAD
     // Store fetched country data for dropdown option
     let countryList = []; 
+=======
+//start geolocation tracking
+startGeolocation();
+
+
+    // console.log(cordinates.lat, cordinates.lng);
+
+    let countryList = []; // Store fetched country data for searching
+    // let 
+>>>>>>> refs/remotes/origin/main
 
     // Fetch and Populate Country Dropdown
     $.ajax({
@@ -191,6 +222,10 @@ $(document).ready(function () {
                             
                             });
 
+                            //set manual selection flag to and stop geolocation updates
+                            isManualSelection = true;
+                            stopGeolocation();
+
                         });
                     } else {
                         dropdown.append('<option value="">No matches found</option>');
@@ -213,6 +248,23 @@ $(document).ready(function () {
     
             if(selectedValue){
                 const selectedCountry = countryList.find(country => country.cca2 === selectedValue);
+                console.log(selectedCountry);
+
+                            //clearing previous markers
+                            if(marker){
+                                map.removeLayer(marker);
+                                map.removeLayer(circle);
+                            };
+                                
+                            //add marker after selecting country on dropdown 
+                            marker = L.marker([selectedCountry.latlng[0], selectedCountry.latlng[1]]).addTo(map);
+                            //add pop up to selected country
+                            marker.bindPopup(`<b>Country:</b><br>${selectedCountry.name.common}`).openPopup();
+                                
+                            map.setView([selectedCountry.latlng[0], selectedCountry.latlng[1]], 5);
+                            
+            
+
     
             if(selectedCountry){
                     console.log("Country details:", selectedCountry);
@@ -251,17 +303,8 @@ $(document).ready(function () {
             dataType: "json",
             success: function (response) {
                 const country = response[0];
-
-
-                // //add marker after selecting country on dropdown 
-                // marker = L.marker([country.latlng[0], country.latlng[1]]).addTo(map);
-                // //add pop up to selected country
-                // marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
-
-                // map.setView([country.latlng[0], country.latlng[1]], 5);
-                // // console.log(countryList.latlng);
-
-
+                
+                if(country){
 
                 const languages = Object.values(country.languages).join(", ");
                 const currenciesDetail = Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ");
@@ -277,8 +320,11 @@ $(document).ready(function () {
                 $("#languages").text(languages);
                 $("#currencies").text(currenciesDetail);
                 $("#flag").html(`<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">`);
+                }
 
-
+            //set manual selection flag to and stop geolocation updates
+            isManualSelection = true;
+            stopGeolocation();
             },
             error: function () {
                 alert("Failed to fetch country info.");
