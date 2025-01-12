@@ -44,9 +44,7 @@ $(document).ready(function () {
       });
       infoBtn.addTo(map);
 
-
-
-    //**********getting user live location on app refresh****************
+    //**********getting client location*********
 
     //declaring marker, circle, zoom
     let marker, circle, zoom, lat, lng;
@@ -57,8 +55,8 @@ $(document).ready(function () {
         lat = position.coords.latitude;
         lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
-        // console.log(lat, lng);
 
+        //creating marker
         //clearing previous markers
         if(marker){
             map.removeLayer(marker);
@@ -67,9 +65,9 @@ $(document).ready(function () {
 
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-        marker.bindPopup("Current location").openPopup();
+        marker.bindPopup(`Current location, (${lat}, ${lng})`).openPopup();
 
-        //clearing current user zoom after location change
+        //clearing client zoom after location change
         if(!zoom){
             zoom = map.fitBounds(circle.getBounds());
         }
@@ -85,10 +83,8 @@ $(document).ready(function () {
     }
 
 
-    // console.log(cordinates.lat, cordinates.lng);
-
-    let countryList = []; // Store fetched country data for searching
-    // let 
+    // Store fetched country data for dropdown option
+    let countryList = []; 
 
     // Fetch and Populate Country Dropdown
     $.ajax({
@@ -96,16 +92,18 @@ $(document).ready(function () {
         method: "GET",
         dataType: "json",
         success: function (response) {
-            countryList = response; // Save country data for search functionality
+            // Save country response 
+            countryList = response; 
 
             const dropdown = $("#countryDropdown");
             dropdown.empty(); // Clear existing options
             dropdown.append('<option value="">Select a country...</option>'); // Default option
 
             response.forEach(country => {
-                const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
-                const countryName = country.name.common;
-                dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
+                const countryCode = country.cca2;   // country Code
+                const countryName = country.name.common;    //Country Name
+
+                dropdown.append(`<option value="${countryCode}">${countryName}, (${countryCode})</option>`);
 
             });
 
@@ -117,7 +115,7 @@ $(document).ready(function () {
 
 
 
-    // ********************Filter Dropdown on Search**************************
+    // ********************Filter Dropdown on Search******************
     //opencase response array
     let openCageCountryList = [];
 
