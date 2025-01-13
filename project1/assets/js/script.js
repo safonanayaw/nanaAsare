@@ -14,12 +14,14 @@ $(document).ready(function () {
 
     var googleSteets = L.tileLayer('http://{s}.google.com/vt?lyrs=m&x={x}&y={y}&z={z}',{
         maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3']
+        subdomains:['mt0','mt1','mt2','mt3'],
+        attribution: "google street map"
     });
 
     var googleSat =  L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}',{
         maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3']
+        subdomains:['mt0','mt1','mt2','mt3'],
+        attribution: "google satelite street map"
     });
 
 
@@ -44,7 +46,9 @@ $(document).ready(function () {
       });
       infoBtn.addTo(map);
 
-    //**********getting client location*********
+
+
+    //**********getting user live location on app refresh****************
 
     //declaring marker, circle, zoom
     let marker, circle, zoom, lat, lng;
@@ -59,7 +63,7 @@ $(document).ready(function () {
 
     //stop watching user location
     function stopGeolocation (){
-        if(watchId !== underfine){
+        if(watchId !== undefined){
          navigator.geolocation.clearWatch(watchId);   
         }     
     }
@@ -71,8 +75,8 @@ $(document).ready(function () {
         lat = position.coords.latitude;
         lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
+        // console.log(lat, lng);
 
-        //creating marker
         //clearing previous markers
         if(marker){
             map.removeLayer(marker);
@@ -81,13 +85,9 @@ $(document).ready(function () {
 
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-<<<<<<< HEAD
-        marker.bindPopup(`Current location, (${lat}, ${lng})`).openPopup();
-=======
         marker.bindPopup(`Current location, (${lat},${lng}`).openPopup();
->>>>>>> refs/remotes/origin/main
 
-        //clearing client zoom after location change
+        //clearing current user zoom after location change
         if(!zoom){
             zoom = map.fitBounds(circle.getBounds());
         }
@@ -103,10 +103,6 @@ $(document).ready(function () {
     }
 
 
-<<<<<<< HEAD
-    // Store fetched country data for dropdown option
-    let countryList = []; 
-=======
 //start geolocation tracking
 startGeolocation();
 
@@ -115,7 +111,6 @@ startGeolocation();
 
     let countryList = []; // Store fetched country data for searching
     // let 
->>>>>>> refs/remotes/origin/main
 
     // Fetch and Populate Country Dropdown
     $.ajax({
@@ -123,18 +118,16 @@ startGeolocation();
         method: "GET",
         dataType: "json",
         success: function (response) {
-            // Save country response 
-            countryList = response; 
+            countryList = response; // Save country data for search functionality
 
             const dropdown = $("#countryDropdown");
             dropdown.empty(); // Clear existing options
             dropdown.append('<option value="">Select a country...</option>'); // Default option
 
             response.forEach(country => {
-                const countryCode = country.cca2;   // country Code
-                const countryName = country.name.common;    //Country Name
-
-                dropdown.append(`<option value="${countryCode}">${countryName}, (${countryCode})</option>`);
+                const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
+                const countryName = country.name.common;
+                dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
 
             });
 
@@ -146,7 +139,7 @@ startGeolocation();
 
 
 
-    // ********************Filter Dropdown on Search******************
+    // ********************Filter Dropdown on Search**************************
     //opencase response array
     let openCageCountryList = [];
 
@@ -239,15 +232,55 @@ startGeolocation();
     });
     
 
+
+
+
     //**************Listen and grab changes on the dropdown for weather info****************
     $("#countryDropdown").on("change", function(){
             //get the selected value
-            const selectedValue = $(this).val();
+            const countryCode = $(this).val();
             //selected coutry code
-            console.log(selectedValue);
+            console.log(countryCode);
+
+            //checking if json file is loaded is loaded correctly
+            // $.ajax({
+            //     url: 'assets/data/countryBorders.json', // Ensure this path is correct
+            //     dataType: 'json',
+            //     success: function(data) {
+            //         // Process the data
+            //         console.log(data);
+            //     },
+            //     error: function(jqXHR, textStatus, errorThrown) {
+            //         console.error("Failed to load countryBorders.json:", textStatus, errorThrown);
+            //         alert("Failed to load country borders data.");
+            //     }
+            // });
+
+            // $.getJSON("assets/data/countryBorders.json", function (data) {
+            //     console.log("GeoJSON loaded");
+            // }).fail(function () {
+            //     console.error("Failed to load GeoJSON file. Check the path or server setup.");
+            // });
+
+
+            //using geoJSON to draw country border
+            function highlightCountryBorders(countryCode) {
+                $.getJSON("assets/data/countryBorders.json", function (data) {
+                    const country = data.features.find(
+                        feature => feature.properties.iso_a2 === countryCode
+                    );
+                    if (country) {
+                        L.geoJSON(country).addTo(map);
+                        // .bindPopup(country.properties.name);
+                        map.fitBounds(L.geoJSON(country).getBounds());
+                    }
+                });
+            }
+
+            highlightCountryBorders(countryCode);
     
-            if(selectedValue){
-                const selectedCountry = countryList.find(country => country.cca2 === selectedValue);
+            if(countryCode){
+                const selectedCountry = countryList.find(country => country.cca2 === countryCode);
                 console.log(selectedCountry);
 
                             //clearing previous markers
@@ -306,20 +339,20 @@ startGeolocation();
                 
                 if(country){
 
-                const languages = Object.values(country.languages).join(", ");
-                const currenciesDetail = Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ");
-                const flagUrl = country.flags.png;
+                const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
+                const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
+                const flagUrl = country.flags ? country.flags.png : "N/A";
 
                 $("#countryDetails").text(JSON.stringify(country, null, 2));
-                $("#countryName").text(country.name.common);
-                $("#officialName").text(country.name.nativeName.eng.official);
-                $("#capitalName").text(country.capital[0]);
-                $("#countryCode").text(country.cca2);
-                $("#religion").text(country.region);
-                $("#subRegion").text(country.subregion);
+                $("#countryName").text(country.name ? country.name.common : "N/A");
+                $("#officialName").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
+                $("#capitalName").text(country.capital ? country.capital[0] : "N/A");
+                $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
+                $("#religion").text(country.region ? country.region : "N/A");
+                $("#subRegion").text(country.subregion ? country.subregion : "N/A");
                 $("#languages").text(languages);
                 $("#currencies").text(currenciesDetail);
-                $("#flag").html(`<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">`);
+                $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
                 }
 
             //set manual selection flag to and stop geolocation updates
