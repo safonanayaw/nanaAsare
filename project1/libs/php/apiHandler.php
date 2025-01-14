@@ -30,6 +30,13 @@ if (isset($_GET['type'])) {
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey";
             break;
 
+            case "wikipedia";
+            $lat = $_GET['lat'];
+            $lng = $_GET['lng'];
+            $apiKey = $apiKeyMap["geonames"];
+            $url = "http://api.geonames.org/findNearbyWikipediaJSON?lat=$lat&lng=$lng&username=$apiKey";
+            break;
+
         default:
             echo json_encode(["error" => "Invalid type"]);
             exit;
