@@ -110,32 +110,66 @@ startGeolocation();
     // console.log(cordinates.lat, cordinates.lng);
 
     let countryList = []; // Store fetched country data for searching
-    // let 
+    
+    // Show loading indicator
+    $("#loading").show();
 
-    // Fetch and Populate Country Dropdown
-    $.ajax({
-        url: "https://restcountries.com/v3.1/all",
-        method: "GET",
-        dataType: "json",
-        success: function (response) {
-            countryList = response; // Save country data for search functionality
 
+    async function fetchAndPopulateCountryDropdown(){
+        try {
+            $("#loading").show();
+            const response = await fetch("https://restcountries.com/v3.1/all");
+            if(!response.ok){
+                throw new Error("Failed to fetch country data");
+            }
+            const data = await response.json();
+            countryList = data; //save response to countryList array
             const dropdown = $("#countryDropdown");
             dropdown.empty(); // Clear existing options
             dropdown.append('<option value="">Select a country...</option>'); // Default option
-
-            response.forEach(country => {
+    
+            data.forEach(country => {
                 const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
                 const countryName = country.name.common;
                 dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
-
             });
 
-        },
-        error: function () {
-            alert("Failed to load country list.");
+            // Hide loading indicator
+            $("#loading").hide();
+        }catch(error){
+            // Hide loading indicator
+            $("#loading").hide();
+            alert("Failed to load country data. Please refresh the page and try again.");
+            console.error(error);
         }
-    });
+    }
+    // call fxn to fetch countrylist data
+    fetchAndPopulateCountryDropdown();
+
+    // // Fetch and Populate Country Dropdown
+    // $.ajax({
+    //     url: "https://restcountries.com/v3.1/all",
+    //     method: "GET",
+    //     dataType: "json",
+    //     success: function (response) {
+    //         countryList = response; // Save country data for search functionality
+
+    //         const dropdown = $("#countryDropdown");
+    //         dropdown.empty(); // Clear existing options
+    //         dropdown.append('<option value="">Select a country...</option>'); // Default option
+
+    //         response.forEach(country => {
+    //             const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
+    //             const countryName = country.name.common;
+    //             dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
+
+    //         });
+
+    //     },
+    //     error: function () {
+    //         alert("Failed to load country data. Please refresh the page and try again.");
+    //     }
+    // });
 
 
 
@@ -200,7 +234,7 @@ startGeolocation();
                                 const countryInfo = selectValue.formatted;
 
                                 // //value selected from search option 
-                                // console.log(selectValue);
+                                console.log(selectValue);
 
                                 //clearing previous markers
                                 if(marker){
@@ -214,6 +248,8 @@ startGeolocation();
                             marker.bindPopup(`<b>Country:</b><br>${countryInfo}`).openPopup();
 
                             map.setView([coord.lat, coord.lng], 15);
+
+
 
                             //wikipedia api call from searched dropdown options
                             $.ajax({
@@ -229,10 +265,13 @@ startGeolocation();
                                 // console.log(wikiInfo);
                                 const wikiInfo = wikiresponse.geonames[0];
                                 const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
+
                                 //update the wiki field in html
                                 $("#wikipediaInfo").text(wikiInfo.summary);
                                 //update the wikiUrl IN THE HTML
+                                if(wikiUrl){
                                 $("#wikipediaLink").attr("href", wikiUrl);
+                                }
                                 }else{
                                 console.error("No wikipedia information found in the response");
                                 $("#wikipediaInfo").text("Failed to load wikipedia information")
@@ -271,28 +310,40 @@ startGeolocation();
 
             //using geoJSON to draw country border
             //setting country border in order to clear the previous border after new border
+
+
+
             let currentCountryBorder = null;
             let currentMarker = null;
-            function highlightCountryBorders(countryCode) {
-                $.getJSON("assets/data/countryBorders.json", function (data) {
-                    const country = data.features.find(
-                        feature => feature.properties.iso_a2 === countryCode
-                    );
 
-                    if (country) {
-                        if(currentCountryBorder){
-                            map.removeLayer(currentCountryBorder);
-                            console.log("i cleared the border")
-                        }
-                        //add the new country border
-                        currentCountryBorder = L.geoJSON(country);
-                        currentCountryBorder.addTo(map);
-                        map.fitBounds(currentCountryBorder.getBounds());
-                        }
-                }).fail(function () {
-                    console.error("Failed to load GeoJSON country border file.");
-                });
+            async function highlightCountryBorders(countryCode){
+                try{
+                const response = await fetch("assets/data/countryBorders.json");
+                if(!response.ok){
+                    throw new Error("Failed to load GeoJSON country border file.");
+
+                }
+                const data = await response.json();
+                const country = data.features.find(
+                    feature => feature.properties.iso_a2 === countryCode
+                );
+                if(country){
+                    if(currentCountryBorder){
+                        map.removeLayer(currentCountryBorder);
+                        console.log("Cleared the previous border");
+                    }
+                    //Add the new country border
+                    currentCountryBorder = L.geoJSON(country);
+                    currentCountryBorder.addTo(map);
+                    map.fitBounds(currentCountryBorder.getBounds());
+                }
             }
+             catch(error){
+                console.error(error.message);
+            }
+        }
+
+
             //executing country Border JSON function
             highlightCountryBorders(countryCode);
     
@@ -348,10 +399,13 @@ startGeolocation();
                             //update the wiki field in html
                             $("#wikipediaInfo").text(wikiInfo.summary);
                             //update the wikiUrl IN THE HTML
+                            if(wikiUrl){
                             $("#wikipediaLink").attr("href", wikiUrl);
+                            $("#wikipediaLink").html("Click to read more");
+                            }
                             }else{
                             console.error("No wikipedia information found in the response");
-                            $("#wikipediaInfo").text("Failed to load wikipedia information")
+                            $("#wikipediaInfo").text("Failed to load wikipedia information");
                                 }
                             }
                         });
