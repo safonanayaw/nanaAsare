@@ -10,13 +10,13 @@
     height: 500px;
     margin: 50px;
 }
-#title {
+/* #title {
     background-color: #3cb371;
     text-align: center;
     border-radius: 10px;
     width: 100%;
 
-}
+} */
 
 #searchContainer {
     position: absolute; /* Position it absolutely within its nearest positioned ancestor */

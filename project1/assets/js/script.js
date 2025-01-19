@@ -522,24 +522,41 @@ startGeolocation();
             success: function (response) {
                 const country = response[0];
                 
-                if(country){
+            if(country){
+            console.log(country);
+            const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
+            const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
+            const flagUrl = country.flags ? country.flags.png : "N/A";
+            
 
-                const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
-                const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
-                const flagUrl = country.flags ? country.flags.png : "N/A";
+            $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
 
-                $("#countryDetails").text(JSON.stringify(country, null, 2));
-                $("#countryName").text(country.name ? country.name.common : "N/A");
-                $("#officialName").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
-                $("#capitalName").text(country.capital ? country.capital[0] : "N/A");
-                $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
-                $("#religion").text(country.region ? country.region : "N/A");
-                $("#subRegion").text(country.subregion ? country.subregion : "N/A");
-                $("#languages").text(languages);
-                $("#currencies").text(currenciesDetail);
-                $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
-                };
+            $("#countryDetails").text(JSON.stringify(country, null, 2));
 
+            $("#countryName").html(country.name ? `<strong>Country Name: </strong> ${country.name.common}` : "N/A");
+
+            $("#officialName").html(country.name && country.name.nativeName && country.name.nativeName.eng ? `<strong>Official Name: </strong>${country.name.nativeName.eng.official}` : "N/A");
+
+            $("#capitalName").html(country.capital ? `<strong>Capital: </strong>${country.capital[0]}` : "N/A");
+            $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
+            
+            $("#religion").html(country.region ? `<strong>Region: </strong>${country.region }`: "N/A");
+            $("#subRegion").html(country.subregion ? `<strong>Sub Region: </strong>${country.subregion}` : "N/A");
+
+            $("#languages").html(languages ? `<strong>Language(s): </strong>${languages}`: "N/A");
+            $("#currencies").html(currenciesDetail ? `<strong>Currencie(s): </strong>${currenciesDetail}`: "N/A");
+
+            $("#area").html(country.area ? `<strong>Area: </strong>${country.area}`: "N/A");
+
+            $("#population").html(country.population ? `<strong>Population: </strong>${country.population}`: "N/A");
+
+            $("#timeZone").html(country.timezones[0] ? `<strong>Time Zone: </strong>${country.timezones[0]}`: "N/A");
+
+            $("#callingNumber").html(country.idd ? `<strong>Calling Number: </strong>${country.idd.root+country.idd.suffixes[0] }`: "N/A");
+            
+
+
+        };
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
             stopGeolocation();
