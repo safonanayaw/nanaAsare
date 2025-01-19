@@ -1,0 +1,10 @@
+TODO
+*display message when search filter return no serach value to user
+
+*integrate  opencage api
+
+*move the rescountry api call to different php file as all api should be in different php 
+file not directly in the js file
+
+use opencage to search for home address
+if search filled return null switch to opencage

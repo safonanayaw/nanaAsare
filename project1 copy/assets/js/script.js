@@ -25,56 +25,12 @@ $(document).ready(function () {
     });
 
 
-    //declaring marker, circle, zoom
-    let marker, circle, zoom, lat, lng, openCageData, userCountryCode, description;
-
-    // Store fetched country data for searching
-    let countryList = []; 
-    
-    //set user selecting location to false on app initial load
-    let isManualSelection = false; 
-    let watchId;
-
-    // Show loading indicator
-    $("#loading").show();
-
-    //populate dropdown with country info
-    async function fetchAndPopulateCountryDropdown(){
-        try {
-            $("#loading").show();
-            const response = await fetch("https://restcountries.com/v3.1/all");
-            if(!response.ok){
-                throw new Error("Failed to fetch country data");
-            }
-            const data = await response.json();
-            countryList = data; //save response to countryList array
-            const dropdown = $("#countryDropdown");
-            dropdown.empty(); // Clear existing options
-            dropdown.append('<option value="">Select a country...</option>'); // Default option
-    
-            data.forEach(country => {
-                const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
-                const countryName = country.name.common;
-                dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
-            });
-
-            // Hide loading indicator
-            $("#loading").hide();
-        }catch(error){
-            // Hide loading indicator
-            $("#loading").hide();
-            alert("Failed to load country data. Please refresh the page and try again.");
-            console.error(error);
-        }
-    }
-    // call fxn to fetch countrylist data
-    fetchAndPopulateCountryDropdown();
-
-
     // functions declaration
+
     // country border function
     //using geoJSON to draw country border
     let currentCountryBorder = null;
+    let currentMarker = null;
 
     async function highlightCountryBorders(countryCode){
         try{
@@ -147,14 +103,19 @@ $(document).ready(function () {
     infoBtn = L.easyButton("fa-info fa-xl", function (btn, map) {
         $("#exampleModal").modal("show");
       });
-    infoBtn.addTo(map);
-
-
-
+      infoBtn.addTo(map);
 
 
 
     //**********getting user live location on app refresh****************
+
+    //declaring marker, circle, zoom
+    let marker, circle, zoom, lat, lng;
+    
+    //set user selecting location to false on app initial load
+    let isManualSelection = false; 
+    let watchId;
+
     //start watching user location
     function startGeolocation (){
         navigator.geolocation.watchPosition(userLocation, userErrorLocation);
@@ -182,109 +143,20 @@ $(document).ready(function () {
             map.removeLayer(circle);
         }
 
-        // use lat and lng for forward geocoding using opencage to get country ISO code to search the geoCode file for user bordeR
-        $.ajax({
-            url: apiUrl,
-            method: "GET",
-            data: {type: "geocodeReverse", lat: lat, lng: lng},
-            dataType: "json",
-            success: function (response){
-                openCageData = response.results;
-                userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
-                description = openCageData[0].formatted;
-                console.log(openCageData);
-                
-                console.log(description);
+        marker = L.marker([lat, lng]).addTo(map);
+        circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
+        marker.bindPopup(`Current location, (${lat},${lng}`).openPopup();
 
-                marker = L.marker([lat, lng]).addTo(map);
-                circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-                marker.bindPopup(`Current location: ${description}`).openPopup();
-    
-                //clearing current user zoom after location change
-                if(!zoom){
-                zoom = map.fitBounds(circle.getBounds());
-                }
-                //current user location country border
-                highlightCountryBorders(userCountryCode);
-             },
-             error: function(){
-                console.log("Failed to reverse geocode for current user location");
-             }
-            });
+        //clearing current user zoom after location change
+        if(!zoom){
+            zoom = map.fitBounds(circle.getBounds());
+        }
 
-            //populate current user country info for modal layout popup
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: { type: "countryInfo", countryCode: userCountryCode },
-                dataType: "json",
-                success: function (response) {
-                    const country = response[0];
-                    
-                    if(country){
-    
-                    const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
-                    const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
-                    const flagUrl = country.flags ? country.flags.png : "N/A";
-    
-                    $("#countryDetails").text(JSON.stringify(country, null, 2));
-                    $("#countryName").text(country.name ? country.name.common : "N/A");
-                    $("#officialName").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
-                    $("#capitalName").text(country.capital ? country.capital[0] : "N/A");
-                    $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
-                    $("#religion").text(country.region ? country.region : "N/A");
-                    $("#subRegion").text(country.subregion ? country.subregion : "N/A");
-                    $("#languages").text(languages);
-                    $("#currencies").text(currenciesDetail);
-                    $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
-                    };
-                }
-            });
+        // use lat and lng for forward geocoding using opencage to get country ISO code to search the geoCode file for user border
 
-            //current user waether info
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "weather", lat: lat, lng: lng},
-                dataType: "json",
-                success: function (response){
-                    const weatherInfo = response;
-                    $("#weatherInfo").text(JSON.stringify(weatherInfo, null, 2));
-                    $("#temparature").text(`${weatherInfo.main.temp} °C`);
-                }
-            });
-
-            //wikipedia info
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "wikipedia", lat: lat, lng:lng},
-                dataType: "json",
-                success: function (wikiresponse){
-                    console.log("Response:", wikiresponse);
-                    // const selectedWikiInfo = wikiresponse.find()
-                    if(wikiresponse && wikiresponse.geonames && wikiresponse.geonames.length > 0){
-                    // const wikiInfo = wikiresponse.find(wiki => wikiresponse.geonames.countryCode === selectValue);
-                    // console.log(wikiInfo);
-                    const wikiInfo = wikiresponse.geonames[0];
-                    const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
-
-                    //update the wiki field in html
-                    $("#wikipediaInfo").text(wikiInfo.summary);
-                    //update the wikiUrl IN THE HTML
-                    if(wikiUrl){
-                    $("#wikipediaLink").attr("href", wikiUrl);
-                    }
-                    }else{
-                    console.error("No wikipedia information found in the response");
-                    $("#wikipediaInfo").text("Failed to load wikipedia information")
-                    }
-                    }
-                });
-
-
-
-    };
+        
+  
+    }
 
     function userErrorLocation(err){
         if(err.code === 1){
@@ -297,13 +169,78 @@ $(document).ready(function () {
 
 //start geolocation tracking
 startGeolocation();
-//**********getting user live location on app refresh ends here****************
+
+
+    // console.log(cordinates.lat, cordinates.lng);
+
+    let countryList = []; // Store fetched country data for searching
+    
+    // Show loading indicator
+    $("#loading").show();
+
+
+    async function fetchAndPopulateCountryDropdown(){
+        try {
+            $("#loading").show();
+            const response = await fetch("https://restcountries.com/v3.1/all");
+            if(!response.ok){
+                throw new Error("Failed to fetch country data");
+            }
+            const data = await response.json();
+            countryList = data; //save response to countryList array
+            const dropdown = $("#countryDropdown");
+            dropdown.empty(); // Clear existing options
+            dropdown.append('<option value="">Select a country...</option>'); // Default option
+    
+            data.forEach(country => {
+                const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
+                const countryName = country.name.common;
+                dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
+            });
+
+            // Hide loading indicator
+            $("#loading").hide();
+        }catch(error){
+            // Hide loading indicator
+            $("#loading").hide();
+            alert("Failed to load country data. Please refresh the page and try again.");
+            console.error(error);
+        }
+    }
+    // call fxn to fetch countrylist data
+    fetchAndPopulateCountryDropdown();
+
+    // // Fetch and Populate Country Dropdown
+    // $.ajax({
+    //     url: "https://restcountries.com/v3.1/all",
+    //     method: "GET",
+    //     dataType: "json",
+    //     success: function (response) {
+    //         countryList = response; // Save country data for search functionality
+
+    //         const dropdown = $("#countryDropdown");
+    //         dropdown.empty(); // Clear existing options
+    //         dropdown.append('<option value="">Select a country...</option>'); // Default option
+
+    //         response.forEach(country => {
+    //             const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
+    //             const countryName = country.name.common;
+    //             dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
+
+    //         });
+
+    //     },
+    //     error: function () {
+    //         alert("Failed to load country data. Please refresh the page and try again.");
+    //     }
+    // });
 
 
 
-//********************Filter Dropdown on Search**************************
-//opencage response array
+    // ********************Filter Dropdown on Search**************************
+    //opencase response array
     let openCageCountryList = [];
+
 
     $("#countrySearch").on("input", function () {
         const searchValue = $(this).val().toLowerCase();
@@ -339,89 +276,92 @@ startGeolocation();
                     // console.log(openCageCountryList);
         
                     
-            if (openCageCountryList && openCageCountryList.length > 0) {
-                openCageCountryList.forEach(result => {
-                    const formatted = result.formatted;
-                    const coords = result.geometry;
-                    const countryCode = result.components["ISO_3166-1_alpha-2"];
-                    
-
-                    dropdown.append(`<option value="${countryCode}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
-                    
-
-
-                    // after selecting option navigate marker to coordinate of selected option
-                    $("#countryDropdown").on("change", function(){
-                        const selectCountry = $(this).val();
-                        console.log(selectCountry);
-
-                        const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === selectCountry);
-
-                        const coord = selectValue.geometry;
-                        const countryInfo = selectValue.formatted;  
-
-                        //clearing previous markers
-                        if(marker){
-                        map.removeLayer(marker);
-                        map.removeLayer(circle);
-                        };
-
-                    //add marker after selecting country on dropdown 
-                    marker = L.marker([coord.lat, coord.lng]).addTo(map);
-                    //add pop up to selected country
-                    marker.bindPopup(`<b>Country:</b><br>${countryInfo}`).openPopup();
-
-                    map.setView([coord.lat, coord.lng], 15);
-
-
-
-                    //wikipedia api call from searched dropdown options
-                    $.ajax({
-                    url: apiUrl,
-                    method: "GET",
-                    data: {type: "wikipedia", lat: coord.lat, lng: coord.lng},
-                    dataType: "json",
-                    success: function (wikiresponse){
-                        console.log("Response:", wikiresponse);
-                        // const selectedWikiInfo = wikiresponse.find()
-                        if(wikiresponse && wikiresponse.geonames && wikiresponse.geonames.length > 0){
-                        // const wikiInfo = wikiresponse.find(wiki => wikiresponse.geonames.countryCode === selectValue);
-                        // console.log(wikiInfo);
-                        const wikiInfo = wikiresponse.geonames[0];
-                        const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
-
-                        //update the wiki field in html
-                        $("#wikipediaInfo").text(wikiInfo.summary);
-                        //update the wikiUrl IN THE HTML
-                        if(wikiUrl){
-                        $("#wikipediaLink").attr("href", wikiUrl);
-                        }
-                        }else{
-                        console.error("No wikipedia information found in the response");
-                        $("#wikipediaInfo").text("Failed to load wikipedia information")
-                        }
-                        }
-                    });
-                    
-                });
-
-                    //set manual selection flag to and stop geolocation updates
-                    isManualSelection = true;
-                    stopGeolocation();
-
-                });
-            } else {
-                dropdown.append('<option value="">No matches found</option>');
-            }
-            },
-            error: function () {
-                dropdown.append('<option value="">An error occured</option>');
-            }
-        });
-    }
-});
+                    if (openCageCountryList && openCageCountryList.length > 0) {
+                        openCageCountryList.forEach(result => {
+                            const formatted = result.formatted;
+                            const coords = result.geometry;
+                            const countryCode = result.components["ISO_3166-1_alpha-2"];
+                            
     
+                            dropdown.append(`<option value="${countryCode}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
+                            
 
+
+                            // after selecting option navigate marker to coordinate of selected option
+                            $("#countryDropdown").on("change", function(){
+                                const selectCountry = $(this).val();
+                                console.log(selectCountry);
+
+                                const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === selectCountry);
+
+                                const coord = selectValue.geometry;
+                                const countryInfo = selectValue.formatted;
+
+                                // //value selected from search option 
+                                console.log(selectValue);
+
+                                //clearing previous markers
+                                if(marker){
+                                map.removeLayer(marker);
+                                map.removeLayer(circle);
+                                };
+
+                            //add marker after selecting country on dropdown 
+                            marker = L.marker([coord.lat, coord.lng]).addTo(map);
+                            //add pop up to selected country
+                            marker.bindPopup(`<b>Country:</b><br>${countryInfo}`).openPopup();
+
+                            map.setView([coord.lat, coord.lng], 15);
+
+
+
+                            //wikipedia api call from searched dropdown options
+                            $.ajax({
+                            url: apiUrl,
+                            method: "GET",
+                            data: {type: "wikipedia", lat: coord.lat, lng: coord.lng},
+                            dataType: "json",
+                            success: function (wikiresponse){
+                                console.log("Response:", wikiresponse);
+                                // const selectedWikiInfo = wikiresponse.find()
+                                if(wikiresponse && wikiresponse.geonames && wikiresponse.geonames.length > 0){
+                                // const wikiInfo = wikiresponse.find(wiki => wikiresponse.geonames.countryCode === selectValue);
+                                // console.log(wikiInfo);
+                                const wikiInfo = wikiresponse.geonames[0];
+                                const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
+
+                                //update the wiki field in html
+                                $("#wikipediaInfo").text(wikiInfo.summary);
+                                //update the wikiUrl IN THE HTML
+                                if(wikiUrl){
+                                $("#wikipediaLink").attr("href", wikiUrl);
+                                }
+                                }else{
+                                console.error("No wikipedia information found in the response");
+                                $("#wikipediaInfo").text("Failed to load wikipedia information")
+                                }
+                             }
+                            });
+                            
+                        });
+
+                            //set manual selection flag to and stop geolocation updates
+                            isManualSelection = true;
+                            stopGeolocation();
+
+                        });
+                    } else {
+                        dropdown.append('<option value="">No matches found</option>');
+                    }
+                },
+                error: function () {
+                    dropdown.append('<option value="">An error occured</option>');
+                }
+            });
+        }
+    });
+    
+    
     //**************Listen and grab dropdown value for weather, counntryBorder****************
     $("#countryDropdown").on("change", function(){
             //get the selected value
@@ -435,7 +375,7 @@ startGeolocation();
             highlightCountryBorders(countryCode); 
 
         // Add markers from GeoJSON
-            // addMarkersFromGeoJSON(countryCode); 
+            addMarkersFromGeoJSON(countryCode); 
     
             if(countryCode){
                 const selectedCountry = countryList.find(country => country.cca2 === countryCode);
@@ -499,9 +439,6 @@ startGeolocation();
             }else{
                 console.log("No country selected");
             }
-            //set manual selection flag to and stop geolocation updates
-            isManualSelection = true;
-            stopGeolocation();
         });
 
 
@@ -538,7 +475,7 @@ startGeolocation();
                 $("#languages").text(languages);
                 $("#currencies").text(currenciesDetail);
                 $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
-                };
+                }
 
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
