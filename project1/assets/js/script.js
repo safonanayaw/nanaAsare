@@ -527,33 +527,47 @@ startGeolocation();
             const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
             const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
             const flagUrl = country.flags ? country.flags.png : "N/A";
+            const googleMaps = country.maps.googleMaps;
+            const openStreetMaps = country.maps.openStreetMaps;
+
             
 
-            $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
+            $("#flag").html(flagUrl ? `<h4>Country Flag</h4> <img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
+
+            
 
             $("#countryDetails").text(JSON.stringify(country, null, 2));
 
-            $("#countryName").html(country.name ? `<strong>Country Name: </strong> ${country.name.common}` : "N/A");
+            $("#officialName").html(country.name && country.name.nativeName && country.name.nativeName.eng ? `<strong>Official Name: </strong>${country.name.nativeName.eng.official}` : `<strong>Official Name: </strong> N/A`);
 
-            $("#officialName").html(country.name && country.name.nativeName && country.name.nativeName.eng ? `<strong>Official Name: </strong>${country.name.nativeName.eng.official}` : "N/A");
+            $("#countryName").html(country.name ? `<strong>Country Name: </strong> ${country.name.common}` : `<strong>Country Name: </strong> N/A`);
 
-            $("#capitalName").html(country.capital ? `<strong>Capital: </strong>${country.capital[0]}` : "N/A");
-            $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
+            $("#capitalName").html(country.capital ? `<strong>Capital: </strong>${country.capital[0]}` : `<strong>Capital: </strong> N/A`);
+
+            $("#countryCode").html(country.cca2 ? `<strong>Country Code: </strong> ${country.cca2}` : `<strong>Country Code: </strong> N/A`);
             
-            $("#religion").html(country.region ? `<strong>Region: </strong>${country.region }`: "N/A");
-            $("#subRegion").html(country.subregion ? `<strong>Sub Region: </strong>${country.subregion}` : "N/A");
+            $("#region").html(country.region ? `<strong>Region: </strong> ${country.region }`: `<strong>Region: </strong> N/A`);
+            $("#subRegion").html(country.subregion ? `<strong>Sub Region: </strong>${country.subregion}` : `<strong>Subregion: </strong> N/A`);
 
-            $("#languages").html(languages ? `<strong>Language(s): </strong>${languages}`: "N/A");
-            $("#currencies").html(currenciesDetail ? `<strong>Currencie(s): </strong>${currenciesDetail}`: "N/A");
+            $("#languages").html(languages ? `<strong>Language(s): </strong>${languages}`: `<strong>Language(s): </strong> N/A`);
+            $("#currencies").html(currenciesDetail ? `<strong>Currencie(s): </strong>${currenciesDetail}`: `<strong>Currencie(s): </strong> N/A`);
 
-            $("#area").html(country.area ? `<strong>Area: </strong>${country.area}`: "N/A");
+            $("#area").html(country.area ? `<strong>Area: </strong>${country.area} km²`: `<strong>Area: </strong> N/A`);
 
-            $("#population").html(country.population ? `<strong>Population: </strong>${country.population}`: "N/A");
+            $("#population").html(country.population ? `<strong>Population: </strong>${country.population}`: `<strong>Population: </strong> N/A`);
 
-            $("#timeZone").html(country.timezones[0] ? `<strong>Time Zone: </strong>${country.timezones[0]}`: "N/A");
+            $("#timeZone").html(country.timezones[0] ? `<strong>Time Zone: </strong>${country.timezones[0]}`: `<strong>Timezones: </strong> N/A`);
 
-            $("#callingNumber").html(country.idd ? `<strong>Calling Number: </strong>${country.idd.root+country.idd.suffixes[0] }`: "N/A");
+            $("#callingNumber").html(country.idd ? `<strong>Calling Number: </strong>${country.idd.root+country.idd.suffixes[0] }`: `<strong>Calling Code: </strong> N/A`);
+
+            $("#unMember").html(country.unMember === true ? `<strong>UN Member: </strong>Yes`: `<strong>UN Member: </strong> No`);
             
+            $("#startOfWeek").html(country.startOfWeek ? `<strong>Start Week: </strong>${country.startOfWeek}`:  `<strong>Start Week: </strong> N/A`);
+
+            $("#googleMap").attr("href", googleMaps);
+            $("#openStreetMap").attr("href", openStreetMaps);
+
+            $("#coatOfArm").html(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
 
 
         };
