@@ -1,7 +1,6 @@
 $(document).ready(function () {
     const apiUrl = "libs/php/apiHandler.php";
 
-
     var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -26,7 +25,9 @@ $(document).ready(function () {
 
 
     //declaring marker, circle, zoom
-    let marker, circle, zoom, lat, lng, openCageData, userCountryCode, description;
+    let marker, circle, zoom, lat, lng, openCageData, userCountryCode, description, userCountry;
+    //opencage response array
+    let openCageCountryList = [];
 
     // Store fetched country data for searching
     let countryList = []; 
@@ -98,35 +99,31 @@ $(document).ready(function () {
                 map.fitBounds(currentCountryBorder.getBounds());
             }else{
                 console.log("country not found in GeoJSON data.")
-            }
+            };
         }
     catch(error){
         console.error(error.message);
         }
-    }
+    };
 
      //point of interest marker clusters functions
-        async function addMarkersFromGeoJSON(countryCode) {
-            try {
-                const response = await fetch("assets/data/markers.json");
-                if (!response.ok) {
-                    throw new Error("Failed to load GeoJSON markers file.");
-                }
-                const data = await response.json();
-                const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
-                L.geoJSON(country, {
-                    pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-                    }
-                }).addTo(map);
-            } catch (error) {
-                console.error("Error loading GeoJSON markers data:", error.message);
-            }
-        }
-
-
-
-
+        // async function addMarkersFromGeoJSON(countryCode) {
+        //     try {
+        //         const response = await fetch("assets/data/markers.json");
+        //         if (!response.ok) {
+        //             throw new Error("Failed to load GeoJSON markers file.");
+        //         }
+        //         const data = await response.json();
+        //         const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
+        //         L.geoJSON(country, {
+        //             pointToLayer: function (feature, latlng) {
+        //                 return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
+        //             }
+        //         }).addTo(map);
+        //     } catch (error) {
+        //         console.error("Error loading GeoJSON markers data:", error.message);
+        //     }
+        // }
 
     // Initialize Map
     const map = L.map('map',{
@@ -148,11 +145,6 @@ $(document).ready(function () {
         $("#exampleModal").modal("show");
       });
     infoBtn.addTo(map);
-
-
-
-
-
 
     //**********getting user live location on app refresh****************
     //start watching user location
@@ -182,110 +174,170 @@ $(document).ready(function () {
             map.removeLayer(circle);
         }
 
-        // use lat and lng for forward geocoding using opencage to get country ISO code to search the geoCode file for user bordeR
-        $.ajax({
-            url: apiUrl,
-            method: "GET",
-            data: {type: "geocodeReverse", lat: lat, lng: lng},
-            dataType: "json",
-            success: function (response){
-                openCageData = response.results;
-                userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
-                description = openCageData[0].formatted;
-                console.log(openCageData);
+        function getGeocodeReverse(lat, lng) {
+            return new Promise((resolve, reject)=>{
+                $.ajax({
+                    url: apiUrl,
+                    method: "GET",
+                    data: {type: "geocodeReverse", lat: lat, lng: lng},
+                    dataType: "json",
+                    success: function (response){
+                        openCageData = response.results;
+                        userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
+                        description = openCageData[0].formatted;
+        
+                        if(lat && lng && description){
+                            resolve({lat, lng, userCountryCode, description});
+                            };
+
+                     },
+                     error: function(){
+                        reject("Failed to reverse geocode for current user location");
+                     },
+                    });
+            });
+        }
+
+        function getCountryInfo(userCountryCode){
+            return new Promise((resolve, reject)=>{
+                $.ajax({
+                    url: apiUrl,
+                    method: "GET",
+                    data: { type: "countryInfo", countryCode: userCountryCode },
+                    dataType: "json",
+                    success: function (response) {
+                      if (response && response.length > 0) {
+                        userCountry = response[0];
+                        resolve(response[0]);
+                      } else {
+                        reject("Country info not found.");
+                      }
+                    },
+                    error: function () {
+                      reject("Failed to fetch country info.");
+                    },
+                  });
+            });
+        }
+
+        function getWikipediaInfo(lat, lng){
+            return new Promise((resolve, reject)=>{
+                $.ajax({
+                    url: apiUrl,
+                    method: "GET",
+                    data: { type: "wikipedia", lat: lat, lng: lng },
+                    dataType: "json",
+                    success: function (wikiResponse) {
+                      if (wikiResponse && wikiResponse.geonames && wikiResponse.geonames.length > 0) {
+                        resolve(wikiResponse.geonames[0]);
+                      } else {
+                        reject("No Wikipedia information found.");
+                      }
+                    },
+                    error: function () {
+                      reject("Failed to fetch Wikipedia information.");
+                    },
+                  });
+            });
+        }
+
+        getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description}) => {
+            console.log(`Reverse Geocode Data: ${description}`);
+            // update user location maker
+            marker = L.marker([lat, lng]).addTo(map);
+            circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
+            marker.bindPopup(`Current location: ${description}`).openPopup();
+
+            //clearing current user zoom after location change
+            if(!zoom){
+            zoom = map.fitBounds(circle.getBounds());
+            }
+            //current user location country border
+            highlightCountryBorders(userCountryCode);
+
+            //return country Info fxn
+            return getCountryInfo(userCountryCode);
+
+            
+        }).then((userCountry) =>{
+            console.log("Country Info:", userCountry);
+            const country = userCountry;
+            
+            //display user country info
+            if(country){
+                console.log(country);
+                const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
+                const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
+                const flagUrl = country.flags ? country.flags.png : "N/A";
+                const googleMaps = country.maps.googleMaps;
+                const openStreetMaps = country.maps.openStreetMaps;
+    
                 
-                console.log(description);
-
-                marker = L.marker([lat, lng]).addTo(map);
-                circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-                marker.bindPopup(`Current location: ${description}`).openPopup();
+                //country info layout here *******************************************
+                $("#flag").html(flagUrl ? `<h4>Country Flag</h4> <img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
     
-                //clearing current user zoom after location change
-                if(!zoom){
-                zoom = map.fitBounds(circle.getBounds());
-                }
-                //current user location country border
-                highlightCountryBorders(userCountryCode);
-             },
-             error: function(){
-                console.log("Failed to reverse geocode for current user location");
-             }
-            });
-
-            //populate current user country info for modal layout popup
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: { type: "countryInfo", countryCode: userCountryCode },
-                dataType: "json",
-                success: function (response) {
-                    const country = response[0];
-                    
-                    if(country){
+                $("#countryDetails").text(JSON.stringify(country, null, 2));
     
-                    const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
-                    const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
-                    const flagUrl = country.flags ? country.flags.png : "N/A";
+                $("#officialName").html(country.name && country.name.nativeName && country.name.nativeName.eng ? `<strong>Official Name: </strong>${country.name.nativeName.eng.official}` : `<strong>Official Name: </strong> N/A`);
     
-                    $("#countryDetails").text(JSON.stringify(country, null, 2));
-                    $("#countryName").text(country.name ? country.name.common : "N/A");
-                    $("#officialName").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
-                    $("#capitalName").text(country.capital ? country.capital[0] : "N/A");
-                    $("#countryCode").text(country.cca2 ? country.cca2 : "N/A");
-                    $("#religion").text(country.region ? country.region : "N/A");
-                    $("#subRegion").text(country.subregion ? country.subregion : "N/A");
-                    $("#languages").text(languages);
-                    $("#currencies").text(currenciesDetail);
-                    $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
-                    };
-                }
-            });
+                $("#countryName").html(country.name ? `<strong>Country Name: </strong> ${country.name.common}` : `<strong>Country Name: </strong> N/A`);
+    
+                $("#capitalName").html(country.capital ? `<strong>Capital: </strong>${country.capital[0]}` : `<strong>Capital: </strong> N/A`);
+    
+                $("#countryCode").html(country.cca2 ? `<strong>Country Code: </strong> ${country.cca2}` : `<strong>Country Code: </strong> N/A`);
+                
+                $("#region").html(country.region ? `<strong>Region: </strong> ${country.region }`: `<strong>Region: </strong> N/A`);
+                $("#subRegion").html(country.subregion ? `<strong>Sub Region: </strong>${country.subregion}` : `<strong>Subregion: </strong> N/A`);
+    
+                $("#languages").html(languages ? `<strong>Language(s): </strong>${languages}`: `<strong>Language(s): </strong> N/A`);
+                $("#currencies").html(currenciesDetail ? `<strong>Currencie(s): </strong>${currenciesDetail}`: `<strong>Currencie(s): </strong> N/A`);
+    
+                $("#area").html(country.area ? `<strong>Area: </strong>${country.area} km²`: `<strong>Area: </strong> N/A`);
+    
+                $("#population").html(country.population ? `<strong>Population: </strong>${country.population}`: `<strong>Population: </strong> N/A`);
+    
+                $("#timeZone").html(country.timezones[0] ? `<strong>Time Zone: </strong>${country.timezones[0]}`: `<strong>Timezones: </strong> N/A`);
+    
+                $("#callingNumber").html(country.idd ? `<strong>Calling Number: </strong>${country.idd.root+country.idd.suffixes[0] }`: `<strong>Calling Code: </strong> N/A`);
+    
+                $("#unMember").html(country.unMember === true ? `<strong>UN Member: </strong>Yes`: `<strong>UN Member: </strong> No`);
+                
+                $("#startOfWeek").html(country.startOfWeek ? `<strong>Start Week: </strong>${country.startOfWeek}`:  `<strong>Start Week: </strong> N/A`);
+    
+                $("#googleMap").attr("href", googleMaps);
+                $("#openStreetMap").attr("href", openStreetMaps);
+    
+                $("#coatOfArm").html(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
+                //country info layout end here *******************************************
+    
+                
+                // modal layout start here ******************************************
+                $("#countryNameMod").text(country.name ? country.name.common : "N/A");
+                $("#officialNameMod").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
+                $("#capitalNameMod").text(country.capital ? country.capital[0] : "N/A");
+                $("#countryCodeMod").text(country.cca2 ? country.cca2 : "N/A");
+                $("#regionMod").text(country.region ? country.region : "N/A");
+                $("#subRegionMod").text(country.subregion ? country.subregion : "N/A");
+                $("#languagesMod").text(languages);
+                $("#currenciesMod").text(currenciesDetail);
+                $("#flagMod").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
+                // modal layout ends here ******************************************
 
-            //current user waether info
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "weather", lat: lat, lng: lng},
-                dataType: "json",
-                success: function (response){
-                    const weatherInfo = response;
-                    $("#weatherInfo").text(JSON.stringify(weatherInfo, null, 2));
-                    $("#temparature").text(`${weatherInfo.main.temp} °C`);
-                }
-            });
+            };
 
-            //wikipedia info
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "wikipedia", lat: lat, lng:lng},
-                dataType: "json",
-                success: function (wikiresponse){
-                    console.log("Response:", wikiresponse);
-                    // const selectedWikiInfo = wikiresponse.find()
-                    if(wikiresponse && wikiresponse.geonames && wikiresponse.geonames.length > 0){
-                    // const wikiInfo = wikiresponse.find(wiki => wikiresponse.geonames.countryCode === selectValue);
-                    // console.log(wikiInfo);
-                    const wikiInfo = wikiresponse.geonames[0];
-                    const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
+            return getWikipediaInfo(country.latlng[0], country.latlng[1]);
 
-                    //update the wiki field in html
-                    $("#wikipediaInfo").text(wikiInfo.summary);
-                    //update the wikiUrl IN THE HTML
-                    if(wikiUrl){
-                    $("#wikipediaLink").attr("href", wikiUrl);
-                    }
-                    }else{
-                    console.error("No wikipedia information found in the response");
-                    $("#wikipediaInfo").text("Failed to load wikipedia information")
-                    }
-                    }
-                });
-
+        }).then((wikiInfo) => {
+            console.log("Wikipedia Info:", wikiInfo);
+            const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
+            $("#wikipediaInfo").text(wikiInfo.summary);
+            $("#wikipediaLink").attr("href", wikiUrl);
+        }).catch((error) => {
+            console.log("Error in chain", error);
+        });
 
 
     };
-
     function userErrorLocation(err){
         if(err.code === 1){
             alert("Plese allow geolocation access")
@@ -293,8 +345,6 @@ $(document).ready(function () {
             alert("Cannot get current geolocation")
         }
     }
-
-
 //start geolocation tracking
 startGeolocation();
 //**********getting user live location on app refresh ends here****************
@@ -302,8 +352,7 @@ startGeolocation();
 
 
 //********************Filter Dropdown on Search**************************
-//opencage response array
-    let openCageCountryList = [];
+
 
     $("#countrySearch").on("input", function () {
         const searchValue = $(this).val().toLowerCase();
@@ -335,9 +384,6 @@ startGeolocation();
                 dataType: "json",
                 success: function (response) {
                     openCageCountryList = response.results;
-                    // console.log(openCageCountryList);
-                    // console.log(openCageCountryList);
-        
                     
             if (openCageCountryList && openCageCountryList.length > 0) {
                 openCageCountryList.forEach(result => {
@@ -531,10 +577,8 @@ startGeolocation();
             const openStreetMaps = country.maps.openStreetMaps;
 
             
-
+            //country info layout here *******************************************
             $("#flag").html(flagUrl ? `<h4>Country Flag</h4> <img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
-
-            
 
             $("#countryDetails").text(JSON.stringify(country, null, 2));
 
@@ -568,6 +612,19 @@ startGeolocation();
             $("#openStreetMap").attr("href", openStreetMaps);
 
             $("#coatOfArm").html(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
+            //country info layout end here *******************************************
+
+            
+            // modal layout start here ******************************************
+            $("#countryNameMod").text(country.name ? country.name.common : "N/A");
+            $("#officialNameMod").text(country.name && country.name.nativeName && country.name.nativeName.eng ? country.name.nativeName.eng.official : "N/A");
+            $("#capitalNameMod").text(country.capital ? country.capital[0] : "N/A");
+            $("#countryCodeMod").text(country.cca2 ? country.cca2 : "N/A");
+            $("#regionMod").text(country.region ? country.region : "N/A");
+            $("#subRegionMod").text(country.subregion ? country.subregion : "N/A");
+            $("#languagesMod").text(languages);
+            $("#currenciesMod").text(currenciesDetail);
+            $("#flagMod").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" style="width:20px;  height:20px;">` : "N/A");
 
 
         };
