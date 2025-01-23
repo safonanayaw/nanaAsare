@@ -415,7 +415,12 @@ $(document).ready(function () {
             //modal and layout info
             restModalAndLayoutInfo(country);
 
+            //weather info function
+            getWeatherInfo(lat, lng);
+
+            //wikipedia info function
             getWikipediaInfo(country.latlng[0], country.latlng[1]);
+            
 
         }).catch((error) => {
             console.log("Error in chain", error);
