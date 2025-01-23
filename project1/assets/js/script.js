@@ -248,7 +248,9 @@ $(document).ready(function () {
                     const sunRiseTime = sunRiseDate.toLocaleTimeString();
 
                     const sunSetDate = new Date(weatherInfo.sys.sunset * 10000);
+
                     const sunSetTime = sunSetDate.toLocaleTimeString();
+
                     if(sunRiseTime){
                         $("#sunRise").html(`<strong>Sunrise: </strong> ${sunRiseTime} UTC`);
                     }
