@@ -19,25 +19,25 @@
 } */
 
 #searchContainer {
-    position: absolute; /* Position it absolutely within its nearest positioned ancestor */
-    top: 20px;          /* Adjust as needed to place it near the top of the map */
-    left: 50%;          /*Center horizontally*/
+    position: absolute; 
+    top: 20px;          
+    left: 50%;          
     margin-top: 60px;
     /* margin-left: 100px; */
-    transform: translateX(-50%); /* Center the container by offsetting half its width */
-    background-color: #bab7b7; /* White background */
-    border-radius: 10px;      /* Rounded corners */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-    padding: 20px;            /* Internal spacing */
-    max-width: 340px;         /* Limit the container width */
-    transition: box-shadow 0.3s ease-in-out; /* Smooth hover effect */
-    z-index: 1000;            /* Ensure it appears above the map */
+    transform: translateX(-50%); 
+    background-color: #bab7b7; 
+    border-radius: 10px;      
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+    padding: 20px;           
+    max-width: 340px;         
+    transition: box-shadow 0.3s ease-in-out;
+    z-index: 1000;            
     opacity: 0.7;
 }
 
-/* Hover effect for the container */
+
 #searchContainer:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); 
 }
 #seachDivOne {
     width: 300px; 

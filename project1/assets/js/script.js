@@ -256,13 +256,7 @@ $(document).ready(function () {
                     if(sunSetTime){
                         $("#sunSet").html(`<strong>Sunset: </strong> ${sunSetTime} UTC`);
                     }
-
-                    
-
-
-
-
-                   
+ 
                 },
                 error: function(){
                     reject("Failed to get user weather Info");
