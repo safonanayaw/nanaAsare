@@ -115,10 +115,9 @@ $(document).ready(function () {
             feature => feature.properties.iso_a2 === countryCode
                 );
             if(country){
-            if(currentCountryBorder){
-                map.removeLayer(currentCountryBorder);
-                    console.log("Cleared the previous border");
-                }
+                if(currentCountryBorder){
+                    map.removeLayer(currentCountryBorder);
+                    }
                 //Add the new country border
                 currentCountryBorder = L.geoJSON(country);
                 currentCountryBorder.addTo(map);
@@ -211,13 +210,59 @@ $(document).ready(function () {
                 success: function (response){
                     const weatherInfo = response;
                     if(weatherInfo){
-                        console.logweatherInfo
                         resolve(weatherInfo); 
                     }else{
                         reject("No weather info found");
                     }
-                    $("#weatherInfo").text(JSON.stringify(weatherInfo, null, 2));
-                    // $("#temparature").text(`${weatherInfo.main.temp} °C`);
+                    // $("#weatherInfo").text(JSON.stringify(weatherInfo, null, 2));
+                    $("#temparatureMod").text(`${weatherInfo.main.temp} °C`);
+
+                    $("#weatherLocation").html(`<strong>Location: </strong> ${weatherInfo.name}`);
+
+                    $("#weatherCoordinates").html(`<strong>Coordinates:</strong> Latitude: ${weatherInfo.coord.lat}, Longitude: ${weatherInfo.coord.lon}</p>`);
+
+                    $("#weatherDesc").html(`<strong>Description: </strong>${weatherInfo.weather[0].main}, ${weatherInfo.weather[0].description}`);
+
+                    $("#temparatureLay").html(`<strong>Temperature: </strong> ${weatherInfo.main.temp} °C`);
+
+                    $("#tempFeelsLike").html(`<strong>Feels Like:</strong> ${weatherInfo.main.feels_like}°C`);
+
+                    $("#minTemp").html(`<strong>Min Temp:</strong> ${weatherInfo.main.temp_min}°C`);
+
+                    $("#maxTemp").html(`<strong>Max Temp:</strong> ${weatherInfo.main.temp_max}°C`);
+
+                    $("#tempPressure").html(`<strong>Pressure:</strong> ${weatherInfo.main.pressure}hPa`);
+
+                    $("#tempHumidity").html(`<strong>Humidity:</strong> ${weatherInfo.main.humidity}%`);
+
+                    $("#tempVisibility").html(`<strong>Visibility:</strong> ${weatherInfo.visibility} m`);
+
+                    $("#windSpeed").html(`<strong>Wind Speed: </strong> ${weatherInfo.wind.speed} m/s`);
+
+                    $("#windDirection").html(`<strong>Wind Direction: </strong> ${weatherInfo.wind.deg}°`);
+
+                    $("#windCloud").html(`<strong>Cloudiness: </strong> ${weatherInfo.clouds.all}%`);
+                    
+                    //convert unix time to human readable
+                    const sunRiseDate = new Date(weatherInfo.sys.sunrise * 10000);
+                    const sunRiseTime = sunRiseDate.toLocaleTimeString();
+
+                    const sunSetDate = new Date(weatherInfo.sys.sunset * 10000);
+                    const sunSetTime = sunSetDate.toLocaleTimeString();
+                    if(sunRiseTime){
+                        $("#sunRise").html(`<strong>Sunrise: </strong> ${sunRiseTime} UTC`);
+                    }
+
+                    if(sunSetTime){
+                        $("#sunSet").html(`<strong>Sunset: </strong> ${sunSetTime} UTC`);
+                    }
+
+                    
+
+
+
+
+                   
                 },
                 error: function(){
                     reject("Failed to get user weather Info");
@@ -378,10 +423,9 @@ $(document).ready(function () {
             $("#wikipediaInfo").text(wikiInfo.summary);
             $("#wikipediaLink").attr("href", wikiUrl);
 
-            return getWeatherInfo(lat, lng);
+            //call weather api function
+            getWeatherInfo(lat, lng);
 
-        }).then((weather)=>{
-            $("#temparatureMod").text(`${weather.main.temp} °C`)
         }).catch((error) => {
             console.log("Error in chain", error);
         });
@@ -489,6 +533,8 @@ $("#countrySearch").on("input", function () {
                     getCountryInfo(SelectCountryCode).then((response)=>{
                         const country = response;
                         restModalAndLayoutInfo(country);
+                        //calling weather function
+                        getWeatherInfo(selectValue.geometry.lat, selectValue.geometry.lng);
                     });
 
 
@@ -534,30 +580,25 @@ $("#countrySearch").on("input", function () {
     });
     }
     });
-    
-
-
 
     // Fetch Country Info selected on Dropdown Change
     
     $("#countryDropdown").on("change", function () {
-        
-        if(openCageUse) {
-            console.log("nothing will execute again, dropdown without search ");
-            console.log(`opencage is activated, openCage value is set to: ${openCageUse}`);
-            return;
-        }
-
         const countryCode = $(this).val();
-        console.log(`opencage is false so I got executed, value is: ${openCageUse}`);
-        if (!countryCode) return;
+        
+        if(openCageUse) return;
+
+        if(!countryCode) return ;
+
+        
+        
 
         //hightlight selected country's border
         highlightCountryBorders(countryCode);                             
 
         // Show Loader
         $("#loading").removeClass("d-none");
-        getCountryInfo(countryCode).then((response)=>{
+        getCountryInfo(countryCode).then((response) => {
             const country = response; 
             console.log(country);
 
@@ -571,11 +612,14 @@ $("#countrySearch").on("input", function () {
             // add pop up to selected country                
             marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
             //et country map view
-            map.setView([country.latlng[0], country.latlng[1]], 5);
+            map.setView([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], 5);
+            console.log(country);
+            console.log(`coordinate: ${country.capitalInfo.latlng[0]}, ${country.capitalInfo.latlng[1]}`);
 
 
             //modal and layout info
             restModalAndLayoutInfo(country);
+            getWeatherInfo(country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]);
 
 
             //set manual selection true and stop geolocation updates
