@@ -187,6 +187,12 @@ $(document).ready(function () {
                 dataType: "json",
                 success: function (wikiResponse) {
                     if (wikiResponse && wikiResponse.geonames && wikiResponse.geonames.length > 0) {
+                    const wikiInfo = wikiResponse.geonames[0];
+                    const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
+                    console.log(wikiResponse);
+                    $("#wikipediaInfo").text(wikiInfo.summary);
+                    $("#wikipediaLink").attr("href", wikiUrl);
+
                     resolve(wikiResponse.geonames[0]);
                     } else {
                     reject("No Wikipedia information found.");
@@ -248,9 +254,7 @@ $(document).ready(function () {
                     const sunRiseTime = sunRiseDate.toLocaleTimeString();
 
                     const sunSetDate = new Date(weatherInfo.sys.sunset * 10000);
-
                     const sunSetTime = sunSetDate.toLocaleTimeString();
-
                     if(sunRiseTime){
                         $("#sunRise").html(`<strong>Sunrise: </strong> ${sunRiseTime} UTC`);
                     }
@@ -411,16 +415,7 @@ $(document).ready(function () {
             //modal and layout info
             restModalAndLayoutInfo(country);
 
-            return getWikipediaInfo(country.latlng[0], country.latlng[1]);
-
-        }).then((wikiInfo) => {
-            console.log("Wikipedia Info:", wikiInfo);
-            const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
-            $("#wikipediaInfo").text(wikiInfo.summary);
-            $("#wikipediaLink").attr("href", wikiUrl);
-
-            //call weather api function
-            getWeatherInfo(lat, lng);
+            getWikipediaInfo(country.latlng[0], country.latlng[1]);
 
         }).catch((error) => {
             console.log("Error in chain", error);
@@ -531,37 +526,10 @@ $("#countrySearch").on("input", function () {
                         restModalAndLayoutInfo(country);
                         //calling weather function
                         getWeatherInfo(selectValue.geometry.lat, selectValue.geometry.lng);
+
+                        //calling wikipedia function
+                        getWikipediaInfo(selectValue.geometry.lat, selectValue.geometry.lng);
                     });
-
-
-
-                //wikipedia get request with searched value from dropdown options
-                $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "wikipedia", lat: coord.lat, lng: coord.lng},
-                dataType: "json",
-                success: function (wikiresponse){
-                    // console.log("Response:", wikiresponse);
-                    // const selectedWikiInfo = wikiresponse.find()
-                    if(wikiresponse && wikiresponse.geonames && wikiresponse.geonames.length > 0){
-                        // const wikiInfo = wikiresponse.find(wiki => wikiresponse.geonames.countryCode === selectValue);
-                        // console.log(wikiInfo);
-                        const wikiInfo = wikiresponse.geonames[0];
-                        const wikiUrl =`https://${wikiresponse.geonames[0].wikipediaUrl}`;
-
-                        //update the wiki field in html
-                        $("#wikipediaInfo").text(wikiInfo.summary);
-                        //update the wikiUrl IN THE HTML
-                        if(wikiUrl){
-                        $("#wikipediaLink").attr("href", wikiUrl);
-                        }
-                    }else{
-                        console.error("No wikipedia information found in the response");
-                        $("#wikipediaInfo").text("Failed to load wikipedia information")
-                    }
-                }
-            });
 
         });
 
@@ -604,7 +572,7 @@ $("#countrySearch").on("input", function () {
                 map.removeLayer(circle);
             }
             //add marker
-            marker = L.marker([country.latlng[0], country.latlng[1]]).addTo(map);
+            marker = L.marker([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]]).addTo(map);
             // add pop up to selected country                
             marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
             //et country map view
@@ -615,7 +583,12 @@ $("#countrySearch").on("input", function () {
 
             //modal and layout info
             restModalAndLayoutInfo(country);
-            getWeatherInfo(country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]);
+            
+            //calling weather function
+            getWeatherInfo(country.latlng[0], country.latlng[1]);
+
+            //calling wikipedia function
+            getWikipediaInfo(country.latlng[0], country.latlng[1]);
 
 
             //set manual selection true and stop geolocation updates
