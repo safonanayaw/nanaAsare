@@ -73,13 +73,16 @@ body::before {
     color: white;
     padding: 10px 20px;
 }
+
 .navbar-brand {
     font-size: 1.8rem;
     color: white;
     font-weight: bold;
 }
 .navbar-brand:hover {
-    color: #d4edda;
+    color: #d4edda; 
+    text-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: color 0.2s ease-in, text-shadow 0.3s ease-in;
 }
 
 /* Search Container */
@@ -114,6 +117,17 @@ body::before {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
+/* hover effect on weather icon and flag */
+img {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Add hover effect */
+img:hover {
+    transform: scale(1.1); /* Slightly enlarge the image */
+    opacity: 0.9; /* Reduce opacity slightly */
+}
+
 /* Country Info Section */
 #countryTitle {
     font-size: 2rem;
@@ -132,6 +146,15 @@ body::before {
     border: none;
     border-left: 4px solid #3cb371;
     margin-bottom: 10px;
+}
+
+
+.list-group-item:hover {
+    background-color: #3cb371; 
+    color: white; 
+    transition: all 0.3s ease-in-out; 
+    border-left-color: #2b6b6e; 
+    cursor: pointer; 
 }
 
 ul.list-group {
@@ -164,10 +187,22 @@ div#weatherDesc {
     color: white;
 }
 
+.modal-body a:hover {
+    color: #3cb371;
+    text-decoration: underline;
+    transition: color 0.2s ease-in;
+}
+
 .table-striped > tbody > tr:nth-child(odd) > td {
     background-color: #e9f5e9;
 }
-
+/*button: hover*/
+button:hover {
+    background-color: #3cb371;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    transition: all 0.3s ease-in-out;
+}
 /* Footer */
 footer {
     background: #2b6b6e;
