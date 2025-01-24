@@ -1,6 +1,11 @@
 <?php
 header("Content-Type: application/json");
 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+
 if (isset($_GET['type'])) {
     
     $type = $_GET['type'];
@@ -13,10 +18,10 @@ if (isset($_GET['type'])) {
     ];
    
     switch ($type) {
-        case "countryInfo":
-            $countryCode = $_GET['countryCode'];
-            $url = "https://restcountries.com/v3.1/alpha/$countryCode";
-            break;
+        // case "countryInfo":
+        //     $countryCode = $_GET['countryCode'];
+        //     $url = "https://restcountries.com/v3.1/alpha/$countryCode";
+        //     break;
 
         case "weather":
             $lat = $_GET['lat'];

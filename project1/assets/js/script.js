@@ -3,12 +3,10 @@ $(document).ready(function () {
     const apiUrl = "libs/php/apiHandler.php";
 
     //declaring marker, circle, zoom
-    let marker, circle, zoom, lat, lng, openCageData, description, userCountry, userCountryCode;
+    let marker, circle, zoom, lat, lng, openCageData, description, userCountryCode;
     //opencage response array
     let openCageCountryList = [];
     let openCageUse = false;
-
-    console.log(`initial OC Value: ${openCageUse}`);
 
     // Store fetched country data for searching
     let countryList = []; 
@@ -16,6 +14,17 @@ $(document).ready(function () {
     //set user selecting location to false on app initial load
     let isManualSelection = false; 
     let watchId;
+
+    //loading functions
+    function showLoader() {
+        $("#loading").removeClass("d-none");
+        console.log("Im loading");
+    }
+    
+    function hideLoader() {
+        $("#loading").addClass("d-none");
+        console.log("done loading");
+    }
 
 
     //fetch country name for dropdown
@@ -96,7 +105,6 @@ $(document).ready(function () {
     $("#loading").show();
 
     // Functions declaration start here *********************************************************
-    //populate dropdown with country info
 
 
     // country border function
@@ -121,7 +129,7 @@ $(document).ready(function () {
                 //Add the new country border
                 currentCountryBorder = L.geoJSON(country);
                 currentCountryBorder.addTo(map);
-                map.fitBounds(currentCountryBorder.getBounds());
+                // map.fitBounds(currentCountryBorder.getBounds());
             }else{
                 console.log("country not found in GeoJSON data.")
             };
@@ -149,36 +157,70 @@ $(document).ready(function () {
 
                     },
                     error: function(){
+                        alert("falied to reverse geocode");
                     reject("Failed to reverse geocode for current user location");
                     },
                 });
         });
     }
 
-    function getCountryInfo(countryCode){
-        return new Promise((resolve, reject)=>{
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: { type: "countryInfo", countryCode: countryCode },
-                dataType: "json",
-                success: function (response) {
-                    if (response && response.length > 0) {
-                    userCountry = response[0];
-                    console.log(userCountry);
-                    resolve(response[0]);
-                    } else {
-                    reject("Country info not found.");
-                    }
-                },
-                error: function () {
-                    reject("Failed to fetch country info.");
-                },
-                });
-        });
+    // function getCountryInfo(countryCode){
+    //     showLoader();
+    //     return new Promise((resolve, reject) => {
+            
+    //         $.ajax({
+    //             url: apiUrl,
+    //             method: "GET",
+    //             data: { type: "countryInfo", countryCode: countryCode },
+    //             dataType: "json",
+    //             success: function (response) {
+    //                 console.log(response);
+    //                 if (response && response.length > 0) {
+    //                 userCountry = response[0];
+    //                 console.log(userCountry);
+    //                 resolve(response[0]);
+    //                 console.log(response[0]);
+    //                 } else {
+    //                 reject("Country info not found.");
+    //                 }
+    //             },
+    //             error: function () {
+    //                 hideLoader();
+    //                 reject("Failed to fetch country info.");
+    //             },
+    //             });
+    //     });
+    // }
+
+    function getCountryInfo(countryCode) {
+        showLoader(); // Show loader while fetching data
+    
+        return fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch country info.");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data && data.length > 0) {
+                    const userCountry = data[0];                    
+                    return userCountry; 
+                } else {
+                    throw new Error("Country info not found.");
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error; 
+            })
+            .finally(() => {
+                hideLoader(); // hide loader after processing
+            });
     }
 
     function getWikipediaInfo(lat, lng){
+        showLoader();
         return new Promise((resolve, reject)=>{
             $.ajax({
                 url: apiUrl,
@@ -199,6 +241,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function () {
+                    hideLoader();
                     reject("Failed to fetch Wikipedia information.");
                 },
                 });
@@ -207,6 +250,7 @@ $(document).ready(function () {
 
     //weather api call
     function getWeatherInfo(lat, lng){
+        showLoader();
         return new Promise((resolve, reject)=> {
             $.ajax({
                 url: apiUrl,
@@ -265,6 +309,7 @@ $(document).ready(function () {
  
                 },
                 error: function(){
+                    hideLoader();
                     reject("Failed to get user weather Info");
                 }
             });
@@ -273,7 +318,6 @@ $(document).ready(function () {
 
     function restModalAndLayoutInfo(country){
         if(country){
-
             console.log(country);
             const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
             const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
@@ -283,7 +327,7 @@ $(document).ready(function () {
 
             
             //country info layout here *******************************************
-            $("#flag").html(flagUrl ? `<h5>Country Flag</h5> <img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
+            $("#flag").html(flagUrl ? `<img src=${flagUrl} alt="country Flag" class="mb-3 img-fluid" style="max-width: 200px;">` : "N/A");
 
             $("#countryDetails").text(JSON.stringify(country, null, 2));
 
@@ -337,24 +381,25 @@ $(document).ready(function () {
 
 
 
-    //point of interest marker clusters functions
-    // async function addMarkersFromGeoJSON(countryCode) {
-    //     try {
-    //         const response = await fetch("assets/data/markers.json");
-    //         if (!response.ok) {
-    //             throw new Error("Failed to load GeoJSON markers file.");
-    //         }
-    //         const data = await response.json();
-    //         const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
-    //         L.geoJSON(country, {
-    //             pointToLayer: function (feature, latlng) {
-    //                 return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-    //             }
-    //         }).addTo(map);
-    //     } catch (error) {
-    //         console.error("Error loading GeoJSON markers data:", error.message);
-    //     }
-    // }
+
+    // point of interest marker clusters functions
+    async function addMarkersFromGeoJSON(countryCode) {
+        try {
+            const response = await fetch("assets/data/markers.json");
+            if (!response.ok) {
+                throw new Error("Failed to load GeoJSON markers file.");
+            }
+            const data = await response.json();
+            const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
+            L.geoJSON(country, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
+                }
+            }).addTo(map);
+        } catch (error) {
+            console.error("Error loading GeoJSON markers data:", error.message);
+        }
+    }
 // Functions declaration ends here *********************************************************
 
 
@@ -377,6 +422,7 @@ $(document).ready(function () {
 
     function userLocation(position){
         if(isManualSelection) return; //skip if manual location is active
+        showLoader();//show loader while fetching user location
 
         lat = position.coords.latitude;
         lng = position.coords.longitude;
@@ -390,8 +436,10 @@ $(document).ready(function () {
         }
 
 
+
+
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description}) => {
-            console.log(`Reverse Geocode Data: ${description}`);
+
             // update user location maker
             marker = L.marker([lat, lng]).addTo(map);
             circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
@@ -399,10 +447,10 @@ $(document).ready(function () {
 
             //clearing current user zoom after location change
             if(!zoom){
+            //get user country border
+            highlightCountryBorders(userCountryCode);   
             zoom = map.fitBounds(circle.getBounds());
             }
-            //current user location country border
-            highlightCountryBorders(userCountryCode);
 
             //return country Info fxn
             return getCountryInfo(userCountryCode);
@@ -420,11 +468,15 @@ $(document).ready(function () {
 
             //wikipedia info function
             getWikipediaInfo(country.latlng[0], country.latlng[1]);
+
+
             
 
         }).catch((error) => {
             console.log("Error in chain", error);
-        });
+        }).finally(()=>{
+            hideLoader();
+        })
 
 
     };
@@ -446,6 +498,7 @@ startGeolocation();
 
 $("#countrySearch").on("input", function () {
     const searchValue = $(this).val().toLowerCase();
+    console.log(searchValue);
     const dropdown = $("#countryDropdown");
     dropdown.empty();
     dropdown.append('<option value="">Select from searched below...</option>');
@@ -554,13 +607,12 @@ $("#countrySearch").on("input", function () {
     
     $("#countryDropdown").on("change", function () {
         const countryCode = $(this).val();
+
+        console.log(countryCode)
         
         if(openCageUse) return;
 
         if(!countryCode) return ;
-
-        
-        
 
         //hightlight selected country's border
         highlightCountryBorders(countryCode);                             
