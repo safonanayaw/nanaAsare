@@ -18,43 +18,35 @@ $(document).ready(function () {
     //loading functions
     function showLoader() {
         $("#loading").removeClass("d-none");
-        // console.log("Im loading");
+        console.log("Im loading");
     }
     
     function hideLoader() {
         $("#loading").addClass("d-none");
-        // console.log("done loading");
+        console.log("done loading");
     }
 
 
     //fetch country name for dropdown
     async function fetchAndPopulateCountryDropdown(){
         try {
-            const response = await fetch("assets/data/countryBorders.json");
+            const response = await fetch("https://restcountries.com/v3.1/all");
             if(!response.ok){
                 throw new Error("Failed to fetch country data");
             }
             const data = await response.json();
-
+            countryList = data; //save response to countryList array
             const dropdown = $("#countryDropdown");
             dropdown.empty(); // Clear existing options
             dropdown.append('<option value="">Select a country...</option>'); // Default option
     
-            data.features.forEach(feature => {
-                if(feature.properties){
-                const countryCode = feature.properties.iso_a2;
-                const countryName = feature.properties.name;
-                countryList.push({code: countryCode, name: countryName});
-                dropdown.append();  
-                }
+            data.forEach(country => {
+                const countryCode = country.cca2; // ISO 3166-1 alpha-2 code
+                const countryName = country.name.common;
+                dropdown.append(`<option value="${countryCode}">${countryName} (${countryCode})</option>`);
             });
-
-            countryList.sort((a,b) => a.name.localeCompare(b.name));
-            countryList.forEach((country)=> {
-                dropdown.append(`<option value="${country.code}">${country.name} (${country.code})</option>`)
-            });
-            console.log(countryList);
-            return countryList;
+            // Hide loading indicator
+            $("#loading").hide();
         }catch(error){
             // alert("Failed to load country data. Please refresh the page and try again.");
             console.error(error);
@@ -109,30 +101,6 @@ $(document).ready(function () {
         });
     infoBtn.addTo(map);
 
-    // Country Information easyButton
-    countryInfoBtn = L.easyButton("fa-globe fa-xl", function (btn, map) {
-        $("#countryInfoModal").modal("show");
-    });
-    countryInfoBtn.addTo(map);
-
-    // Weather Information easyButton
-const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
-    $("#weatherInfoModal").modal("show");
-  });
-  weatherInfoBtn.addTo(map);
-
-    // Weather Information easyButton
-    const wikipediaBtn = L.easyButton("fa-newspaper fa-xl", function (btn, map) {
-        $("#wikipediaModal").modal("show");
-      });
-      wikipediaBtn.addTo(map);
-
-
-   // currency easyButton
-    const currencyBtn = L.easyButton("fa-calculator fa-xl", function (btn, map) {
-        $("#currencyInfoModal").modal("show");
-      });
-      currencyBtn.addTo(map);
     // Show loading indicator
     $("#loading").show();
 
@@ -180,17 +148,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 dataType: "json",
                 success: function (response){
                     openCageData = response.results;
-                    
                     userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
                     description = openCageData[0].formatted;
 
-                    const countryNameoObject = countryList.find(country=> userCountryCode === country.code);
-                    const countryName = countryNameoObject.name;
-                    const currencyCode = openCageData[0].annotations.currency.iso_code
-
-                    console.log(currencyCode);
-                    if(lat && lng && description, countryName){
-                        resolve({lat, lng, userCountryCode, description, countryName, currencyCode});
+                    if(lat && lng && description){
+                        resolve({lat, lng, userCountryCode, description});
                         };
 
                     },
@@ -231,7 +193,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
     // }
 
     function getCountryInfo(countryCode) {
-        // showLoader(); // Show loader while fetching data
+        showLoader(); // Show loader while fetching data
     
         return fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
             .then((response) => {
@@ -257,146 +219,38 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             });
     }
 
-    let currencyList = {};
-
-    function getExchangeRate (currencyCode) {
-        return new Promise((resolve, reject) => {
+    function getWikipediaInfo(lat, lng){
+        showLoader();
+        return new Promise((resolve, reject)=>{
             $.ajax({
                 url: apiUrl,
                 method: "GET",
-                data: {type: "exchangeRate", currency: currencyCode},
-                dataType: "json",
-                success: function (response) {
-                    if (response && response.rates) {
-                        currencyList = response;
-                        const originalCurrencyDropdown = $("#originCurrency");
-
-                        const conversionCurrencyDrropdown = $("#conversionCurrency");
-
-
-    
-                        // Clear existing options
-                        originalCurrencyDropdown.empty();
-
-                        conversionCurrencyDrropdown.empty();
-
-                        originalCurrencyDropdown.append(`<option value="">${currencyList.base}</option>`);
-
-                        const target = Object.keys(currencyList.rates).find((rateCode)=>{
-                            return rateCode === "USD";
-                        });
-
-                        console.log(target);
-                        conversionCurrencyDrropdown.append(`<option value="">${target}</option>`);
-
-                        const originalUnit = currencyList.rates[currencyList.base];
-
-                        const targetUnit = currencyList.rates[target];
-
-
-                        $("#originCurrencyAmountInput").val(originalUnit);
-
-                        $("#targetCurrencyAmountInput").val(targetUnit);
-
-                        console.log(`original unit: ${originalUnit}`);
-
-                        console.log(`target unit: ${targetUnit}`);
-                        
-                        
-                        
-
-                        
-
-    
-                        // Populate dropdown with currency codes from the rates object
-                        Object.keys(currencyList.rates).forEach(rateCode => {
-                            originalCurrencyDropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
-
-                            conversionCurrencyDrropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
-                        });
-
-
-
-    
-                        resolve(response);
-                    } else {
-                        reject("No currency information found.");
-                    }
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
-                    console.error("Error fetching currency:", textStatus, errorThrown);
-                    reject("Failed to fetch currency information.");
-                },
-            });
-        });
-    }
-
-    // function getWikipediaInfo(countryName){
-    //     // showLoader();
-    //     return new Promise((resolve, reject)=>{
-    //         $.ajax({
-    //             url: apiUrl, // Ensure apiUrl is correctly defined
-    //             method: "GET",
-    //             data: { type: "wikipedia", countryName: countryName },
-    //             dataType: "json",
-    //             success: function (wikiResponse) {
-    //                 if (wikiResponse && wikiResponse.geonames && wikiResponse.geonames.length > 0) {
-    //                     const wikiInfo = wikiResponse.geonames[0];
-    //                     const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
-    //                     console.log(`wiki info `, wikiInfo.summary);
-    //                     console.log(wikiResponse);
-    //                     $("#wikipediaInfo").text(wikiInfo.summary);
-    //                     $("#wikipediaLink").attr("href", wikiUrl);
-    
-    //                     resolve(wikiResponse.geonames[0]);
-    //                 } else {
-    //                     reject("No Wikipedia information found.");
-    //                 }
-    //             },
-    //             error: function (jqXHR, textStatus, errorThrown) {
-    //                 hideLoader();
-    //                 console.error("Error fetching Wikipedia information:", textStatus, errorThrown);
-    //                 reject("Failed to fetch Wikipedia information.");
-    //             },
-    //         });
-    //     });
-    // }
-
-    function getWikipediaInfo(countryName) {
-        // showLoader();
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: apiUrl,
-                method: "GET",
-                data: {type: "wikipedia", countryName: countryName},
+                data: { type: "wikipedia", lat: lat, lng: lng },
                 dataType: "json",
                 success: function (wikiResponse) {
-                    if (wikiResponse && wikiResponse.extract) {
-                        const wikiInfo = wikiResponse;
-                        const wikiUrl = wikiInfo.content_urls.desktop.page;
-                        console.log(`wiki info `, wikiInfo.extract);
-                        console.log(wikiResponse);
-                        $("#wikipediaInfo").text(wikiInfo.extract);
-                        $("#wikipediaLink").attr("href", wikiUrl);
-    
-                        resolve(wikiInfo);
+                    if (wikiResponse && wikiResponse.geonames && wikiResponse.geonames.length > 0) {
+                    const wikiInfo = wikiResponse.geonames[0];
+                    const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
+                    console.log(wikiResponse);
+                    $("#wikipediaInfo").text(wikiInfo.summary);
+                    $("#wikipediaLink").attr("href", wikiUrl);
+
+                    resolve(wikiResponse.geonames[0]);
                     } else {
-                        reject("No Wikipedia information found.");
+                    reject("No Wikipedia information found.");
                     }
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
+                error: function () {
                     hideLoader();
-                    console.error("Error fetching Wikipedia information:", textStatus, errorThrown);
                     reject("Failed to fetch Wikipedia information.");
                 },
-            });
+                });
         });
     }
 
     //weather api call
     function getWeatherInfo(lat, lng){
-        // showLoader();
+        showLoader();
         return new Promise((resolve, reject)=> {
             $.ajax({
                 url: apiUrl,
@@ -413,31 +267,31 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                     // $("#weatherInfo").text(JSON.stringify(weatherInfo, null, 2));
                     $("#temparatureMod").text(`${weatherInfo.main.temp} °C`);
 
-                    $("#weatherLocation").text(` ${weatherInfo.name}`);
-                    console.log(`${weatherInfo.coord.lat}, ${weatherInfo.coord.lon}`)
-                    $("#weatherCoordinates").text(`Latitude: ${weatherInfo.coord.lat}, Longitude: ${weatherInfo.coord.lon}`);
+                    $("#weatherLocation").html(`<strong>Location: </strong> ${weatherInfo.name}`);
 
-                    $("#weatherDesc").text(`${weatherInfo.weather[0].main}, ${weatherInfo.weather[0].description}`);
+                    $("#weatherCoordinates").html(`<strong>Coordinates:</strong> Latitude: ${weatherInfo.coord.lat}, Longitude: ${weatherInfo.coord.lon}</p>`);
 
-                    $("#temparatureLay").text(`${weatherInfo.main.temp} °C`);
+                    $("#weatherDesc").html(`<strong>Description: </strong>${weatherInfo.weather[0].main}, ${weatherInfo.weather[0].description}`);
 
-                    $("#tempFeelsLike").text(`${weatherInfo.main.feels_like}°C`);
+                    $("#temparatureLay").html(`<strong>Temperature: </strong> ${weatherInfo.main.temp} °C`);
 
-                    $("#minTemp").text(`${weatherInfo.main.temp_min}°C`);
+                    $("#tempFeelsLike").html(`<strong>Feels Like:</strong> ${weatherInfo.main.feels_like}°C`);
 
-                    $("#maxTemp").text(`${weatherInfo.main.temp_max}°C`);
+                    $("#minTemp").html(`<strong>Min Temp:</strong> ${weatherInfo.main.temp_min}°C`);
 
-                    $("#tempPressure").text(`${weatherInfo.main.pressure}hPa`);
+                    $("#maxTemp").html(`<strong>Max Temp:</strong> ${weatherInfo.main.temp_max}°C`);
 
-                    $("#tempHumidity").text(`${weatherInfo.main.humidity}%`);
+                    $("#tempPressure").html(`<strong>Pressure:</strong> ${weatherInfo.main.pressure}hPa`);
 
-                    $("#tempVisibility").text(`${weatherInfo.visibility} m`);
+                    $("#tempHumidity").html(`<strong>Humidity:</strong> ${weatherInfo.main.humidity}%`);
 
-                    $("#windSpeed").text(`${weatherInfo.wind.speed} m/s`);
+                    $("#tempVisibility").html(`<strong>Visibility:</strong> ${weatherInfo.visibility} m`);
 
-                    $("#windDirection").text(`${weatherInfo.wind.deg}°`);
+                    $("#windSpeed").html(`<strong>Wind Speed: </strong> ${weatherInfo.wind.speed} m/s`);
 
-                    $("#windCloud").text(`${weatherInfo.clouds.all}%`);
+                    $("#windDirection").html(`<strong>Wind Direction: </strong> ${weatherInfo.wind.deg}°`);
+
+                    $("#windCloud").html(`<strong>Cloudiness: </strong> ${weatherInfo.clouds.all}%`);
                     
                     //convert unix time to human readable
                     const sunRiseDate = new Date(weatherInfo.sys.sunrise * 10000);
@@ -446,11 +300,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                     const sunSetDate = new Date(weatherInfo.sys.sunset * 10000);
                     const sunSetTime = sunSetDate.toLocaleTimeString();
                     if(sunRiseTime){
-                        $("#sunRise").text(`${sunRiseTime} UTC`);
+                        $("#sunRise").html(`<strong>Sunrise: </strong> ${sunRiseTime} UTC`);
                     }
 
                     if(sunSetTime){
-                        $("#sunSet").text(`${sunSetTime} UTC`);
+                        $("#sunSet").html(`<strong>Sunset: </strong> ${sunSetTime} UTC`);
                     }
  
                 },
@@ -477,36 +331,36 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
             $("#countryDetails").text(JSON.stringify(country, null, 2));
 
-            $("#officialName").text(country.name && country.name.nativeName && country.name.nativeName.eng ? `${country.name.nativeName.eng.official}` : `N/A`);
+            $("#officialName").html(country.name && country.name.nativeName && country.name.nativeName.eng ? `<strong>Official Name: </strong>${country.name.nativeName.eng.official}` : `<strong>Official Name: </strong> N/A`);
 
-            $("#countryName").text(country.name ? `${country.name.common}` : `N/A`);
+            $("#countryName").html(country.name ? `<strong>Country Name: </strong> ${country.name.common}` : `<strong>Country Name: </strong> N/A`);
 
-            $("#capitalName").text(country.capital ? `${country.capital[0]}` : `N/A`);
+            $("#capitalName").html(country.capital ? `<strong>Capital: </strong>${country.capital[0]}` : `<strong>Capital: </strong> N/A`);
 
-            $("#countryCode").text(country.cca2 ? `${country.cca2}` : `N/A`);
+            $("#countryCode").html(country.cca2 ? `<strong>Country Code: </strong> ${country.cca2}` : `<strong>Country Code: </strong> N/A`);
             
-            $("#region").text(country.region ? `${country.region }`: `N/A`);
-            $("#subRegion").text(country.subregion ? `${country.subregion}` : `N/A`);
+            $("#region").html(country.region ? `<strong>Region: </strong> ${country.region }`: `<strong>Region: </strong> N/A`);
+            $("#subRegion").html(country.subregion ? `<strong>Sub Region: </strong>${country.subregion}` : `<strong>Subregion: </strong> N/A`);
 
-            $("#languages").text(languages ? `${languages}`: `N/A`);
-            $("#currencies").text(currenciesDetail ? `${currenciesDetail}`: `N/A`);
+            $("#languages").html(languages ? `<strong>Language(s): </strong>${languages}`: `<strong>Language(s): </strong> N/A`);
+            $("#currencies").html(currenciesDetail ? `<strong>Currencie(s): </strong>${currenciesDetail}`: `<strong>Currencie(s): </strong> N/A`);
 
-            $("#area").text(country.area ? `${country.area} km²`: `N/A`);
+            $("#area").html(country.area ? `<strong>Area: </strong>${country.area} km²`: `<strong>Area: </strong> N/A`);
 
-            $("#population").text(country.population ? `${country.population}`: `N/A`);
+            $("#population").html(country.population ? `<strong>Population: </strong>${country.population}`: `<strong>Population: </strong> N/A`);
 
-            $("#timeZone").text(country.timezones[0] ? `${country.timezones[0]}`: `N/A`);
+            $("#timeZone").html(country.timezones[0] ? `<strong>Time Zone: </strong>${country.timezones[0]}`: `<strong>Timezones: </strong> N/A`);
 
-            $("#callingNumber").text(country.idd ? `${country.idd.root+country.idd.suffixes[0] }`: `N/A`);
+            $("#callingNumber").html(country.idd ? `<strong>Calling Number: </strong>${country.idd.root+country.idd.suffixes[0] }`: `<strong>Calling Code: </strong> N/A`);
 
-            $("#unMember").text(country.unMember === true ? `Yes`: `No`);
+            $("#unMember").html(country.unMember === true ? `<strong>UN Member: </strong>Yes`: `<strong>UN Member: </strong> No`);
             
-            $("#startOfWeek").text(country.startOfWeek ? `${country.startOfWeek}`:  `N/A`);
+            $("#startOfWeek").html(country.startOfWeek ? `<strong>Start Week: </strong>${country.startOfWeek}`:  `<strong>Start Week: </strong> N/A`);
 
             $("#googleMap").attr("href", googleMaps);
             $("#openStreetMap").attr("href", openStreetMaps);
 
-            $("#coatOfArm").text(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
+            $("#coatOfArm").html(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
             //country info layout end here *******************************************
 
             
@@ -529,23 +383,23 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
 
     // point of interest marker clusters functions
-    // async function addMarkersFromGeoJSON(countryCode) {
-    //     try {
-    //         const response = await fetch("assets/data/markers.json");
-    //         if (!response.ok) {
-    //             throw new Error("Failed to load GeoJSON markers file.");
-    //         }
-    //         const data = await response.json();
-    //         const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
-    //         L.geoJSON(country, {
-    //             pointToLayer: function (feature, latlng) {
-    //                 return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-    //             }
-    //         }).addTo(map);
-    //     } catch (error) {
-    //         console.error("Error loading GeoJSON markers data:", error.message);
-    //     }
-    // }
+    async function addMarkersFromGeoJSON(countryCode) {
+        try {
+            const response = await fetch("assets/data/markers.json");
+            if (!response.ok) {
+                throw new Error("Failed to load GeoJSON markers file.");
+            }
+            const data = await response.json();
+            const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
+            L.geoJSON(country, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
+                }
+            }).addTo(map);
+        } catch (error) {
+            console.error("Error loading GeoJSON markers data:", error.message);
+        }
+    }
 // Functions declaration ends here *********************************************************
 
 
@@ -584,7 +438,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
 
 
-        getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
+        getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description}) => {
 
             // update user location maker
             marker = L.marker([lat, lng]).addTo(map);
@@ -598,14 +452,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             zoom = map.fitBounds(circle.getBounds());
             }
 
-            console.log(`user countryName`, countryName);
-            console.log(`user currency`, currencyCode);
-            //wikipedia info function
-            getWikipediaInfo(countryName);
-
-            //user currency info
-            getExchangeRate(currencyCode);
-            
             //return country Info fxn
             return getCountryInfo(userCountryCode);
 
@@ -620,7 +466,8 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             //weather info function
             getWeatherInfo(lat, lng);
 
-
+            //wikipedia info function
+            getWikipediaInfo(country.latlng[0], country.latlng[1]);
 
 
             
@@ -651,7 +498,6 @@ startGeolocation();
 
 $("#countrySearch").on("input", function () {
     const searchValue = $(this).val().toLowerCase();
-
     console.log(searchValue);
     const dropdown = $("#countryDropdown");
     dropdown.empty();
@@ -662,10 +508,10 @@ $("#countrySearch").on("input", function () {
     
     // Check against the country list
     countryList.forEach(country => {
-        const countryCode = country.code;
-        const countryName = country.name.toLowerCase();
+        const countryCode = country.cca2;
+        const countryName = country.name.common.toLowerCase();
         if (countryName.includes(searchValue) || countryCode.toLowerCase().includes(searchValue)) {
-            dropdown.append(`<option value="${countryCode}">${countryName.toUpperCase()} (${countryCode})</option>`);
+            dropdown.append(`<option value="${countryCode}">${country.name.common} (${countryCode})</option>`);
 
             matchFound = true; // Mark that a match is found
             openCageUse = false; // Mark that openCage is not used
@@ -704,11 +550,7 @@ $("#countrySearch").on("input", function () {
                     const SelectCountryCode = $(this).val();
                     console.log(SelectCountryCode);
 
-                    //search openCage for the selected country Info
                     const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === SelectCountryCode);
-
-                    //search countryList array for matching country code and countryName
-                    const countryName = countryList.find(country => country.code === SelectCountryCode);
 
                     const coord = selectValue.geometry;
 
@@ -744,11 +586,7 @@ $("#countrySearch").on("input", function () {
                         getWeatherInfo(selectValue.geometry.lat, selectValue.geometry.lng);
 
                         //calling wikipedia function
-                        getWikipediaInfo(countryName);
-                        return getGeocodeReverse(selectValue.geometry.lat, selectValue.geometry.lng);
-                    }).then(({currencyCode})=>{
-                        console.log(`selected country currency code: ${currencyCode}`);
-                        getExchangeRate(currencyCode);
+                        getWikipediaInfo(selectValue.geometry.lat, selectValue.geometry.lng);
                     });
 
         });
@@ -779,6 +617,8 @@ $("#countrySearch").on("input", function () {
         //hightlight selected country's border
         highlightCountryBorders(countryCode);                             
 
+        // Show Loader
+        $("#loading").removeClass("d-none");
         getCountryInfo(countryCode).then((response) => {
             const country = response; 
             console.log(country);
@@ -804,15 +644,8 @@ $("#countrySearch").on("input", function () {
             //calling weather function
             getWeatherInfo(country.latlng[0], country.latlng[1]);
 
-            //getting country currency code
-            getGeocodeReverse(country.latlng[0], country.latlng[1]).then(({currencyCode})=>{
-                console.log(`dropdown country currency code: ${currencyCode}`);
-                getExchangeRate(currencyCode);
-            })
-
             //calling wikipedia function
-            getWikipediaInfo(country.name.common);
-            console.log(country.name.common);
+            getWikipediaInfo(country.latlng[0], country.latlng[1]);
 
 
             //set manual selection true and stop geolocation updates

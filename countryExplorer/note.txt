@@ -8,5 +8,3 @@ file not directly in the js file
 
 use opencage to search for home address
 if search filled return null switch to opencage
-
-solve wikipedia countryName isManualSelection

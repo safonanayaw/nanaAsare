@@ -36,7 +36,7 @@
     </nav>
 
     <!-- Map Section -->
-    <div id="map" style="height: 500px; margin: 20px;"></div>
+    <div id="map" style="height: 600px; margin: 20px;"></div>
 
     
 <!-- loading -->
@@ -45,127 +45,7 @@
       <p>Loading, please wait...</p>
   </div>
 
-<!--  country info start here -->
-<div class="container my-5">
-  <div class="row">
-    <div class="col-12 text-center">
-      <h2 class="mb-4" id="countryTitle">Country Infomation </h2>
-      <div id="flag"></div>
-      <p id="officialName"><strong>Official Name:</strong> </p>
-      <p id="countryName"><strong>Common Name:</strong> </p>
-    </div>
-  </div>
 
-  <div class="row">
-    <!-- Basic Information -->
-    <div class="col-md-6">
-      <h3>Basic Information</h3>
-      <ul class="list-group mb-3">
-        <li id="region" class="list-group-item"><strong>Region:</strong> </li>
-        <li id="subRegion" class="list-group-item"><strong>Subregion:</strong> </li>
-        <li id="capitalName" class="list-group-item"><strong>Capital:</strong> </li>
-        <li id="area" class="list-group-item"><strong>Area:</strong> </li>
-        <li id="population" class="list-group-item"><strong>Population:</strong> </li>
-        <li id="timeZone" class="list-group-item"><strong>Timezones:</strong> </li>
-      </ul>
-    </div>
-
-    <!-- Additional Details -->
-    <div class="col-md-6">
-      <h3>Additional Details</h3>
-      <ul class="list-group mb-3">
-        <li id="countryCode" class="list-group-item"><strong>Country Code:</strong> </li>
-        <li id="currencies" class="list-group-item"><strong>Currency:</strong> </li>
-        <li id="languages" class="list-group-item"><strong>Languages:</strong> </li>
-        <li id="callingNumber" class="list-group-item"><strong>Calling Code:</strong> </li>
-        <li id="unMember" class="list-group-item"><strong>UN Member:</strong> </li>
-        <li id="startOfWeek" class="list-group-item"><strong>Start Week:</strong> </li>
-      </ul>
-    </div>
-
-    <div class="row">
-      <!-- Maps and Links -->
-      <div class="col-6">
-        <h4>Maps and Links</h4>
-        <p>
-          <strong>Google Maps:</strong> 
-          <a id="googleMap" href="#" target="_blank">View on Google Maps</a>
-        </p>
-        <p>
-          <strong>OpenStreetMaps:</strong> 
-          <a id="openStreetMap" href="#" target="_blank">View on OpenStreetMaps</a>
-        </p>
-        <p>
-          <strong>Read More:</strong> 
-          <a id="wikipediaLink" href="#" target="_blank">Wikipedia Info</a>
-        </p>
-      </div>
-
-        <!-- Coat of Arms -->
-        <div class="col-6 text-center mt-0">
-          <div id="coatOfArm"></div>
-        </div>
-     </div>
-
-
-</div>
-
-<!-- country info start end -->
-
-<!-- country weather info start here -->
-<div class="container my-5">
-  <div class="row">
-    <div class="col-12 text-center">
-      <h3 class="mb-2"><strong>Weather & Climate</strong></h3>
-      <h4 id="weatherLocation" class="mb-2">Location: </h4>
-      <p id="weatherCoordinates"><strong>Coordinates:</strong> Latitude: , Longitude: </p>
-      <div style="background-color: rgb(98, 101, 100);" class="mb-4">
-        <img src="https://openweathermap.org/img/wn/03d.png" alt="Weather Icon" class="img-fluid" style="width: 50px;">
-        <div id="weatherDesc"><strong>Description: </strong></div>
-    </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <!-- Current Weather -->
-    <div class="col-md-4">
-      <h3>Current Weather</h3>
-      <ul class="list-group mb-4">
-        <li id="temparatureLay" class="list-group-item"><strong>Temperature: </strong></li>
-        <li id="tempFeelsLike" class="list-group-item"><strong>Feels Like: </strong></li>
-        <li id="minTemp" class="list-group-item"><strong>Min Temp: </strong></li>
-        <li id="maxTemp" class="list-group-item"><strong>Max Temp:</strong></li>
-        <li id="tempPressure" class="list-group-item"><strong>Pressure: </strong></li>
-        <li id="tempHumidity" class="list-group-item"><strong>Humidity: </strong></li>
-        <li id="tempVisibility" class="list-group-item"><strong>Visibility: </strong></li>
-      </ul>
-    </div>
-
-    <!-- Wind and Clouds -->
-    <div class="col-md-4">
-      <h3>Wind & Clouds</h3>
-      <ul class="list-group mb-3">
-        <li id="windSpeed" class="list-group-item"><strong>Wind Speed:</strong></li>
-        <li id="windDirection" class="list-group-item"><strong>Wind Direction:</strong></li>
-        <li id="windCloud" class="list-group-item"><strong>Cloudiness:</strong></li>
-      </ul>
-    </div>
-
-    
-      <!-- Sun Information -->
-      <div class="col-md-4 text-center mb-4">
-        <h3>Sun Information</h3>
-        <ul class="list-group mb-3">
-          <li id="sunRise" class="list-group-item"><strong>Sunrise: </strong></li>
-          <li id="sunSet" class="list-group-item"><strong>Sunset: </strong></li>
-        </ul>
-      </div>
-  </div>
-
-</div>
-
-
-<!-- country weather info ends here -->
 
 <!-- Modal Section start -->
 
@@ -179,156 +59,124 @@
         <div class="modal-body">
           <table class="table table-striped">
             <tr>
-  
               <td class="text-center">
                 <i class="fa-solid fa-street-view fa-xl text-success"></i>
               </td>
-  
               <td>
                 Country Name
               </td>
-  
               <td id="countryNameMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
+
             <tr>
-  
               <td class="text-center">
                 <i class="fa-solid fa-heart fa-xl text-success"></i>
               </td>
-  
               <td>
                 Official Name
               </td>
-  
               <td id="officialNameMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
+
             <tr>
-  
               <td class="text-center">
                 <i class="fa-solid fa-car fa-xl text-success"></i>
               </td>
-  
               <td>
                 Capital City
               </td>
-  
               <td id="capitalNameMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
+
             <tr>
-  
               <td class="text-center">
                 <i class="fa-solid fa-book fa-xl text-success"></i>
               </td>
-  
               <td>
                 Country Code
               </td>
-  
               <td id="countryCodeMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
+
             <tr>
-  
               <td class="text-center">
                 <i class="fa-solid fa-binoculars fa-xl text-success"></i>
               </td>
-  
               <td>
                 Region
               </td>
-  
               <td id="regionMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
             <tr>
   
               <td class="text-center">
                 <i class="fa-solid fa-globe fa-xl text-success"></i>
               </td>
-  
               <td>
                 Subregion
               </td>
-  
               <td id="subRegionMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
             <tr>
   
               <td class="text-center">
                 <i class="fa-solid fa-anchor fa-xl text-success"></i>
               </td>
-  
               <td>
                 Official Language(s)
               </td>
-  
               <td id="languagesMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
             <tr>
   
               <td class="text-center">
                 <i class="fa-solid fa-money-bill fa-xl text-success"></i>
               </td>
-  
               <td>
                 Currency
               </td>
-  
               <td id="currenciesMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
             <tr>
   
               <td class="text-center">
                 <i class="fa-solid fa-flag fa-xl text-success"></i>
               </td>
-  
               <td>
                 Flag
               </td>
-  
               <td id="flagMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
             <tr>
   
               <td class="text-center">
                 <i class="fa-solid fa-cloud-moon fa-xl text-success"></i>
               </td>
-  
               <td>
                 Temparature
-              </td>
-  
+              </td>  
               <td id="temparatureMod" class="text-end">
                 N/A
               </td>
-  
             </tr>
-
           </table>
         </div>
         <div class="modal-footer">
@@ -341,12 +189,301 @@
 <!-- Modal Section End -->
 
 
-
-    <!-- Loading Animation -->
-    <div id="loading" class="d-none">
-        <div class="spinner-border text-primary"></div>
-        <p>Loading...</p>
+<!-- Modal for country Info start -->
+<div id="countryInfoModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-success bg-gradient text-white">
+          <h5 class="modal-title" id="countryTitle">Country Information</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-4 text-success">
+            <div id="flag" class="mb-3"></div>
+            <p id="officialName" class="h5"><strong>Official Name:</strong> N/A</p>
+            <p id="countryName" class="h6"><strong>Common Name:</strong> N/A</p>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="text-success">Basic Information</h5>
+              <table class="table table-striped">
+                <tr>
+                  <td><i class="fa-solid fa-globe fa-xl text-success"></i></td>
+                  <td>Region</td>
+                  <td id="region" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-map-location fa-xl text-success"></i></td>
+                  <td>Subregion</td>
+                  <td id="subRegion" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-city fa-xl text-success"></i></td>
+                  <td>Capital</td>
+                  <td id="capitalName" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-expand fa-xl text-success"></i></td>
+                  <td>Area</td>
+                  <td id="area" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-users fa-xl text-success"></i></td>
+                  <td>Population</td>
+                  <td id="population" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-clock fa-xl text-success"></i></td>
+                  <td>Timezones</td>
+                  <td id="timeZone" class="text-end">N/A</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="col-md-6">
+              <h5 class="text-success">Additional Details</h5>
+              <table class="table table-striped">
+                <tr>
+                  <td><i class="fa-solid fa-book fa-xl text-success"></i></td>
+                  <td>Country Code</td>
+                  <td id="countryCode" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-money-bill fa-xl text-success"></i></td>
+                  <td>Currency</td>
+                  <td id="currencies" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-language fa-xl text-success"></i></td>
+                  <td>Languages</td>
+                  <td id="languages" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-phone fa-xl text-success"></i></td>
+                  <td>Calling Code</td>
+                  <td id="callingNumber" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-flag fa-xl text-success"></i></td>
+                  <td>UN Member</td>
+                  <td id="unMember" class="text-end">N/A</td>
+                </tr>
+                <tr>
+                  <td><i class="fa-solid fa-calendar fa-xl text-success"></i></td>
+                  <td>Start of Week</td>
+                  <td id="startOfWeek" class="text-end">N/A</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
+</div>
+
+<!-- Modal Section for Weather Info -->
+<div id="weatherInfoModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-success bg-gradient text-white">
+        <h5 class="modal-title" id="weatherTitle">Weather & Climate Information</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4 bg-success">
+          <h4><strong>Weather & Climate</strong></h4>
+          <p id="weatherLocation" class="h5 mb-2"><strong>Location:</strong> N/A</p>
+          <p id="weatherCoordinates" class="h6">
+            <strong>Coordinates:</strong> Latitude: N/A, Longitude: N/A
+          </p>
+          <div class="p-3 rounded" style="background-color: rgb(98, 101, 100);">
+            <img src="https://openweathermap.org/img/wn/03d.png" alt="Weather Icon" class="img-fluid mb-2" style="width: 50px;">
+            <p id="weatherDesc"><strong>Description:</strong> N/A</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Current Weather -->
+          <div class="col-md-6">
+            <h5 class="text-success">Current Weather</h5>
+            <table class="table table-striped">
+              <tr>
+                <td><i class="fa-solid fa-thermometer-half fa-lg text-success"></i></td>
+                <td>Temperature</td>
+                <td id="temparatureLay" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-hand-holding-water fa-lg text-success"></i></td>
+                <td>Feels Like</td>
+                <td id="tempFeelsLike" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-temperature-low fa-lg text-success"></i></td>
+                <td>Min Temp</td>
+                <td id="minTemp" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-temperature-high fa-lg text-success"></i></td>
+                <td>Max Temp</td>
+                <td id="maxTemp" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-compress-alt fa-lg text-success"></i></td>
+                <td>Pressure</td>
+                <td id="tempPressure" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-droplet fa-lg text-success"></i></td>
+                <td>Humidity</td>
+                <td id="tempHumidity" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-eye fa-lg text-success"></i></td>
+                <td>Visibility</td>
+                <td id="tempVisibility" class="text-end">N/A</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Wind & Clouds -->
+          <div class="col-md-6">
+            <h5 class="text-success">Wind & Clouds</h5>
+            <table class="table table-striped">
+              <tr>
+                <td><i class="fa-solid fa-wind fa-lg text-success"></i></td>
+                <td>Wind Speed</td>
+                <td id="windSpeed" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-compass fa-lg text-success"></i></td>
+                <td>Wind Direction</td>
+                <td id="windDirection" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-cloud fa-lg text-success"></i></td>
+                <td>Cloudiness</td>
+                <td id="windCloud" class="text-end">N/A</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Sun Information -->
+          <div class="col-md-12">
+            <h5 class="text-success">Sun Information</h5>
+            <table class="table table-striped">
+              <tr>
+                <td><i class="fa-solid fa-sun fa-lg text-success"></i></td>
+                <td>Sunrise</td>
+                <td id="sunRise" class="text-end">N/A</td>
+              </tr>
+              <tr>
+                <td><i class="fa-solid fa-moon fa-lg text-success"></i></td>
+                <td>Sunset</td>
+                <td id="sunSet" class="text-end">N/A</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Wikipedia Content Modal -->
+<div id="wikipediaModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-success bg-gradient text-white">
+        <h5 class="modal-title" id="wikiTitle">Wikipedia</h5>
+        <button type="button" class="btn btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <h4 id="wikiHeading" class="text-warning"><strong> Wikipedia Info About Country</strong></h4>
+          <p id="wikipediaInfo" class="text-success">
+            Wikipedia is a free online encyclopedia created and maintained by volunteers worldwide. It is the largest and most popular general reference source on the internet, offering articles in over 300 languages and covering virtually every topic imaginable.
+          </p>
+        </div>
+        <div id="wikipediaLink"><a href="#"></a></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal Section for Currency Info -->
+<div id="currencyInfoModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-success bg-gradient text-white">
+        <h5 class="modal-title" id="currencyTitle">Currency Exchange Information</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <!-- Currency Exchange Details -->
+          <div class="col-md-12">
+            <h5 class="text-success">Conversion Rates</h5>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+
+                  <th scope="col" class="text-start">
+                    <i class="fa-solid fa-money-bill fa-lg text-success"></i> Amount (Origin)
+                    <select id="originCurrency" class="form-select">
+                        <option value="">Select Currency</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </th>
+
+                  <th scope="col" class="text-center"><i class="fa-solid fa-arrows-alt-h fa-lg text-success"></i> Conversion</th>
+
+                  <th scope="col" class="text-center">
+                  <i class="fa-solid fa-money-bill fa-lg text-success"></i> Target
+                  <select id="conversionCurrency" class="form-select">
+                      <option value="">Select Currency</option>
+                      <!-- Options will be populated dynamically -->
+                  </select>
+                  </th>
+
+                </tr>
+              </thead>
+              <tbody id="currencyConversionTable">
+                <tr>
+                  <td class="text-start">
+                    <input id="originCurrencyAmountInput" type="number" class="form-control" placeholder="Enter Amount (GHS)" oninput="">
+                  </td>
+                  <td class="text-center">→</td>
+                  <td>
+                  <input id="targetCurrencyAmountInput" type="number" class="form-control" placeholder="Enter Amount (USD)" oninput="">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
     <footer>
       <p>© 2025 Country Explorer | Designed with ❤ BY NANA YAW</p>

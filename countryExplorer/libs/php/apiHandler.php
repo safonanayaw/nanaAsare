@@ -35,11 +35,12 @@ if (isset($_GET['type'])) {
             $apiKey = $apiKeyMap["opencage"];
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey";
             break;
-            
-            case "wikipedia":
-            $countryName = $_GET['countryName'];
-            // $apiKey = $apiKeyMap["geonames"];
-            $url = "https://en.wikipedia.org/api/rest_v1/page/summary/" . urlencode($countryName);;
+
+            case "wikipedia";
+            $lat = $_GET['lat'];
+            $lng = $_GET['lng'];
+            $apiKey = $apiKeyMap["geonames"];
+            $url = "http://api.geonames.org/findNearbyWikipediaJSON?lat=$lat&lng=$lng&username=$apiKey";
             break;
 
             case "geocodeReverse";
@@ -49,9 +50,11 @@ if (isset($_GET['type'])) {
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$lat%2C$lng&key=$apiKey";
             break;
 
-            case "exchangeRate";
-            $currency = $_GET['currency'];
-            $url = "https://api.exchangerate-api.com/v4/latest/$currency";
+            case "openexchange";
+            $lat = $_GET['lat'];
+            $lng = $_GET['lng'];
+            $apiKey = $apiKeyMap["openexchange"];
+            $url = "";
             break;
 
         default:
