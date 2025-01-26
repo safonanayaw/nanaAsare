@@ -8,6 +8,8 @@ $(document).ready(function () {
     let openCageCountryList = [];
     let openCageUse = false;
 
+    let onFirstLoad = true;
+
     // Store fetched country data for searching
     let countryList = []; 
     
@@ -230,6 +232,8 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
     //     });
     // }
 
+
+
     function getCountryInfo(countryCode) {
         // showLoader(); // Show loader while fetching data
     
@@ -269,56 +273,9 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 success: function (response) {
                     if (response && response.rates) {
                         currencyList = response;
-                        const originalCurrencyDropdown = $("#originCurrency");
+                        resolve({response});
+                        // return currencyList;
 
-                        const conversionCurrencyDrropdown = $("#conversionCurrency");
-
-
-    
-                        // Clear existing options
-                        originalCurrencyDropdown.empty();
-
-                        conversionCurrencyDrropdown.empty();
-
-                        originalCurrencyDropdown.append(`<option value="">${currencyList.base}</option>`);
-
-                        const target = Object.keys(currencyList.rates).find((rateCode)=>{
-                            return rateCode === "USD";
-                        });
-
-                        console.log(target);
-                        conversionCurrencyDrropdown.append(`<option value="">${target}</option>`);
-
-                        const originalUnit = currencyList.rates[currencyList.base];
-
-                        const targetUnit = currencyList.rates[target];
-
-
-                        $("#originCurrencyAmountInput").val(originalUnit);
-
-                        $("#targetCurrencyAmountInput").val(targetUnit);
-
-                        console.log(`original unit: ${originalUnit}`);
-
-                        console.log(`target unit: ${targetUnit}`);
-                        
-                        
-                        
-
-                        
-
-    
-                        // Populate dropdown with currency codes from the rates object
-                        Object.keys(currencyList.rates).forEach(rateCode => {
-                            originalCurrencyDropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
-
-                            conversionCurrencyDrropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
-                        });
-
-
-
-    
-                        resolve(response);
                     } else {
                         reject("No currency information found.");
                     }
@@ -331,6 +288,207 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             });
         });
     }
+    
+let userCurrencyList = {}
+    function getUserExchangeRate (currencyCode) {
+        if(!onFirstLoad) return;
+        return new Promise((resolve, reject) => {
+
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: {type: "exchangeRate", currency: currencyCode},
+                dataType: "json",
+                success: function (response) {
+                    if (response && response.rates) {
+                        userCurrencyList = response;
+
+                        const baseCurrencyDropdown = $("#baseCurrency");
+
+                        const targetCurrencyDropdown = $("#targetCurrency");
+
+                       
+                        // Clear existing options
+                        baseCurrencyDropdown.empty();
+
+                            targetCurrencyDropdown.empty();
+
+                            //getting the relative base USD currencyCode 
+                                const targetCode = Object.keys(userCurrencyList.rates).find((rateCode)=>{
+                                return rateCode === "USD";
+                            });
+
+                            targetCurrencyDropdown.append(`<option value=${targetCode}>${targetCode}</option>`);
+
+                            Object.keys(userCurrencyList.rates).forEach(rateCode => {
+                                targetCurrencyDropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
+    
+                            });
+
+                    
+
+                        const baseUnit = userCurrencyList.rates[userCurrencyList.base];
+
+                        const targetUnit = userCurrencyList.rates[targetCode];
+
+
+                        $("#baseCurrencyAmountInput").val(baseUnit);
+
+                        $("#targetCurrencyAmountInput").val(targetUnit);
+                        const baseCode = userCurrencyList.base;
+
+                        console.log(`base currencyCode: ${baseCode}`);
+                        console.log(`base unit: ${baseUnit}`);
+
+                        console.log(`target USD code: ${targetCode}`);
+                        console.log(`target unit: ${targetUnit}`);
+
+                        // Populate dropdown with currency codes from the rates object
+                        Object.keys(userCurrencyList.rates).forEach(rateCode => {
+                            if(rateCode === currencyCode){
+
+                                baseCurrencyDropdown.append(`<option selected value="${rateCode}">${rateCode}</option>`);
+                            }else{
+                                baseCurrencyDropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
+                            }
+                            
+
+                        });
+    
+                        resolve({response, baseCode, baseUnit, targetCode, targetUnit});
+                        return countryList;
+
+
+                    } else {
+                        reject("No currency information found.");
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    hideLoader();
+                    console.error("Error fetching currency:", textStatus, errorThrown);
+                    reject("Failed to fetch currency information.");
+                },
+            });
+            onFirstLoad = false;
+        });
+    }
+
+    $("#targetCurrency").on("change", function(){
+        const targetSelectCode = $(this).val();
+        const baseCurrencyCode = $("#baseCurrency").val();
+        //stop geoLocation watch
+        stopGeolocation();
+
+        if(targetSelectCode){
+            console.log(`select target currency code:${targetSelectCode}`);
+            getExchangeRate(baseCurrencyCode).then(({response}) => {
+                console.log(`base currency data: `, response);
+               
+               console.log(`base code now: ${baseCurrencyCode}`);
+            //    get target currency unit from select curency ojject
+                const targetCurrencyUnit = response.rates[targetSelectCode];
+                console.log(`taget unit in base response: ${targetCurrencyUnit}`);
+                const currentBaseUnit = $("#baseCurrencyAmountInput").val();
+                console.log({currentBaseUnit, targetCurrencyUnit, rate:response.rates})
+                if(currentBaseUnit){
+                    const convertedTargetValue = currentBaseUnit * targetCurrencyUnit;
+
+                    $("#targetCurrencyAmountInput").val(convertedTargetValue);
+                }else{
+
+                    $("#targetCurrencyAmountInput").val(1);
+                    $("#baseCurrencyAmountInput").val(baseCurrencyUnit);
+                }
+
+               
+            })
+
+        }
+    });
+
+    $("#baseCurrency").on("change", function(){
+        const targetSelectCode = $(this).val();
+        //stop geoLocation watch
+        stopGeolocation();
+
+        if(targetSelectCode){
+            console.log(`select base currency code:${targetSelectCode}`);
+            getExchangeRate(targetSelectCode).then(({response}) => {
+                console.log(`base currency data: `, response);
+               const targetCurrencyCode = $("#targetCurrency").val();
+               console.log(`target code now: ${targetCurrencyCode}`);
+            //    get target currency unit from select curency ojject
+               const targetCurrencyUnit = response.rates[targetCurrencyCode];
+                const currentBaseUnit = $("#baseCurrencyAmountInput").val();
+                console.log({currentBaseUnit, targetCurrencyUnit, rate:response.rates})
+                if(currentBaseUnit){
+                    const convertedTargetValue = currentBaseUnit * targetCurrencyUnit;
+
+                    $("#targetCurrencyAmountInput").val(convertedTargetValue);
+                }else{
+
+                    $("#baseCurrencyAmountInput").val(1);
+                    $("#targetCurrencyAmountInput").val(targetCurrencyUnit);
+                }
+
+               
+            })
+
+        }
+    });
+
+    $("#baseCurrencyAmountInput").on("input", function(){
+        const currentBaseCode = $("#baseCurrency").val();
+        // console.log(`current base value, ${currentBaseCode}`);
+
+        let currentBaseUnit = $(this).val();
+        //convert baseUnit to number
+        currentBaseUnit = parseFloat(currentBaseUnit);
+        console.log(`current base unit, ${currentBaseUnit}`);
+        console.log(typeof(currentBaseUnit));
+        
+        const currentTargetCode = $("#targetCurrency").val();
+        // console.log(`current target code, ${currentTargetCode}`);
+
+
+        let currentTargetUnit = $("#targetCurrencyAmountInput").val();
+        currentTargetUnit = parseFloat(currentTargetUnit);
+        // console.log(typeof(currentTargetUnit));
+
+        // console.log(`current target unit, ${currentTargetUnit}`);
+        //checking if baseUnit is NaN
+        if(isNaN(currentBaseUnit)){
+            let UnitIntarget = $("#targetCurrencyAmountInput");
+            UnitIntarget.val("");
+        }
+
+        getExchangeRate(currentBaseCode).then(({response})=>{
+            if(response.rates){
+              let relativeTargetUnit = response.rates[currentTargetCode];
+                console.log(`relative target unit: ${relativeTargetUnit}`);
+                let newTargetValue = currentBaseUnit * relativeTargetUnit;
+
+                $("#targetCurrencyAmountInput").val(newTargetValue);
+            }
+            
+        });
+
+
+    })
+
+    // $(document).ready(function() {
+    //     // Add an event listener for the input event
+    //     $('#targetCurrencyAmountInput').on('input', function() {
+    //         // Get the value of the input element
+    //         const inputValue = $(this).val();
+            
+    //         // Perform any action with the input value (e.g., log to console)
+    //         console.log(`Input Value: ${inputValue}`);
+            
+    //         // Example: Update another element with the input value
+    //         $('#output').text(`Entered Amount: ${inputValue}`);
+    //     });
+    // });
 
     // function getWikipediaInfo(countryName){
     //     // showLoader();
@@ -603,8 +761,9 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             //wikipedia info function
             getWikipediaInfo(countryName);
 
+            baseSelect = false;
             //user currency info
-            getExchangeRate(currencyCode);
+            getUserExchangeRate(currencyCode);
             
             //return country Info fxn
             return getCountryInfo(userCountryCode);
@@ -748,7 +907,7 @@ $("#countrySearch").on("input", function () {
                         return getGeocodeReverse(selectValue.geometry.lat, selectValue.geometry.lng);
                     }).then(({currencyCode})=>{
                         console.log(`selected country currency code: ${currencyCode}`);
-                        getExchangeRate(currencyCode);
+                        getUserExchangeRate(currencyCode);
                     });
 
         });
@@ -807,7 +966,7 @@ $("#countrySearch").on("input", function () {
             //getting country currency code
             getGeocodeReverse(country.latlng[0], country.latlng[1]).then(({currencyCode})=>{
                 console.log(`dropdown country currency code: ${currencyCode}`);
-                getExchangeRate(currencyCode);
+                getUserExchangeRate(currencyCode);
             })
 
             //calling wikipedia function

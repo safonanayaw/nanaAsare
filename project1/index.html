@@ -443,9 +443,9 @@
 
                   <th scope="col" class="text-start">
                     <i class="fa-solid fa-money-bill fa-lg text-success"></i> Amount (Origin)
-                    <select id="originCurrency" class="form-select">
+                    <select id="baseCurrency" class="form-select">
                         <option value="">Select Currency</option>
-                        <!-- Options will be populated dynamically -->
+                        <!-- Base Options will be populated dynamically -->
                     </select>
                 </th>
 
@@ -453,9 +453,9 @@
 
                   <th scope="col" class="text-center">
                   <i class="fa-solid fa-money-bill fa-lg text-success"></i> Target
-                  <select id="conversionCurrency" class="form-select">
+                  <select id="targetCurrency" class="form-select">
                       <option value="">Select Currency</option>
-                      <!-- Options will be populated dynamically -->
+                      <!--Target Options will be populated dynamically -->
                   </select>
                   </th>
 
@@ -464,7 +464,7 @@
               <tbody id="currencyConversionTable">
                 <tr>
                   <td class="text-start">
-                    <input id="originCurrencyAmountInput" type="number" class="form-control" placeholder="Enter Amount (GHS)" oninput="">
+                    <input id="baseCurrencyAmountInput" type="number" class="form-control" placeholder="Enter Amount (GHS)" oninput="">
                   </td>
                   <td class="text-center">→</td>
                   <td>
