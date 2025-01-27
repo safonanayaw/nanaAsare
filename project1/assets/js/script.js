@@ -476,6 +476,46 @@ let userCurrencyList = {}
 
     })
 
+
+    $("#targetCurrencyAmountInput").on("input", function(){
+        const currentTargetCode = $("#targetCurrency").val();
+        // console.log(`current base value, ${currentTargetCode}`);
+
+        let currentTargetUnit = $(this).val();
+        //convert baseUnit to number
+        currentTargetUnit = parseFloat(currentTargetUnit);
+        console.log(`current target unit, ${currentTargetUnit}`);
+        console.log(typeof(currentTargetUnit));
+        
+        const currentBaseCode = $("#baseCurrency").val();
+        // console.log(`current target code, ${currentBaseCode}`);
+
+
+        let currentBaseUnit = $("#baseCurrencyAmountInput").val();
+        currentBaseUnit = parseFloat(currentBaseUnit);
+        // console.log(typeof(currentBaseUnit));
+
+        // console.log(`current base unit, ${currentBaseUnit}`);
+        //checking if targetUnit is NaN
+        if(isNaN(currentTargetUnit)){
+            let UnitInBase = $("#BaseCurrencyAmountInput");
+            UnitInBase.val("");
+        }
+
+        getExchangeRate(currentTargetCode).then(({response})=>{
+            if(response.rates){
+              let relativeBaseUnit = response.rates[currentBaseCode];
+                console.log(`relative target unit: ${relativeBaseUnit}`);
+                let newBaseValue = currentTargetUnit * relativeBaseUnit;
+
+                $("#baseCurrencyAmountInput").val(newBaseValue);
+            }
+            
+        });
+
+
+    })
+
     // $(document).ready(function() {
     //     // Add an event listener for the input event
     //     $('#targetCurrencyAmountInput').on('input', function() {
