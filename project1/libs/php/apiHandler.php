@@ -39,7 +39,8 @@ if (isset($_GET['type'])) {
             case "wikipedia":
             $countryName = $_GET['countryName'];
             // $apiKey = $apiKeyMap["geonames"];
-            $url = "https://en.wikipedia.org/api/rest_v1/page/summary/" . urlencode($countryName);;
+            $url = "https://en.wikipedia.org/api/rest_v1/page/summary/$countryName";
+            echo $url;
             break;
 
             case "geocodeReverse";

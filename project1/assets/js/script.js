@@ -274,6 +274,8 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 success: function (response) {
                     if (response && response.rates) {
                         dropDowncurrencyList = response;
+                        $("#currencyDate").text(`Date: ${response.date}`);
+                        console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
@@ -356,6 +358,9 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 success: function (response) {
                     if (response && response.rates) {
                         currencyList = response;
+                        
+                        $("#currencyDate").text(`Date: ${response.date}`);
+                        console.log(response.date);
                         resolve({response});
                         // return currencyList;
 
@@ -386,6 +391,9 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 success: function (response) {
                     if (response && response.rates) {
                         userCurrencyList = response;
+                        $("#currencyDate").text(`Date: ${response.date}`);
+
+                        console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
@@ -651,11 +659,13 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
     function getWikipediaInfo(countryName) {
         // showLoader();
+        const countryname = encodeURIComponent(countryName);
+        console.log(`wikipedia country name ${countryname}`);
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: apiUrl,
                 method: "GET",
-                data: {type: "wikipedia", countryName: countryName},
+                data: {type: "wikipedia", countryName: countryname},
                 dataType: "json",
                 success: function (wikiResponse) {
                     if (wikiResponse && wikiResponse.extract) {
@@ -854,6 +864,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
     function userLocation(position){
         if(isManualSelection) return; //skip if manual location is active
+        if(!onFirstLoad) return;
         showLoader();//show loader while fetching user location
 
         lat = position.coords.latitude;
@@ -916,6 +927,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             console.log("Error in chain", error);
         }).finally(()=>{
             hideLoader();
+            onFirstLoad = false;
         })
 
 
@@ -995,7 +1007,8 @@ $("#countrySearch").on("input", function () {
                     const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === SelectCountryCode);
 
                     //search countryList array for matching country code and countryName
-                    const countryName = countryList.find(country => country.code === SelectCountryCode);
+                    // const countryName = countryList.find(country => country.code === SelectCountryCode);
+                    const countryName = selectValue.components.country;
 
                     const coord = selectValue.geometry;
 
@@ -1032,6 +1045,7 @@ $("#countrySearch").on("input", function () {
 
                         //calling wikipedia function
                         getWikipediaInfo(countryName);
+                        console.log(`country name: ${countryName}`);
                         return getGeocodeReverse(selectValue.geometry.lat, selectValue.geometry.lng);
                     }).then(({currencyCode})=>{
                         console.log(`selected country currency code: ${currencyCode}`);
