@@ -2,6 +2,10 @@ $(document).ready(function () {
     //api call directory          
     const apiUrl = "libs/php/apiHandler.php";
 
+    // Initialize marker cluster group globally
+    const earthquakeMarkers = L.markerClusterGroup();
+    let layerControlEarthQuake = null;
+
     //declaring marker, circle, zoom
     let marker, circle, zoom, lat, lng, openCageData, description, userCountryCode;
     //opencage response array
@@ -55,7 +59,7 @@ $(document).ready(function () {
             countryList.forEach((country)=> {
                 dropdown.append(`<option value="${country.code}">${country.name} (${country.code})</option>`)
             });
-            console.log(countryList);
+            // console.log(countryList);
             return countryList;
         }catch(error){
             // alert("Failed to load country data. Please refresh the page and try again.");
@@ -190,7 +194,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                     const countryName = countryNameoObject.name;
                     const currencyCode = openCageData[0].annotations.currency.iso_code
 
-                    console.log(currencyCode);
+                    // console.log(currencyCode);
                     if(lat && lng && description, countryName){
                         resolve({lat, lng, userCountryCode, description, countryName, currencyCode});
                         };
@@ -204,33 +208,154 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
         });
     }
 
-    // function getCountryInfo(countryCode){
-    //     showLoader();
-    //     return new Promise((resolve, reject) => {
-            
-    //         $.ajax({
-    //             url: apiUrl,
-    //             method: "GET",
-    //             data: { type: "countryInfo", countryCode: countryCode },
-    //             dataType: "json",
-    //             success: function (response) {
-    //                 console.log(response);
-    //                 if (response && response.length > 0) {
-    //                 userCountry = response[0];
-    //                 console.log(userCountry);
-    //                 resolve(response[0]);
-    //                 console.log(response[0]);
-    //                 } else {
-    //                 reject("Country info not found.");
-    //                 }
-    //             },
-    //             error: function () {
-    //                 hideLoader();
-    //                 reject("Failed to fetch country info.");
-    //             },
-    //             });
-    //     });
-    // }
+
+
+    //geocode function
+    function geoCode (query) {
+        return new Promise((resolve, reject)=>{
+            const urlQuery = encodeURIComponent(query);
+            // console.log(urlQuery);
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: { type: "geocode", query: urlQuery },
+                dataType: "json",
+                success: function(response) {
+                    // console.log(response);
+                    if(response.results){
+                        const bounds = response.results[0].bounds;
+                        // console.log(bounds);
+                        resolve({response, bounds});
+                    }else{
+                        reject("no geoCode info found")
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    hideLoader();
+                    console.error("Error fetching geoCode:", textStatus, errorThrown);
+                    reject("Failed to fetch geoCode information.");
+                },
+            })
+        })
+    }
+
+    //country's earth quake data function
+
+
+function getEarthquake(north, south, east, west) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: apiUrl,
+            method: "GET",
+            data: { type: "earthquarkes", north: north, south: south, east: east, west: west },
+            dataType: "json",
+            success: function(response) {
+                if (response.earthquakes) {
+                    const earthQuakeData = response.earthquakes;
+
+                    // Clear existing markers
+                    earthquakeMarkers.clearLayers();
+                    
+                    // Remove existing layer control if it exists
+                    if (layerControlEarthQuake) {
+                        layerControlEarthQuake.remove();
+                        layerControlEarthQuake = null;
+                    }
+
+                    function getMarkerSize(magnitude) {
+                        return Math.max(magnitude * 5, 8);
+                    }
+
+                    function getMarkerColor(magnitude) {
+                        if (magnitude >= 6) return '#d32f2f';
+                        if (magnitude >= 5) return '#f57c00';
+                        return '#7cb342';
+                    }
+
+                    // Add new markers
+                    earthQuakeData.forEach(quake => {
+                        const size = getMarkerSize(quake.magnitude);
+                        const color = getMarkerColor(quake.magnitude);
+                        
+                        const circleMarker = L.circleMarker([quake.lat, quake.lng], {
+                            radius: size,
+                            fillColor: color,
+                            color: '#fff',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+
+                        const date = new Date(quake.datetime);
+                        const formattedDate = date.toLocaleString();
+
+                        const popupContent = `
+                            <div class="earthquake-popup">
+                                <h3>Earthquake Details</h3>
+                                <p><span class="magnitude">Magnitude: ${quake.magnitude}</span></p>
+                                <p>Depth: ${quake.depth} km</p>
+                                <p>Date: ${formattedDate}</p>
+                                <p>Location: ${quake.lat.toFixed(4)}, ${quake.lng.toFixed(4)}</p>
+                                <p>ID: ${quake.eqid}</p>
+                            </div>
+                        `;
+
+                        circleMarker.bindPopup(popupContent);
+                        earthquakeMarkers.addLayer(circleMarker);
+                    });
+
+                    // Create custom control only if it doesn't exist
+                    if (!layerControlEarthQuake) {
+                        L.Control.LayerCheckbox = L.Control.extend({
+                            onAdd: function(map) {
+                                const div = L.DomUtil.create('div', 'leaflet-control-layers-checkbox');
+                                div.innerHTML = `
+                                    <label>
+                                        <input type="checkbox" id="earthquakeLayerCheckbox" checked>
+                                        <span class="checkbox-text">Earthquake Layer</span>
+                                    </label>
+                                `;
+
+                                // Prevent map click events when interacting with the control
+                                L.DomEvent.disableClickPropagation(div);
+
+                                // Add event listener for checkbox
+                                const checkbox = div.querySelector('#earthquakeLayerCheckbox');
+                                checkbox.addEventListener('change', function(e) {
+                                    if (e.target.checked) {
+                                        map.addLayer(earthquakeMarkers);
+                                    } else {
+                                        map.removeLayer(earthquakeMarkers);
+                                    }
+                                });
+
+                                return div;
+                            }
+                        });
+
+                        layerControlEarthQuake = new L.Control.LayerCheckbox({
+                            position: 'topright'
+                        }).addTo(map);
+                    }
+
+                    // Ensure markers are added to map
+                    if (!map.hasLayer(earthquakeMarkers)) {
+                        map.addLayer(earthquakeMarkers);
+                    }
+
+                    resolve({ earthQuakeData });
+                } else {
+                    reject("no earthquake data found");
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                hideLoader();
+                console.error("Error fetching earthquake data:", textStatus, errorThrown);
+                reject("Failed to fetch earthquake data information.");
+            },
+        });
+    });
+}
 
 
 
@@ -262,7 +387,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
     }
 
     //function to get selected country currency info on dropdown
-
     let dropDowncurrencyList = {}
     function dropdownGetExchangeRate (currencyCode) { 
         return new Promise((resolve, reject) => {
@@ -299,8 +423,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
     
                             });
 
-                    
-
                         const baseUnit = dropDowncurrencyList.rates[dropDowncurrencyList.base];
 
                         const targetUnit = dropDowncurrencyList.rates[targetCode];
@@ -311,11 +433,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                         $("#targetCurrencyAmountInput").val(targetUnit);
                         const baseCode = dropDowncurrencyList.base;
 
-                        console.log(`base currencyCode: ${baseCode}`);
-                        console.log(`base unit: ${baseUnit}`);
+                        // console.log(`base currencyCode: ${baseCode}`);
+                        // console.log(`base unit: ${baseUnit}`);
 
-                        console.log(`target USD code: ${targetCode}`);
-                        console.log(`target unit: ${targetUnit}`);
+                        // console.log(`target USD code: ${targetCode}`);
+                        // console.log(`target unit: ${targetUnit}`);
 
                         // Populate dropdown with currency codes from the rates object
                         Object.keys(dropDowncurrencyList.rates).forEach(rateCode => {
@@ -325,13 +447,9 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                             }else{
                                 baseCurrencyDropdown.append(`<option value="${rateCode}">${rateCode}</option>`);
                             }
-                            
-
                         });
     
                         resolve({response, baseCode, baseUnit, targetCode, targetUnit});
-
-
                     } else {
                         reject("No currency information found.");
                     }
@@ -393,7 +511,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                         userCurrencyList = response;
                         $("#currencyDate").text(`Date: ${response.date}`);
 
-                        console.log(response.date);
+                        // console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
@@ -429,11 +547,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                         $("#targetCurrencyAmountInput").val(targetUnit);
                         const baseCode = userCurrencyList.base;
 
-                        console.log(`base currencyCode: ${baseCode}`);
-                        console.log(`base unit: ${baseUnit}`);
+                        // console.log(`base currencyCode: ${baseCode}`);
+                        // console.log(`base unit: ${baseUnit}`);
 
-                        console.log(`target USD code: ${targetCode}`);
-                        console.log(`target unit: ${targetUnit}`);
+                        // console.log(`target USD code: ${targetCode}`);
+                        // console.log(`target unit: ${targetUnit}`);
 
                         // Populate dropdown with currency codes from the rates object
                         Object.keys(userCurrencyList.rates).forEach(rateCode => {
@@ -474,10 +592,10 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
         if(targetSelectCode){
             console.log(`select target currency code:${targetSelectCode}`);
             getExchangeRate(baseCurrencyCode).then(({response}) => {
-                console.log(`base currency data: `, response);
+                // console.log(`base currency data: `, response);
                
-               console.log(`base code now: ${baseCurrencyCode}`);
-            //    get target currency unit from select curency ojject
+            //    console.log(`base code now: ${baseCurrencyCode}`);
+            //    get target currency unit from select curency object
                 let targetCurrencyUnit = response.rates[targetSelectCode];
                 targetCurrencyUnit = parseFloat(targetCurrencyUnit);
 
@@ -488,15 +606,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                 console.log({currentBaseUnit, targetCurrencyUnit, rate:response.rates})
                 if(currentBaseUnit){
                     const convertedTargetValue = currentBaseUnit * targetCurrencyUnit;
-
                     $("#targetCurrencyAmountInput").val(convertedTargetValue);
                 }else{
-
                     $("#targetCurrencyAmountInput").val(targetCurrencyUnit);
                     $("#baseCurrencyAmountInput").val(1);
-                }
-
-               
+                }   
             })
 
         }
@@ -525,9 +639,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
                     $("#baseCurrencyAmountInput").val(1);
                     $("#targetCurrencyAmountInput").val(targetCurrencyUnit);
-                }
-
-               
+                }       
             })
 
         }
@@ -540,13 +652,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
         let currentBaseUnit = $(this).val();
         //convert baseUnit to number
         currentBaseUnit = parseFloat(currentBaseUnit);
-        console.log(`current base unit, ${currentBaseUnit}`);
-        console.log(typeof(currentBaseUnit));
+        // console.log(`current base unit, ${currentBaseUnit}`);
+        // console.log(typeof(currentBaseUnit));
         
         const currentTargetCode = $("#targetCurrency").val();
         // console.log(`current target code, ${currentTargetCode}`);
-
-
         let currentTargetUnit = $("#targetCurrencyAmountInput").val();
         currentTargetUnit = parseFloat(currentTargetUnit);
         // console.log(typeof(currentTargetUnit));
@@ -563,10 +673,8 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
               let relativeTargetUnit = response.rates[currentTargetCode];
                 console.log(`relative target unit: ${relativeTargetUnit}`);
                 let newTargetValue = currentBaseUnit * relativeTargetUnit;
-
                 $("#targetCurrencyAmountInput").val(newTargetValue);
-            }
-            
+            }   
         });
 
 
@@ -580,12 +688,11 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
         let currentTargetUnit = $(this).val();
         //convert baseUnit to number
         currentTargetUnit = parseFloat(currentTargetUnit);
-        console.log(`current target unit, ${currentTargetUnit}`);
-        console.log(typeof(currentTargetUnit));
+        // console.log(`current target unit, ${currentTargetUnit}`);
+        // console.log(typeof(currentTargetUnit));
         
         const currentBaseCode = $("#baseCurrency").val();
         // console.log(`current target code, ${currentBaseCode}`);
-
 
         let currentBaseUnit = $("#baseCurrencyAmountInput").val();
         currentBaseUnit = parseFloat(currentBaseUnit);
@@ -603,7 +710,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
               let relativeBaseUnit = response.rates[currentBaseCode];
                 console.log(`relative target unit: ${relativeBaseUnit}`);
                 let newBaseValue = currentTargetUnit * relativeBaseUnit;
-
                 $("#baseCurrencyAmountInput").val(newBaseValue);
             }
             
@@ -612,60 +718,16 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
     })
 
-    // $(document).ready(function() {
-    //     // Add an event listener for the input event
-    //     $('#targetCurrencyAmountInput').on('input', function() {
-    //         // Get the value of the input element
-    //         const inputValue = $(this).val();
-            
-    //         // Perform any action with the input value (e.g., log to console)
-    //         console.log(`Input Value: ${inputValue}`);
-            
-    //         // Example: Update another element with the input value
-    //         $('#output').text(`Entered Amount: ${inputValue}`);
-    //     });
-    // });
-
-    // function getWikipediaInfo(countryName){
-    //     // showLoader();
-    //     return new Promise((resolve, reject)=>{
-    //         $.ajax({
-    //             url: apiUrl, // Ensure apiUrl is correctly defined
-    //             method: "GET",
-    //             data: { type: "wikipedia", countryName: countryName },
-    //             dataType: "json",
-    //             success: function (wikiResponse) {
-    //                 if (wikiResponse && wikiResponse.geonames && wikiResponse.geonames.length > 0) {
-    //                     const wikiInfo = wikiResponse.geonames[0];
-    //                     const wikiUrl = `https://${wikiInfo.wikipediaUrl}`;
-    //                     console.log(`wiki info `, wikiInfo.summary);
-    //                     console.log(wikiResponse);
-    //                     $("#wikipediaInfo").text(wikiInfo.summary);
-    //                     $("#wikipediaLink").attr("href", wikiUrl);
-    
-    //                     resolve(wikiResponse.geonames[0]);
-    //                 } else {
-    //                     reject("No Wikipedia information found.");
-    //                 }
-    //             },
-    //             error: function (jqXHR, textStatus, errorThrown) {
-    //                 hideLoader();
-    //                 console.error("Error fetching Wikipedia information:", textStatus, errorThrown);
-    //                 reject("Failed to fetch Wikipedia information.");
-    //             },
-    //         });
-    //     });
-    // }
 
     function getWikipediaInfo(countryName) {
         // showLoader();
-        const countryname = encodeURIComponent(countryName);
-        console.log(`wikipedia country name ${countryname}`);
+        const urlCountryName = encodeURIComponent(countryName);
+        // console.log(`wikipedia country name ${urlCountryName}`);
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: apiUrl,
                 method: "GET",
-                data: {type: "wikipedia", countryName: countryname},
+                data: {type: "wikipedia", countryname: urlCountryName},
                 dataType: "json",
                 success: function (wikiResponse) {
                     if (wikiResponse && wikiResponse.extract) {
@@ -710,7 +772,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
                     $("#temparatureMod").text(`${weatherInfo.main.temp} °C`);
 
                     $("#weatherLocation").text(` ${weatherInfo.name}`);
-                    console.log(`${weatherInfo.coord.lat}, ${weatherInfo.coord.lon}`)
+                    // console.log(`${weatherInfo.coord.lat}, ${weatherInfo.coord.lon}`)
                     $("#weatherCoordinates").text(`Latitude: ${weatherInfo.coord.lat}, Longitude: ${weatherInfo.coord.lon}`);
 
                     $("#weatherDesc").text(`${weatherInfo.weather[0].main}, ${weatherInfo.weather[0].description}`);
@@ -760,7 +822,7 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
     function restModalAndLayoutInfo(country){
         if(country){
-            console.log(country);
+            // console.log(country);
             const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
             const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
             const flagUrl = country.flags ? country.flags.png : "N/A";
@@ -822,45 +884,17 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
     }
 
 
-
-
-    // point of interest marker clusters functions
-    // async function addMarkersFromGeoJSON(countryCode) {
-    //     try {
-    //         const response = await fetch("assets/data/markers.json");
-    //         if (!response.ok) {
-    //             throw new Error("Failed to load GeoJSON markers file.");
-    //         }
-    //         const data = await response.json();
-    //         const country = data.features.find(feature => feature.properties.iso_a2 === countryCode);
-    //         L.geoJSON(country, {
-    //             pointToLayer: function (feature, latlng) {
-    //                 return L.marker(latlng).bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-    //             }
-    //         }).addTo(map);
-    //     } catch (error) {
-    //         console.error("Error loading GeoJSON markers data:", error.message);
-    //     }
-    // }
-// Functions declaration ends here *********************************************************
-
-
-
-
-
     //**********getting user live location on app refresh****************
     //start watching user location
     function startGeolocation (){
         navigator.geolocation.watchPosition(userLocation, userErrorLocation);
     }
-
     //stop watching user location
     function stopGeolocation (){
         if(watchId !== undefined){
          navigator.geolocation.clearWatch(watchId);   
         }     
     }
-
 
     function userLocation(position){
         if(isManualSelection) return; //skip if manual location is active
@@ -879,8 +913,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
         }
 
 
-
-
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
 
             // update user location maker
@@ -895,8 +927,8 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             zoom = map.fitBounds(circle.getBounds());
             }
 
-            console.log(`user countryName`, countryName);
-            console.log(`user currency`, currencyCode);
+            // console.log(`user countryName`, countryName);
+            // console.log(`user currency`, currencyCode);
             //wikipedia info function
             getWikipediaInfo(countryName);
 
@@ -904,12 +936,25 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
             //user currency info
             getUserExchangeRate(currencyCode);
             
+            //geoCode to get earthquake areas
+            geoCode(countryName).then(({response, bounds})=>{
+                // console.log(bounds);
+                const north = bounds.northeast.lat;
+                const south = bounds.southwest.lat;
+                const east = bounds.northeast.lng;
+                const west = bounds.southwest.lng;
+                getEarthquake(north, south, east, west);
+
+                // console.log(`selected coordinates: north${north}, south: ${south}, east: ${east}, west: ${west}`);
+
+            });
+
             //return country Info fxn
             return getCountryInfo(userCountryCode);
 
             
         }).then((userCountry) =>{
-            console.log("Country Info:", userCountry);
+            // console.log("Country Info:", userCountry);
             const country = userCountry;
             
             //modal and layout info
@@ -917,11 +962,6 @@ const weatherInfoBtn = L.easyButton("fa-cloud-sun fa-xl", function (btn, map) {
 
             //weather info function
             getWeatherInfo(lat, lng);
-
-
-
-
-            
 
         }).catch((error) => {
             console.log("Error in chain", error);
@@ -946,7 +986,6 @@ startGeolocation();
 
 
 //********************Filter Dropdown on Search**************************
-
 
 $("#countrySearch").on("input", function () {
     const searchValue = $(this).val().toLowerCase();
@@ -973,98 +1012,106 @@ $("#countrySearch").on("input", function () {
 
     // If no match found, use OpenCage API
     if (!matchFound) {
+
+        geoCode(searchValue).then(({response, bounds})=>{
+            if(response.results){
+            openCageCountryList = response.results;
+    
+            if (openCageCountryList && openCageCountryList.length > 0) {
+                openCageUse = true; // Mark as openCage is used
+                openCageCountryList.forEach(result => {
+                    const formatted = result.formatted;
+                    const coords = result.geometry;
+                    const countryCode = result.components["ISO_3166-1_alpha-2"];
+                    
         
-        $.ajax({
-            url: apiUrl,
-            method: "GET",
-            data: { type: "geocode", query: searchValue },
-            dataType: "json",
-            success: function (response) {
-                openCageCountryList = response.results;
-                
-        if (openCageCountryList && openCageCountryList.length > 0) {
-            openCageUse = true; // Mark as openCage is used
-            openCageCountryList.forEach(result => {
-                const formatted = result.formatted;
-                const coords = result.geometry;
-                const countryCode = result.components["ISO_3166-1_alpha-2"];
-                
+                    dropdown.append(`<option value="${countryCode}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
+                });
+        
+        
+                    // after selecting option navigate marker to coordinate of option selected
+                    $("#countryDropdown").on("change", function(){
+                        if(!openCageUse) return;
+                            
+                        console.log(`OC is Active, opencage was false, but is set to: ${openCageUse}`);
+                       
+                        const SelectCountryCode = $(this).val();
+                        console.log(SelectCountryCode);
+        
+                        //search openCage for the selected country Info
+                        const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === SelectCountryCode);
+        
+                        //search countryList array for matching country code and countryName
+                        // const countryName = countryList.find(country => country.code === SelectCountryCode);
+                        const countryName = selectValue.components.country;
+        
+                        const coord = selectValue.geometry;
+        
+                        const countryInfo = selectValue.formatted;
+        
+                        console.log(selectValue);
 
-                dropdown.append(`<option value="${countryCode}">${formatted} (Coordinates: ${coords.lat}, ${coords.lng})</option>`);
+                        //clearing previous markers
+                        if(marker){
+                            map.removeLayer(marker);
+                            map.removeLayer(circle);
+                        };
+
+                        //geoCode function
+                        geoCode(countryName).then(({response, bounds})=>{
+                            console.log(bounds);
+                            const north = bounds.northeast.lat;
+                            const south = bounds.southwest.lat;
+                            const east = bounds.northeast.lng;
+                            const west = bounds.southwest.lng;
+                            getEarthquake(north, south, east, west);
+
+                            // console.log(`selected coordinates: north${north}, south: ${south}, east: ${east}, west: ${west}`);
+
+                        });
+        
+                        //add marker after selecting country on dropdown 
+                        marker = L.marker([coord.lat, coord.lng]).addTo(map);
+                        //add pop up to selected country
+                        marker.bindPopup(`<b>Country:</b><br>${countryInfo}`).openPopup();
+        
+                        //executing country Border JSON function
+                        highlightCountryBorders(SelectCountryCode);
+        
+                        map.setView([coord.lat, coord.lng], 15);
+        
+                        //set manual selection flag to and stop geolocation updates
+                        isManualSelection = true;
+                        stopGeolocation();
+        
+                        getCountryInfo(SelectCountryCode).then((response)=>{
+                            const country = response;
+                            restModalAndLayoutInfo(country);
+                            //calling weather function
+                            getWeatherInfo(selectValue.geometry.lat, selectValue.geometry.lng);
+        
+                            //calling wikipedia function
+                            getWikipediaInfo(countryName);
+                            console.log(`country name: ${countryName}`);
+                            return getGeocodeReverse(selectValue.geometry.lat, selectValue.geometry.lng);
+                        }).then(({currencyCode})=>{
+                            console.log(`selected country currency code: ${currencyCode}`);
+                            dropdownGetExchangeRate(currencyCode);
+                        });
+        
             });
+        
+                
+                } else {
+                    dropdown.append('<option value="">No matches found</option>');
+                }
+            }
+    
+        })        
 
-
-                // after selecting option navigate marker to coordinate of option selected
-                $("#countryDropdown").on("change", function(){
-                    if(!openCageUse) return;
-                        
-                    console.log(`OC is Active, opencage was false, but is set to: ${openCageUse}`);
-                   
-                    const SelectCountryCode = $(this).val();
-                    console.log(SelectCountryCode);
-
-                    //search openCage for the selected country Info
-                    const selectValue = openCageCountryList.find(result => result.components["ISO_3166-1_alpha-2"] === SelectCountryCode);
-
-                    //search countryList array for matching country code and countryName
-                    // const countryName = countryList.find(country => country.code === SelectCountryCode);
-                    const countryName = selectValue.components.country;
-
-                    const coord = selectValue.geometry;
-
-                    const countryInfo = selectValue.formatted;
-
-                    console.log(selectValue);
-
-
-                    //clearing previous markers
-                    if(marker){
-                        map.removeLayer(marker);
-                        map.removeLayer(circle);
-                    };
-
-                    //add marker after selecting country on dropdown 
-                    marker = L.marker([coord.lat, coord.lng]).addTo(map);
-                    //add pop up to selected country
-                    marker.bindPopup(`<b>Country:</b><br>${countryInfo}`).openPopup();
-
-                    //executing country Border JSON function
-                    highlightCountryBorders(SelectCountryCode);
-
-                    map.setView([coord.lat, coord.lng], 15);
-
-                    //set manual selection flag to and stop geolocation updates
-                    isManualSelection = true;
-                    stopGeolocation();
-
-                    getCountryInfo(SelectCountryCode).then((response)=>{
-                        const country = response;
-                        restModalAndLayoutInfo(country);
-                        //calling weather function
-                        getWeatherInfo(selectValue.geometry.lat, selectValue.geometry.lng);
-
-                        //calling wikipedia function
-                        getWikipediaInfo(countryName);
-                        console.log(`country name: ${countryName}`);
-                        return getGeocodeReverse(selectValue.geometry.lat, selectValue.geometry.lng);
-                    }).then(({currencyCode})=>{
-                        console.log(`selected country currency code: ${currencyCode}`);
-                        dropdownGetExchangeRate(currencyCode);
-                    });
-
-        });
-
-            
-        } else {
-            dropdown.append('<option value="">No matches found</option>');
-        }
-        },
-        error: function () {
-            dropdown.append('<option value="">An error occured</option>');
-        }
-    });
     }
     });
+
 
     // Fetch Country Info selected on Dropdown Change
     
@@ -1101,6 +1148,19 @@ $("#countrySearch").on("input", function () {
 
             //modal and layout info
             restModalAndLayoutInfo(country);
+
+            //geoCode to get earthquake areas
+            geoCode(country.name.common).then(({response, bounds})=>{
+                console.log(bounds);
+                const north = bounds.northeast.lat;
+                const south = bounds.southwest.lat;
+                const east = bounds.northeast.lng;
+                const west = bounds.southwest.lng;
+                getEarthquake(north, south, east, west);
+
+                // console.log(`selected coordinates: north${north}, south: ${south}, east: ${east}, west: ${west}`);
+
+            });
             
             //calling weather function
             getWeatherInfo(country.latlng[0], country.latlng[1]);
@@ -1110,12 +1170,9 @@ $("#countrySearch").on("input", function () {
                 console.log(`dropdown country currency code: ${currencyCode}`);
                 dropdownGetExchangeRate(currencyCode);
             })
-
             //calling wikipedia function
             getWikipediaInfo(country.name.common);
-            console.log(country.name.common);
-
-
+            // console.log(country.name.common);
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
             stopGeolocation();
@@ -1123,6 +1180,5 @@ $("#countrySearch").on("input", function () {
         });
 
     });
-
-        
+       
 });

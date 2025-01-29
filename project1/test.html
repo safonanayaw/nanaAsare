@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Earthquake Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        .earthquake-popup {
+            font-family: Arial, sans-serif;
+        }
+        .earthquake-popup h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .earthquake-popup p {
+            margin: 5px 0;
+        }
+        .magnitude {
+            font-weight: bold;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    
+    <script>
+        // Earthquake data
+        const earthquakes = [
+            {
+                datetime: "2019-11-26 03:06:38",
+                depth: 20,
+                eqid: "us70006d0m",
+                lat: 41.5205,
+                lng: 19.5591,
+                magnitude: 6.4,
+                src: "us"
+            },
+            {
+                datetime: "2019-09-21 14:19:25",
+                depth: 10,
+                eqid: "us60005lrf",
+                lat: 41.3807,
+                lng: 19.4543,
+                magnitude: 5.6,
+                src: "us"
+            },
+            {
+                datetime: "2016-10-15 20:24:40",
+                depth: 21.45,
+                eqid: "us20007eec",
+                lat: 39.8114,
+                lng: 20.6571,
+                magnitude: 5.5,
+                src: "us"
+            },
+            {
+                datetime: "2019-11-26 06:08:12",
+                depth: 10,
+                eqid: "us70006d2z",
+                lat: 41.5792,
+                lng: 19.425,
+                magnitude: 5.4,
+                src: "us"
+            }
+        ];
+
+        // Initialize the map
+        const map = L.map('map').setView([41, 20], 7);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Initialize marker cluster group
+        const markers = L.markerClusterGroup();
+
+        // Function to get marker size based on magnitude
+        function getMarkerSize(magnitude) {
+            return Math.max(magnitude * 5, 8);
+        }
+
+        // Function to get marker color based on magnitude
+        function getMarkerColor(magnitude) {
+            if (magnitude >= 6) return '#d32f2f';
+            if (magnitude >= 5) return '#f57c00';
+            return '#7cb342';
+        }
+
+        // Add markers for each earthquake
+        earthquakes.forEach(quake => {
+            const size = getMarkerSize(quake.magnitude);
+            const color = getMarkerColor(quake.magnitude);
+            
+            const circleMarker = L.circleMarker([quake.lat, quake.lng], {
+                radius: size,
+                fillColor: color,
+                color: '#fff',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+
+            // Format date
+            const date = new Date(quake.datetime);
+            const formattedDate = date.toLocaleString();
+
+            // Create popup content
+            const popupContent = `
+                <div class="earthquake-popup">
+                    <h3>Earthquake Details</h3>
+                    <p><span class="magnitude">Magnitude: ${quake.magnitude}</span></p>
+                    <p>Depth: ${quake.depth} km</p>
+                    <p>Date: ${formattedDate}</p>
+                    <p>Location: ${quake.lat.toFixed(4)}, ${quake.lng.toFixed(4)}</p>
+                    <p>ID: ${quake.eqid}</p>
+                </div>
+            `;
+
+            circleMarker.bindPopup(popupContent);
+            markers.addLayer(circleMarker);
+        });
+
+        // Add marker cluster group to map
+        map.addLayer(markers);
+
+        // Fit map bounds to show all markers
+        const bounds = markers.getBounds();
+        map.fitBounds(bounds);
+    </script>
+</body>
+</html>

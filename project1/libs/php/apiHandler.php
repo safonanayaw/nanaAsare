@@ -37,10 +37,8 @@ if (isset($_GET['type'])) {
             break;
             
             case "wikipedia":
-            $countryName = $_GET['countryName'];
-            // $apiKey = $apiKeyMap["geonames"];
+            $countryName = $_GET['countryname'];
             $url = "https://en.wikipedia.org/api/rest_v1/page/summary/$countryName";
-            echo $url;
             break;
 
             case "geocodeReverse";
@@ -53,6 +51,15 @@ if (isset($_GET['type'])) {
             case "exchangeRate";
             $currency = $_GET['currency'];
             $url = "https://api.exchangerate-api.com/v4/latest/$currency";
+            break;
+
+            case "earthquarkes";
+            $north = $_GET['north'];
+            $south = $_GET['south'];
+            $east = $_GET['east'];
+            $west = $_GET['west'];
+            $apiKey = $apiKeyMap["geonames"];
+            $url = "http://api.geonames.org/earthquakesJSON?north=$north&south=$south&east=$east&west=$west&username=$apiKey";
             break;
 
         default:
