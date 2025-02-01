@@ -14,21 +14,24 @@ if (isset($_GET['type'])) {
         "opencage" => "e10b66b2bbf245bc81bf941871795c37",
         "openweather" => "044a55e0a3c4e7ee441f497bd3b09967",
         "geonames"=>"safoasare",
-        "openexchange"=>"a11ea68a4ce946138a84c6a1047bd53d"
+        "openexchange"=>"a11ea68a4ce946138a84c6a1047bd53d",
+        "weatherApi" => "74067207a89c43e18ed185200253101",
     ];
    
     switch ($type) {
-        // case "countryInfo":
-        //     $countryCode = $_GET['countryCode'];
-        //     $url = "https://restcountries.com/v3.1/alpha/$countryCode";
-        //     break;
-
-        case "weather":
+        case "weatherInfo":
             $lat = $_GET['lat'];
             $lng = $_GET['lng'];
-            $apiKey = $apiKeyMap["openweather"];
-            $url = "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lng&appid=$apiKey&units=metric";
+            $apiKey = $apiKeyMap["weatherApi"];
+            $url = "http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lng&days=3&aqi=no&alerts=no";
             break;
+
+        // case "weather":
+        //     $lat = $_GET['lat'];
+        //     $lng = $_GET['lng'];
+        //     $apiKey = $apiKeyMap["openweather"];
+        //     $url = "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lng&appid=$apiKey&units=metric";
+        //     break;
 
         case "geocode":
             $query = $_GET['query'];
@@ -60,6 +63,11 @@ if (isset($_GET['type'])) {
             $west = $_GET['west'];
             $apiKey = $apiKeyMap["geonames"];
             $url = "http://api.geonames.org/earthquakesJSON?north=$north&south=$south&east=$east&west=$west&username=$apiKey";
+            break;
+
+            case "airport":
+            $apiKey = $apiKeyMap["geonames"]; 
+            $url = "http://api.geonames.org/searchJSON?q=airport&maxRows=1000&username=$apiKey";
             break;
 
         default:

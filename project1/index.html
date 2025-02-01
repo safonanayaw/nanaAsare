@@ -11,42 +11,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Extra Markers -->
+    <link rel="stylesheet" href="dist/css/leaflet.extra-markers.min.css" />
+
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Welcome To Country Explorer</a>
-            
-            
-            <div id="searchContainer">
-                <div id="seachDivOne">
-                    <input 
-                        type="text" 
-                        id="countrySearch" 
-                        class="form-control" 
-                        placeholder="Search town, city, country or CODE" 
-                    />
-                </div>
-                <select id="countryDropdown" class="form-select" style="width: 300px;">
-
-                    <!-- Dropdown will be populated dynamically -->
-                </select>
-
-            </div>
-        </div>
-    </nav>
+    <span id="selectContainer">
+      <select id="countryDropdown" class="form-select shadow-sm">
+          <!-- Dropdown will be populated dynamically -->
+      </select>
+    </span>
 
     <!-- Map Section -->
-    <div id="map" style="height: 700px; margin: 10px; width: 100%;"></div>
+    <div id="map"></div>
 
-    
 <!-- loading -->
     <div id="loading" class="loading-spinner d-none">
       <div class="spinner"></div>
       <p>Loading, please wait...</p>
   </div>
-
 
 
 <!-- Modal Section start -->
@@ -287,118 +271,76 @@
     </div>
 </div>
 
-<!-- Modal Section for Weather Info -->
-<div id="weatherInfoModal" class="modal" data-bs-backdrop="false" tabindex="-1">
+<!-- ***************************************************************************** -->
+<div id="weatherInfo" class="modal" data-bs-backdrop="false" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
     <div class="modal-content shadow">
+      <!-- Header -->
       <div class="modal-header bg-success bg-gradient text-white">
-        <h5 class="modal-title" id="weatherTitle">Weather & Climate Information</h5>
+        <h5 id="weatherLocation" class="modal-title">N/A</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
+      <!-- Body -->
       <div class="modal-body">
-        <div class="text-center mb-4 bg-success">
-          <h4><strong>Weather & Climate</strong></h4>
-          <p id="weatherLocation" class="h5 mb-2"><strong>Location:</strong> N/A</p>
-          <p id="weatherCoordinates" class="h6">
-            <strong>Coordinates:</strong> Latitude: N/A, Longitude: N/A
-          </p>
-          <div class="p-3 rounded" style="background-color: rgb(98, 101, 100);">
-            <img src="https://openweathermap.org/img/wn/03d.png" alt="Weather Icon" class="img-fluid mb-2" style="width: 50px;">
-            <p id="weatherDesc"><strong>Description:</strong> N/A</p>
+        <!-- Today's Weather -->
+        <div class="mb-4">
+          <h2 class="h4 text-success mb-3">TODAY</h2>
+          <div class="d-flex align-items-center gap-3">
+            <span id="weatherDesc" class="text-success">N/A</span>
+            <div id="todayImgIcon">
+
+            </div>
+            <div>
+              <div id="temparatureLay" class="h3 text-success mb-0">N/A</div>
+              <div id="tempFeelsLike" class="text-success-emphasis">N/A</div>
+            </div>
           </div>
         </div>
 
-        <div class="row">
-          <!-- Current Weather -->
+        <!-- Forecast Grid -->
+        <div class="row g-3">
+          <!-- Friday Forecast -->
           <div class="col-md-6">
-            <h5 class="text-success">Current Weather</h5>
-            <table class="table table-striped">
-              <tr>
-                <td><i class="fa-solid fa-thermometer-half fa-lg text-success"></i></td>
-                <td>Temperature</td>
-                <td id="temparatureLay" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-hand-holding-water fa-lg text-success"></i></td>
-                <td>Feels Like</td>
-                <td id="tempFeelsLike" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-temperature-low fa-lg text-success"></i></td>
-                <td>Min Temp</td>
-                <td id="minTemp" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-temperature-high fa-lg text-success"></i></td>
-                <td>Max Temp</td>
-                <td id="maxTemp" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-compress-alt fa-lg text-success"></i></td>
-                <td>Pressure</td>
-                <td id="tempPressure" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-droplet fa-lg text-success"></i></td>
-                <td>Humidity</td>
-                <td id="tempHumidity" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-eye fa-lg text-success"></i></td>
-                <td>Visibility</td>
-                <td id="tempVisibility" class="text-end">N/A</td>
-              </tr>
-            </table>
+            <div class="card border-success-subtle">
+              <div class="card-body">
+                <h3 id="tomorrowDate" class="h5 text-success mb-2">Fri 31st</h3>
+                <div id="tomorrowTemparatureLay" class="h4 text-success mb-1">28°C</div>
+                <div id="tomorrowTempFeelsLike" class="text-success-emphasis mb-2">25°C</div>
+                <div id="tomorrowImgIcon">
+
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Wind & Clouds -->
+          <!-- Saturday Forecast -->
           <div class="col-md-6">
-            <h5 class="text-success">Wind & Clouds</h5>
-            <table class="table table-striped">
-              <tr>
-                <td><i class="fa-solid fa-wind fa-lg text-success"></i></td>
-                <td>Wind Speed</td>
-                <td id="windSpeed" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-compass fa-lg text-success"></i></td>
-                <td>Wind Direction</td>
-                <td id="windDirection" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-cloud fa-lg text-success"></i></td>
-                <td>Cloudiness</td>
-                <td id="windCloud" class="text-end">N/A</td>
-              </tr>
-            </table>
-          </div>
-        </div>
+            <div class="card border-success-subtle">
+              <div class="card-body">
+                <h3 id="nextDayDate" class="h5 text-success mb-2">Sat 1st</h3>
+                <div id="nextTemparatureLay" class="h4 text-success mb-1">28°C</div>
+                <div id="nextTempFeelsLike" class="text-success-emphasis mb-2">25°C</div>
+                <div id="nextDayImgIcon">
 
-        <div class="row">
-          <!-- Sun Information -->
-          <div class="col-md-12">
-            <h5 class="text-success">Sun Information</h5>
-            <table class="table table-striped">
-              <tr>
-                <td><i class="fa-solid fa-sun fa-lg text-success"></i></td>
-                <td>Sunrise</td>
-                <td id="sunRise" class="text-end">N/A</td>
-              </tr>
-              <tr>
-                <td><i class="fa-solid fa-moon fa-lg text-success"></i></td>
-                <td>Sunset</td>
-                <td id="sunSet" class="text-end">N/A</td>
-              </tr>
-            </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
+
+      <!-- Footer -->
+      <div class="modal-footer justify-content-between">
+        <small id="footer" class="text-muted">
+        </small>
         <button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
 </div>
+<!-- ***************************************************************************** -->
+
 
 <!-- Wikipedia Content Modal -->
 <div id="wikipediaModal" class="modal" data-bs-backdrop="false" tabindex="-1">
@@ -485,16 +427,14 @@
   </div>
 </div>
 
-
-
-    <footer>
-      <p>© 2025 Country Explorer | Designed with ❤ BY NANA YAW</p>
-  </footer>
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" ></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+
+    <!-- Extra Markers -->
+    <script src="dist/js/leaflet.extra-markers.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2.4.0/src/easy-button.js"></script>
     <script src="assets/js/script.js"></script>

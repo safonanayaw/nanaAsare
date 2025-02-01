@@ -10,3 +10,7 @@ use opencage to search for home address
 if search filled return null switch to opencage
 
 solve wikipedia countryName isManualSelection
+
+airport for these countries 
+togo
+syria

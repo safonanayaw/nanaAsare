@@ -113,60 +113,32 @@ body::before {
     z-index: -1;
 }
 
-/* Navbar */
-.navbar {
-    background: linear-gradient(45deg, #3cb371, #2b6b6e);
-    color: white;
-    padding: 10px 20px;
-    height: 55px;
-}
 
-.navbar-brand {
-    font-size: 1.8rem;
-    color: white;
-    font-weight: bold;
-}
-.navbar-brand:hover {
-    color: #d4edda; 
-    text-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: color 0.2s ease-in, text-shadow 0.3s ease-in;
-}
 
-/* Search Container */
-#searchContainer {
-    margin-top: 73px;
-    opacity: 0.7;
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-    width: 100%;
-    max-width: 450px;
-    z-index: 1000;
-}
-
-#countrySearch {
-    margin-bottom: 10px;
-    font-size: 1rem;
-}
-
-#countryDropdown {
-    font-size: 1rem;
-}
-
-/* Map Section */
-#map {
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+/* html, body {
+    margin: 0;
+    padding: 0;
+  } */
+  
+  #map {
     width: 100%;
     height: 100vh;
     margin: 0;
     padding: 0;
-}
+  }
+  
+  #selectContainer {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    padding: 11px 0;
+  }
+  
+  #countryDropdown {
+    width: 200px;
+    margin: 0 auto;
+  }
 
 /* hover effect on weather icon and flag */
 img {
@@ -253,14 +225,4 @@ button:hover {
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
     transition: all 0.3s ease-in-out;
-}
-/* Footer */
-footer {
-    background: #2b6b6e;
-    color: white;
-    text-align: center;
-    /* padding: 20px; */
-    font-size: 1rem;
-    /* margin-top: 40px; */
-    border-top: 4px solid #3cb371;
 }
