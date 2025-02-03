@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header('Content-Type: application/json; charset=utf-8');
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -26,23 +26,49 @@ if (isset($_GET['type'])) {
             $url = "http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lng&days=3&aqi=no&alerts=no";
             break;
 
-        // case "weather":
-        //     $lat = $_GET['lat'];
-        //     $lng = $_GET['lng'];
-        //     $apiKey = $apiKeyMap["openweather"];
-        //     $url = "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lng&appid=$apiKey&units=metric";
-        //     break;
-
         case "geocode":
             $query = $_GET['query'];
             $apiKey = $apiKeyMap["opencage"];
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey";
             break;
             
-            case "wikipedia":
-            $countryName = $_GET['countryname'];
-            $url = "https://en.wikipedia.org/api/rest_v1/page/summary/$countryName";
-            break;
+            // case "wikipedia":
+            //     $countryName = str_replace('_', ' ', $_GET['countryname']);
+            //     $url = "https://en.wikipedia.org/api/rest_v1/page/summary/" . rawurlencode($countryName);
+            //     $ch = curl_init();
+            //     curl_setopt($ch, CURLOPT_URL, $url);
+            //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            //     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            //     curl_setopt($ch, CURLOPT_USERAGENT, 'countryExplorer/1.0');
+            //     $response = curl_exec($ch);
+            //     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            //     curl_close($ch);
+            
+            //     // Debugging
+            //     error_log("Raw Wikipedia Response: " . $response);
+            //     header('Content-Type: application/json; charset=utf-8');
+                
+            //     if ($httpCode === 200) {
+            //         // Decode and then re-encode to ensure clean JSON
+            //         $decoded = json_decode($response);
+            //         if (json_last_error() === JSON_ERROR_NONE) {
+            //             // Direct output of the response without additional encoding
+            //             echo $response;
+            //         } else {
+            //             // If response isn't valid JSON, send error
+            //             echo json_encode([
+            //                 'error' => 'Invalid Wikipedia response format',
+            //                 'status' => $httpCode,
+            //                 'message' => json_last_error_msg()
+            //             ]);
+            //         }
+            //     } else {
+            //         echo json_encode([
+            //             'error' => 'Failed to fetch Wikipedia data',
+            //             'status' => $httpCode
+            //         ]);
+            //     }
+            //     break;
 
             case "geocodeReverse";
             $lat = $_GET['lat'];

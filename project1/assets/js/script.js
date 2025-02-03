@@ -87,8 +87,9 @@ $(document).ready(function () {
 
     //basemap layer button
     var basemaps = {
-        "googleSat": googleSat,
-        "road": road
+        "road": road,
+        "googleSat": googleSat
+        
     };
 
     const overLayMaps = {
@@ -301,8 +302,8 @@ $(document).ready(function () {
                                     const div = L.DomUtil.create('div', 'leaflet-control-layers-checkbox');
                                     div.innerHTML = `
                                         <label>
-                                            <input type="checkbox" id="earthquakeLayerCheckbox" checked>
-                                            <span class="checkbox-text">Earthquake Layer</span>
+                                            <input type="checkbox" id="earthquakeLayerCheckbox" class="small-checkbox" checked>
+                                            <span class="checkbox-text">Earthquake</span>
                                         </label>
                                     `;
 
@@ -384,7 +385,7 @@ async function getAllAirportData(countryCode) {
             <h3>Airport Details</h3>
             <p><span class="">Country Name: ${airport.countryName}</span></p>
             <p>Airport Name: ${airport.name}</p>
-            <p>Location: ${airport.lat}, ${airport.lng}</p>
+            <p>Coordinates: ${airport.lat}, ${airport.lng}</p>
         </div>
     `;
       const marker = L.marker([parseFloat(airport.lat), parseFloat(airport.lng)], {icon: airportMarker}).bindPopup(popupContent);
@@ -443,7 +444,7 @@ map.on('overlayadd', function(eventLayer) {
                 <h3>Hotel Details</h3>
                 <p><span class="">Country Name: ${hotel.countryName}</span></p>
                 <p>Hotel Name: ${hotel.name}</p>
-                <p>Location: ${hotel.lat}, ${hotel.lng}</p>
+                <p>Coordinates: ${hotel.lat}, ${hotel.lng}</p>
             </div>
         `;
         const marker = L.marker([parseFloat(hotel.lat), parseFloat(hotel.lng)], {icon: hotelMarker}).bindPopup(popupContent);
@@ -506,7 +507,7 @@ map.on('overlayadd', function(eventLayer) {
                     if (response && response.rates) {
                         dropDowncurrencyList = response;
                         $("#currencyDate").text(`Date: ${response.date}`);
-                        console.log(response.date);
+                        // console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
@@ -826,39 +827,124 @@ map.on('overlayadd', function(eventLayer) {
     })
 
 
+
     function getWikipediaInfo(countryName) {
-        // showLoader();
-        const urlCountryName = encodeURIComponent(countryName);
-        // console.log(`wikipedia country name ${urlCountryName}`);
+        const cleanCountryName = countryName.trim();
+        const apiUrl = "https://en.wikipedia.org/w/api.php";
+        
+        //first get the main content
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: apiUrl,
                 method: "GET",
-                data: {type: "wikipedia", countryname: urlCountryName},
+                data: {
+                    action: "query",
+                    format: "json",
+                    prop: "extracts|info|sections",
+                    titles: cleanCountryName,
+                    exintro: 0,        // Get full content, not just intro
+                    explaintext: 1,    // Get plain text, not HTML
+                    exsectionformat: "plain",
+                    redirects: 1,      // Follow redirects
+                    origin: "*"        // Required for CORS
+                },
                 dataType: "json",
-                success: function (wikiResponse) {
-                    if (wikiResponse && wikiResponse.extract) {
-                        const wikiInfo = wikiResponse;
-                        const wikiUrl = wikiInfo.content_urls.desktop.page;
-                        console.log(`wiki info `, wikiInfo.extract);
-                        console.log(wikiResponse);
-                        $("#wikipediaInfo").text(wikiInfo.extract);
-                        $("#wikipediaLink").attr("href", wikiUrl);
+                beforeSend: function() {
+                    // console.log("Sending request for:", cleanCountryName);
+                },
+                success: function(response) {
+                    try {
+                        const pages = response.query.pages;
+                        const pageId = Object.keys(pages)[0];
+                        const pageData = pages[pageId];
+                        
+                        if (pageId === "-1") {
+                            reject("Page not found");
+                            return;
+                        }
     
-                        resolve(wikiInfo);
-                    } else {
-                        reject("No Wikipedia information found.");
+                        // Get sections to fetch more content
+                        getAdditionalSections(pageId, pageData)
+                            .then(additionalContent => {
+                                const fullContent = {
+                                    mainContent: pageData.extract,
+                                    additionalContent: additionalContent,
+                                    url: pageData.fullurl
+                                };
+                                
+                                $("#wikipediaInfo").text(fullContent.mainContent + "\n\n" + fullContent.additionalContent);
+                                $("#wikipediaLink").attr("href", fullContent.url);
+                                resolve(fullContent);
+                            })
+                            .catch(error => {
+                                // If additional sections fail, still return main content
+                                const basicContent = {
+                                    mainContent: pageData.extract,
+                                    url: pageData.fullurl
+                                };
+                                $("#wikipediaInfo").text(basicContent.mainContent);
+                                $("#wikipediaLink").attr("href", basicContent.url);
+                                resolve(basicContent);
+                            });
+    
+                    } catch (e) {
+                        console.error("Error processing response:", e);
+                        reject("Failed to process Wikipedia response");
                     }
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
-                    console.error("Error fetching Wikipedia information:", textStatus, errorThrown);
-                    reject("Failed to fetch Wikipedia information.");
-                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Failed to fetch Wikipedia data:", textStatus);
+                    reject(`Failed to fetch Wikipedia information: ${textStatus}`);
+                }
             });
         });
     }
+    
+    // Helper function to get additional sections
+    function getAdditionalSections(pageId, initialData) {
+        const apiUrl = "https://en.wikipedia.org/w/api.php";
+        
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: {
+                    action: "query",
+                    format: "json",
+                    pageids: pageId,
+                    prop: "extracts",
+                    explaintext: 1,
+                    exsectionformat: "plain",
+                    origin: "*",
+                    
+                    rvsection: "geography|economy|history|culture|demographics",
+                },
+                dataType: "json",
+                success: function(response) {
+                    try {
+                        const pages = response.query.pages;
+                        const pageData = pages[pageId];
+                        
+                        if (pageData.extract) {
+                            resolve(pageData.extract);
+                        } else {
+                            resolve("");
+                        }
+                    } catch (e) {
+                        console.error("Error getting additional sections:", e);
+                        resolve("");
+                    }
+                },
+                error: function() {
+                    resolve(""); // Return empty string on error
+                }
+            });
+        });
+    }
+    
 
+
+    
     function getWeatherInfo(lat, lng) {
         $.ajax({
             url: apiUrl,
@@ -869,8 +955,9 @@ map.on('overlayadd', function(eventLayer) {
                 const weatherInfo = response;
     
                 if (weatherInfo) {
-                    console.log(weatherInfo);
+                    // console.log(weatherInfo);
                     $("#temparatureLay").text(`${weatherInfo.current.temp_c}°C`);
+                    $("#temparatureMod").text(`${weatherInfo.current.temp_c}°C`);
                     $("#tempFeelsLike").text(`${weatherInfo.current.feelslike_c}°C`);
                     $("#todayImgIcon").html(`<img src="${weatherInfo.current.condition.icon}" class="mb-3 img-fluid" style="max-width: 40px;">`);
 
@@ -968,7 +1055,7 @@ map.on('overlayadd', function(eventLayer) {
             $("#googleMap").attr("href", googleMaps);
             $("#openStreetMap").attr("href", openStreetMaps);
 
-            $("#coatOfArm").text(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
+            $("#coatOfArm").html(country.coatOfArms.png ? `<h4>Coat of Arms</h4> <img src=${country.coatOfArms.png} alt="country Flag" class="mb-3 img-fluid" style="max-width: 100px;"> `: "");
             //country info layout end here *******************************************
 
             
@@ -1005,20 +1092,22 @@ map.on('overlayadd', function(eventLayer) {
         if(!onFirstLoad) return;
         showLoader();//show loader while fetching user location
 
+
         lat = position.coords.latitude;
         lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
         // console.log(lat, lng);
 
-        //clearing previous markers
-        if(marker){
-            map.removeLayer(marker);
-            map.removeLayer(circle);
-        }
+
 
 
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
 
+            //clearing previous markers
+            if(marker){
+                map.removeLayer(marker);
+                map.removeLayer(circle);
+            }
             // update user location maker
             marker = L.marker([lat, lng]).addTo(map);
             circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
@@ -1106,7 +1195,7 @@ startGeolocation();
 
         getCountryInfo(countryCode).then((response) => {
             const country = response; 
-            console.log(country);
+            // console.log(country);
 
             //clear marker if marker is !null
             if(marker){
@@ -1116,11 +1205,11 @@ startGeolocation();
             //add marker
             marker = L.marker([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]]).addTo(map);
             // add pop up to selected country                
-            marker.bindPopup(`<b>Country:</b><br>${country.name.common}`).openPopup();
+            marker.bindPopup(`<b>Capital City:</b><br>${country.capital[0]} - ${country.name.common}`).openPopup();
             //et country map view
             map.setView([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], 5);
-            console.log(country);
-            console.log(`coordinate: ${country.capitalInfo.latlng[0]}, ${country.capitalInfo.latlng[1]}`);
+            // console.log(country);
+            // console.log(`coordinate: ${country.capitalInfo.latlng[0]}, ${country.capitalInfo.latlng[1]}`);
 
 
             //modal and layout info
@@ -1128,7 +1217,7 @@ startGeolocation();
 
             //geoCode to get earthquake areas
             geoCode(country.name.common).then(({response, bounds})=>{
-                console.log(bounds);
+                // console.log(bounds);
                 const north = bounds.northeast.lat;
                 const south = bounds.southwest.lat;
                 const east = bounds.northeast.lng;
@@ -1144,7 +1233,7 @@ startGeolocation();
 
             //getting country currency code
             getGeocodeReverse(country.latlng[0], country.latlng[1]).then(({currencyCode})=>{
-                console.log(`dropdown country currency code: ${currencyCode}`);
+                // console.log(`dropdown country currency code: ${currencyCode}`);
                 dropdownGetExchangeRate(currencyCode);
             })
             //calling wikipedia function
