@@ -1,13 +1,56 @@
+// Loading functions
+let timer;
+
+// show loader
+showLoader()
+
+//api call directory
+setTimeout(() => {
+    hideLoader();
+}, 4000); // Adjust the timing as needed 
+   
+
+
+function showLoader() {
+    console.log("showLoader called");
+    timer = setTimeout(() => {
+        $("#preloader").addClass("active");
+        console.log("I start loading");
+    }, 2000);
+}
+
+function hideLoader() {
+    console.log("hideLoader called");
+    $("#preloader").removeClass("active");
+    clearTimeout(timer);
+    console.log("done loading");
+}
+
+
+
 $(document).ready(function () {
-    //api call directory          
+    $('body').show();
+  
+
+
     const apiUrl = "libs/php/apiHandler.php";
 
     // Initialize marker cluster group globally
-    const earthquakeMarkers = L.markerClusterGroup();
+    const earthquakeMarkers = L.markerClusterGroup(
+        {
+            polygonOptions: {
+                fillColor: "#fff",
+                color: "#000",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.5
+              }
+            }
+    );
     let layerControlEarthQuake = null;
 
-    //declaring marker, circle, zoom
-    let marker, circle, zoom, lat, lng, openCageData, description, userCountryCode;
+    //declaring marker
+    let marker, lat, lng, openCageData, description, userCountryCode, userCountryCapital;
     let selectedCountryCode;
     let onFirstLoad = true;
 
@@ -18,17 +61,11 @@ $(document).ready(function () {
     let isManualSelection = false; 
     let watchId;
 
-    //loading functions
-    function showLoader() {
-        $("#loading").removeClass("d-none");
-        // console.log("Im loading");
-    }
-    
-    function hideLoader() {
-        $("#loading").addClass("d-none");
-        // console.log("done loading");
-    }
 
+
+    function formatNumber(number) {
+        return new Intl.NumberFormat().format(number);
+    }
 
     //fetch country name for dropdown
     async function fetchAndPopulateCountryDropdown(){
@@ -93,8 +130,38 @@ $(document).ready(function () {
     };
 
     const overLayMaps = {
-        "Airport": L.markerClusterGroup(),
-        "Hotel": L.markerClusterGroup()
+        "Airports": L.markerClusterGroup(
+            {
+                polygonOptions: {
+                    fillColor: "#fff",
+                    color: "#000",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.5
+                  }
+                }
+        ),
+        "Hotels": L.markerClusterGroup(
+            {
+                polygonOptions: {
+                    fillColor: "#fff",
+                    color: "#000",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.5
+                  }
+                }
+        ),
+        "Cities": L.markerClusterGroup({
+            polygonOptions: {
+                fillColor: "#fff",
+                color: "#000",
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.5
+              }
+            }
+        )
     }
 
     layerControl = L.control.layers(basemaps, overLayMaps, {
@@ -132,6 +199,12 @@ $(document).ready(function () {
       });
       currencyBtn.addTo(map);
       
+
+      // news easyButton
+      const newsBtn = L.easyButton("fa-newspaper fa-xl", function (btn, map) {
+        $("#newsModal").modal("show");
+      });
+      newsBtn.addTo(map);
     // Show loading indicator
     $("#loading").show();
 
@@ -157,10 +230,17 @@ $(document).ready(function () {
                 if(currentCountryBorder){
                     map.removeLayer(currentCountryBorder);
                     }
-                //Add the new country border
-                currentCountryBorder = L.geoJSON(country);
+                    const polygonOptions = {
+                        fillColor: "#fff",
+                        color: "#ff0000", // Change this to your desired border color
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.5
+                    };
+                    // Add the new country border with the specified options
+                    currentCountryBorder = L.geoJSON(country, { style: polygonOptions });
                 currentCountryBorder.addTo(map);
-                // map.fitBounds(currentCountryBorder.getBounds());
+                map.fitBounds(currentCountryBorder.getBounds());
             }else{
                 console.log("country not found in GeoJSON data.")
             };
@@ -179,9 +259,12 @@ $(document).ready(function () {
                 dataType: "json",
                 success: function (response){
                     openCageData = response.results;
+                    console.log(openCageData);
                     
                     userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
                     description = openCageData[0].formatted;
+
+
 
                     const countryNameoObject = countryList.find(country=> userCountryCode === country.code);
                     const countryName = countryNameoObject.name;
@@ -224,7 +307,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
+
                     console.error("Error fetching geoCode:", textStatus, errorThrown);
                     reject("Failed to fetch geoCode information.");
                 },
@@ -340,7 +423,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    hideLoader();
+
                     console.error("Error fetching earthquake data:", textStatus, errorThrown);
                     reject("Failed to fetch earthquake data information.");
                 },
@@ -350,36 +433,40 @@ $(document).ready(function () {
 
    
 
-
-    // Get airport data for all countries*******************************************
-async function getAllAirportData(countryCode) {
-    try {
-      const response = await fetch("assets/data/airportData.json");
-      if (!response.ok) {
-        throw new Error("Failed to load Airport Geo data");
-      }
-      const data = await response.json();
-      const countryAirport = data.geonames.filter(airport => airport.countryCode === countryCode);
-      return countryAirport;
-    } catch (error) {
-      console.log(error.message);
-      return [];
-    }
-  }
+    //get airprort Data for 
   
+    function getAllAirportData(countryCode){
+        return new Promise((resolve, reject)=>{
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: {type: "airport", countryCode: countryCode},
+                dataType: "json",
+                success: function(response){
+                    if(response){
+                        resolve(response);
+                    }else{
+                        reject("No current airport data found");
+                    }
+                }
+            })
+        })
+    }
     // Creates a red marker with the coffee icon
     var airportMarker = L.ExtraMarkers.icon({
         icon: 'fa-plane',
-        markerColor: 'blue',
+        iconColor:"black",
+        markerColor: 'white',
         shape: 'square',
         prefix: 'fa'
       });
   // Add airport markers to the map
   async function addAirportsToMap(countryCode) {
     const selectAirportData = await getAllAirportData(countryCode);
+    const airportData = selectAirportData.geonames;
+    console.log(selectAirportData);
 
-
-    selectAirportData.forEach(airport => {
+    airportData.forEach(airport => {
         const popupContent = `
         <div class="earthquake-popup">
             <h3>Airport Details</h3>
@@ -389,20 +476,20 @@ async function getAllAirportData(countryCode) {
         </div>
     `;
       const marker = L.marker([parseFloat(airport.lat), parseFloat(airport.lng)], {icon: airportMarker}).bindPopup(popupContent);
-      overLayMaps["Airport"].addLayer(marker);
+      overLayMaps["Airports"].addLayer(marker);
     });
   }
   
 //   // Event listener for "Airport" checkbox
 map.on('overlayadd', function(eventLayer) {
-    if (eventLayer.name === 'Airport') {
+    if (eventLayer.name === 'Airports') {
       addAirportsToMap(selectedCountryCode);
     }
   });
 
   map.on('overlayremove', function(eventLayer) {
-    if (eventLayer.name === 'Airport') {
-      overLayMaps["Airport"].clearLayers();
+    if (eventLayer.name === 'Airports') {
+      overLayMaps["Airports"].clearLayers();
     }
   });
 //******************************************************************************************/
@@ -410,19 +497,22 @@ map.on('overlayadd', function(eventLayer) {
 
      
      //***************function for hotel data *******************************************
-    async function getAllHotelData(countryCode) {
-        try {
-        const response = await fetch("assets/data/hotelData.json");
-        if (!response.ok) {
-            throw new Error("Failed to load Hotel Geo data");
-        }
-        const data = await response.json();
-        const countryHotel = data.geonames.filter(hotel => hotel.countryCode === countryCode);
-        return countryHotel;
-        } catch (error) {
-        console.log(error.message);
-        return [];
-        }
+    function getAllHotelData(countryCode) {
+        return new Promise((resolve, reject)=> {
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: {type: "hotel", countryCode: countryCode},
+                dataType: "json",
+                success: function(response){
+                    if(response){
+                        resolve(response);
+                    }else{
+                        reject("No current airport data found");
+                    }
+                }
+            })
+        })
     }
 
         // Creates a red marker with the coffee icon
@@ -436,9 +526,9 @@ map.on('overlayadd', function(eventLayer) {
     // Add hotel markers to the map
     async function addHotelsToMap(countryCode) {
         const selectHotelData = await getAllHotelData(countryCode);
+        const hotelData = selectHotelData.geonames;
 
-
-        selectHotelData.forEach(hotel => {
+        hotelData.forEach(hotel => {
             const popupContent = `
             <div class="earthquake-popup">
                 <h3>Hotel Details</h3>
@@ -448,27 +538,90 @@ map.on('overlayadd', function(eventLayer) {
             </div>
         `;
         const marker = L.marker([parseFloat(hotel.lat), parseFloat(hotel.lng)], {icon: hotelMarker}).bindPopup(popupContent);
-        overLayMaps["Hotel"].addLayer(marker);
+        overLayMaps["Hotels"].addLayer(marker);
         });
     }
 
 //   // Event listener for "Airport" checkbox
 map.on('overlayadd', function(eventLayer) {
-    if (eventLayer.name === 'Hotel') {
+    if (eventLayer.name === 'Hotels') {
       addHotelsToMap(selectedCountryCode);
     }
   });
 
   map.on('overlayremove', function(eventLayer) {
-    if (eventLayer.name === 'Hotel') {
-      overLayMaps["Hotel"].clearLayers();
+    if (eventLayer.name === 'Hotels') {
+      overLayMaps["Hotels"].clearLayers();
     }
   });
 
 //****************************************************************************** */
 
+
+
+     //***************function for city data *******************************************
+     function getAllCitesData(countryCode) {
+        return new Promise((resolve, reject)=> {
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                data: {type: "city", countryCode: countryCode},
+                dataType: "json",
+                success: function(response){
+                    if(response){
+                        resolve(response);
+                    }else{
+                        reject("No current airport data found");
+                    }
+                }
+            })
+        })
+    }
+
+        // Creates a green marker with the city-icon
+        var cityMarker = L.ExtraMarkers.icon({
+            icon: 'fa-city',
+            markerColor: 'green',
+            shape: 'square',
+            prefix: 'fa'
+          });
+
+    // Add city markers to the map
+    async function addCitiesToMap(countryCode) {
+        const selectCityData = await getAllCitesData(countryCode);
+        const cityData = selectCityData.geonames;
+
+        cityData.forEach(city => {
+            const popupContent = `
+            <div class="earthquake-popup">
+                <h3>City Details</h3>
+                <p><span class="">Country Name: ${city.countryName}</span></p>
+                <p>City Name: ${city.name}</p>
+                <p>Coordinates: ${city.lat}, ${city.lng}</p>
+            </div>
+        `;
+        const marker = L.marker([parseFloat(city.lat), parseFloat(city.lng)], {icon: cityMarker}).bindPopup(popupContent);
+        overLayMaps["Cities"].addLayer(marker);
+        });
+    }
+
+    //   // Event listener for "Cities" checkbox
+    map.on('overlayadd', function(eventLayer) {
+        if (eventLayer.name === 'Cities') {
+            addCitiesToMap(selectedCountryCode);
+        }
+    });
+
+    map.on('overlayremove', function(eventLayer) {
+        if (eventLayer.name === 'Cities') {
+        overLayMaps["Cities"].clearLayers();
+        }
+    });
+
+//****************************************************************************** */
+
     function getCountryInfo(countryCode) {
-        // showLoader(); // Show loader while fetching data
+
     
         return fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
             .then((response) => {
@@ -490,7 +643,7 @@ map.on('overlayadd', function(eventLayer) {
                 throw error; 
             })
             .finally(() => {
-                hideLoader(); // hide loader after processing
+
             });
     }
 
@@ -563,7 +716,6 @@ map.on('overlayadd', function(eventLayer) {
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
                     console.error("Error fetching currency:", textStatus, errorThrown);
                     reject("Failed to fetch currency information.");
                 },
@@ -595,7 +747,6 @@ map.on('overlayadd', function(eventLayer) {
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
                     console.error("Error fetching currency:", textStatus, errorThrown);
                     reject("Failed to fetch currency information.");
                 },
@@ -682,7 +833,7 @@ map.on('overlayadd', function(eventLayer) {
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    hideLoader();
+
                     console.error("Error fetching currency:", textStatus, errorThrown);
                     reject("Failed to fetch currency information.");
                 },
@@ -690,6 +841,59 @@ map.on('overlayadd', function(eventLayer) {
             onFirstLoad = false;
         });
     }
+
+
+
+    // new function declaration
+    function generateTableItem(article) {
+        return `
+          <table class="table table-borderless">
+            <tr>
+              <td rowspan="2" width="50%">
+                <img class="img-fluid rounded" src="${article.image_url}" alt="${article.title}" title="${article.title}">
+              </td>
+              <td>
+                <a href="${article.link}" class="fw-bold fs-6 text-black" target="_blank">${article.title}</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="align-bottom pb-0">
+                <p class="fw-light fs-6 mb-1">${article.source_name}</p>
+                <p class="fw-light fs-6 mb-1">${article.description}</p>
+              </td>
+            </tr>
+          </table>
+          <hr>
+        `;
+      }
+
+      function fetchCountryNews(countryCode){
+        $.ajax({
+            url: apiUrl,
+            method: "GET",
+            dataType: "json",
+            data: {type: "newsData", countryCode: countryCode},
+            success: function(response){
+                if(response.status === "success" && response.results && response.results.length > 0){
+                    console.log(response.results);
+                    const allTableHtml = response.results.map(article => generateTableItem(article)).join('');
+                    console.log(allTableHtml);
+                    if(allTableHtml){
+                        $("#newsTable").html(allTableHtml);
+                    }
+                    
+                }else{
+                    console.error("No results found or API status is not success.");
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+
+                console.error("Error fetching newsData:", textStatus, errorThrown);
+                reject("Failed to fetch newsData.");
+            },
+        })
+      }
+
 
     $("#targetCurrency").on("change", function(){
         const targetSelectCode = $(this).val();
@@ -857,22 +1061,23 @@ map.on('overlayadd', function(eventLayer) {
                         const pages = response.query.pages;
                         const pageId = Object.keys(pages)[0];
                         const pageData = pages[pageId];
-                        
                         if (pageId === "-1") {
                             reject("Page not found");
                             return;
                         }
-    
+
+                        // Construct the URL manually
+                        const pageUrl = `https://en.wikipedia.org/?curid=${pageId}`;
+        
                         // Get sections to fetch more content
                         getAdditionalSections(pageId, pageData)
                             .then(additionalContent => {
                                 const fullContent = {
                                     mainContent: pageData.extract,
-                                    additionalContent: additionalContent,
-                                    url: pageData.fullurl
+                                    // additionalContent: additionalContent,
+                                    url: pageUrl
                                 };
-                                
-                                $("#wikipediaInfo").text(fullContent.mainContent + "\n\n" + fullContent.additionalContent);
+                                $("#wikipediaInfo").text(fullContent.mainContent + "\n\n");
                                 $("#wikipediaLink").attr("href", fullContent.url);
                                 resolve(fullContent);
                             })
@@ -880,10 +1085,11 @@ map.on('overlayadd', function(eventLayer) {
                                 // If additional sections fail, still return main content
                                 const basicContent = {
                                     mainContent: pageData.extract,
-                                    url: pageData.fullurl
+                                    url: pageUrl
                                 };
                                 $("#wikipediaInfo").text(basicContent.mainContent);
                                 $("#wikipediaLink").attr("href", basicContent.url);
+                                console.log(basicContent.url);
                                 resolve(basicContent);
                             });
     
@@ -928,7 +1134,7 @@ map.on('overlayadd', function(eventLayer) {
                         if (pageData.extract) {
                             resolve(pageData.extract);
                         } else {
-                            resolve("");
+                            reject("");
                         }
                     } catch (e) {
                         console.error("Error getting additional sections:", e);
@@ -956,11 +1162,11 @@ map.on('overlayadd', function(eventLayer) {
     
                 if (weatherInfo) {
                     // console.log(weatherInfo);
-                    $("#temparatureLay").text(`${weatherInfo.current.temp_c}°C`);
-                    $("#temparatureMod").text(`${weatherInfo.current.temp_c}°C`);
-                    $("#tempFeelsLike").text(`${weatherInfo.current.feelslike_c}°C`);
+                    $("#temparatureLay").text(`${parseInt(weatherInfo.current.temp_c)}°C`);
+                    $("#temparatureMod").text(`${parseInt(weatherInfo.current.temp_c)}°C`);
+                    $("#tempFeelsLike").text(`${parseInt(weatherInfo.current.feelslike_c)}°C`);
                     $("#todayImgIcon").html(`<img src="${weatherInfo.current.condition.icon}" class="mb-3 img-fluid" style="max-width: 40px;">`);
-
+                    console.log(weatherInfo);
                     $("#weatherLocation").text(` ${weatherInfo.location.name}, ${weatherInfo.location.country}`);
                     $("#weatherCoordinates").text(`Latitude: ${weatherInfo.location.lat}, Longitude: ${weatherInfo.location.lon}`);
                     $("#weatherDesc").text(`${weatherInfo.current.condition.text}`);
@@ -970,7 +1176,7 @@ map.on('overlayadd', function(eventLayer) {
 
                     function formatDate(dateString) {
                         const date = new Date(dateString);
-                        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
                         const day = daysOfWeek[date.getDay()];
                         const dayOfMonth = date.getDate();
                         const month = date.getMonth() + 1; // Months is zero-based
@@ -983,19 +1189,19 @@ map.on('overlayadd', function(eventLayer) {
                             return s[(v - 20) % 10] || s[v] || s[0];
                         };
                     
-                        return `${year}-${month.toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')} ${day} ${dayOfMonth}${ordinalSuffix(dayOfMonth)}`;
+                        return `${day} ${dayOfMonth}${ordinalSuffix(dayOfMonth)}`;
                     }
                     const formattedDateTomorrow = formatDate(dateStrTomorrow)
                     $("#tomorrowDate").text(`${formattedDateTomorrow}`);
-                    $("#tomorrowTemparatureLay").text(`${weatherInfo.forecast.forecastday[1].day.maxtemp_c}°C`);
-                    $("#tomorrowTempFeelsLike").text(`${weatherInfo.forecast.forecastday[1].day.mintemp_c}°C`);
+                    $("#tomorrowTemparatureLay").text(`${parseInt(weatherInfo.forecast.forecastday[1].day.maxtemp_c)}°C`);
+                    $("#tomorrowTempFeelsLike").text(`${parseInt(weatherInfo.forecast.forecastday[1].day.mintemp_c)}°C`);
                     $("#tomorrowImgIcon").html(`<img src="${weatherInfo.forecast.forecastday[1].day.condition.icon}" class="mb-3 img-fluid" style="max-width: 40px;">`);
                     
 
                     const formattedDateNextDay = formatDate(dateStrNextDay);
                     $("#nextDayDate").text(`${formattedDateNextDay}`);
-                    $("#nextTemparatureLay").text(`${weatherInfo.forecast.forecastday[2].day.maxtemp_c}°C`);
-                    $("#nextTempFeelsLike").text(`${weatherInfo.forecast.forecastday[2].day.mintemp_c}°C`);
+                    $("#nextTemparatureLay").text(`${parseInt(weatherInfo.forecast.forecastday[2].day.maxtemp_c)}°C`);
+                    $("#nextTempFeelsLike").text(`${parseInt(weatherInfo.forecast.forecastday[2].day.mintemp_c)}°C`);
                     $("#nextDayImgIcon").html(`<img src="${weatherInfo.forecast.forecastday[2].day.condition.icon}" class="mb-3 img-fluid" style="max-width: 40px;">`);
                     
                     $("#footer").html(`Last updated ${weatherInfo.current.last_updated} Powered by <a href="https://www.weatherapi.com" class="text-success text-decoration-none">WeatherAPI.com</a>`);
@@ -1005,7 +1211,6 @@ map.on('overlayadd', function(eventLayer) {
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                hideLoader();
                 console.error("Failed to get user weather Info:", textStatus, errorThrown);
             }
         });
@@ -1039,18 +1244,15 @@ map.on('overlayadd', function(eventLayer) {
 
             $("#languages").text(languages ? `${languages}`: `N/A`);
             $("#currencies").text(currenciesDetail ? `${currenciesDetail}`: `N/A`);
-
-            $("#area").text(country.area ? `${country.area} km²`: `N/A`);
-
-            $("#population").text(country.population ? `${country.population}`: `N/A`);
-
-            $("#timeZone").text(country.timezones[0] ? `${country.timezones[0]}`: `N/A`);
+            const area = formatNumber(country.area);
+            $("#area").text(area ? `${area} km²`: `N/A`);
+            const population = formatNumber(country.population);
+            $("#population").text(population ? `${population}`: `N/A`);
 
             $("#callingNumber").text(country.idd ? `${country.idd.root+country.idd.suffixes[0] }`: `N/A`);
 
             $("#unMember").text(country.unMember === true ? `Yes`: `No`);
             
-            $("#startOfWeek").text(country.startOfWeek ? `${country.startOfWeek}`:  `N/A`);
 
             $("#googleMap").attr("href", googleMaps);
             $("#openStreetMap").attr("href", openStreetMaps);
@@ -1082,48 +1284,47 @@ map.on('overlayadd', function(eventLayer) {
     }
     //stop watching user location
     function stopGeolocation (){
+
         if(watchId !== undefined){
          navigator.geolocation.clearWatch(watchId);   
         }     
     }
 
     function userLocation(position){
+
         if(isManualSelection) return; //skip if manual location is active
         if(!onFirstLoad) return;
-        showLoader();//show loader while fetching user location
 
 
         lat = position.coords.latitude;
         lng = position.coords.longitude;
-        const accuracy = position.coords.accuracy;
-        // console.log(lat, lng);
 
 
 
 
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
+        // showLoader();//show loader while fetching user location
 
-            //clearing previous markers
-            if(marker){
-                map.removeLayer(marker);
-                map.removeLayer(circle);
-            }
-            // update user location maker
-            marker = L.marker([lat, lng]).addTo(map);
-            circle = L.circle([lat, lng], {radius: accuracy }).addTo(map);
-            marker.bindPopup(`<strong>Current location: <strong>${description}`).openPopup();
+            // //clearing previous markers
+            // if(marker){
+            //     map.removeLayer(marker);
 
-            //clearing current user zoom after location change
-            if(!zoom){
+            // }
+            // // update user location maker
+            // marker = L.marker([lat, lng]).addTo(map);
+            // marker.bindPopup(`<strong>Current location: <strong>${description}`).openPopup();
+
+            $("#countryDropdown").val(userCountryCode).change();
             //get user country border
-            highlightCountryBorders(userCountryCode);   
-            zoom = map.fitBounds(circle.getBounds());
-            }
+            highlightCountryBorders(userCountryCode); 
 
             // console.log(`user countryName`, countryName);
             // console.log(`user currency`, currencyCode);
             //wikipedia info function
             getWikipediaInfo(countryName);
+
+            //newsData
+            fetchCountryNews(userCountryCode);
             
 
             baseSelect = false;
@@ -1160,7 +1361,7 @@ map.on('overlayadd', function(eventLayer) {
         }).catch((error) => {
             console.log("Error in chain", error);
         }).finally(()=>{
-            hideLoader();
+            // hideLoader();
             onFirstLoad = false;
         })
 
@@ -1180,18 +1381,36 @@ startGeolocation();
     // Fetch Country Info selected on Dropdown Change
     
     $("#countryDropdown").on("change", function () {
+        showLoader();
+        console.log("im after showLoader");
         const countryCode = $(this).val();
 
         if(!countryCode) return ;
 
         //clear previous airport markers
-        overLayMaps["Airport"].clearLayers();
+        overLayMaps["Airports"].clearLayers();
 
         //clear previous hotel markers
-        overLayMaps["Hotel"].clearLayers();
+        overLayMaps["Hotels"].clearLayers();
 
-        //hightlight selected country's border
-        highlightCountryBorders(countryCode);                             
+        //clear previous cities markers
+        overLayMaps["Cities"].clearLayers();
+
+        // Uncheck the checkboxes in the Leaflet layer control
+        uncheckLayerControlCheckboxes(["Airports", "Hotels", "Cities"]);
+
+        function uncheckLayerControlCheckboxes(layers) {
+            const checkboxes = document.querySelectorAll('input.leaflet-control-layers-selector');
+            checkboxes.forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                if (label && layers.includes(label.innerText.trim())) {
+                    checkbox.checked = false;
+                }
+            });
+        }
+        
+        //newsData
+        fetchCountryNews(countryCode);
 
         getCountryInfo(countryCode).then((response) => {
             const country = response; 
@@ -1200,17 +1419,25 @@ startGeolocation();
             //clear marker if marker is !null
             if(marker){
                 map.removeLayer(marker);
-                map.removeLayer(circle);
             }
+
+            var capitalMarker = L.ExtraMarkers.icon({
+                icon: 'fa-house',
+                markerColor: 'yellow',
+                shape: 'square',
+                prefix: 'fa'
+              });
             //add marker
-            marker = L.marker([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]]).addTo(map);
+            marker = L.marker([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], {icon: capitalMarker}).addTo(map);
             // add pop up to selected country                
             marker.bindPopup(`<b>Capital City:</b><br>${country.capital[0]} - ${country.name.common}`).openPopup();
-            //et country map view
-            map.setView([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], 5);
+            // //set country map view
+            // map.setView([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], 5);
             // console.log(country);
             // console.log(`coordinate: ${country.capitalInfo.latlng[0]}, ${country.capitalInfo.latlng[1]}`);
 
+            //hightlight selected country's border
+            highlightCountryBorders(countryCode);  
 
             //modal and layout info
             restModalAndLayoutInfo(country);
@@ -1229,7 +1456,7 @@ startGeolocation();
             });
             
             //calling weather function
-            getWeatherInfo(country.latlng[0], country.latlng[1]);
+            getWeatherInfo(country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]);
 
             //getting country currency code
             getGeocodeReverse(country.latlng[0], country.latlng[1]).then(({currencyCode})=>{
@@ -1241,9 +1468,11 @@ startGeolocation();
             // console.log(country.name.common);
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
+            hideLoader();
             stopGeolocation();
             
         });
+        
         return selectedCountryCode = countryCode;
 
     });

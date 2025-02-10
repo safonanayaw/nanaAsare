@@ -16,6 +16,7 @@ if (isset($_GET['type'])) {
         "geonames"=>"safoasare",
         "openexchange"=>"a11ea68a4ce946138a84c6a1047bd53d",
         "weatherApi" => "74067207a89c43e18ed185200253101",
+        "newsdata" => "pub_6883601c7742417dfcec9e9cd37b3065eb2e8",
     ];
    
     switch ($type) {
@@ -26,49 +27,18 @@ if (isset($_GET['type'])) {
             $url = "http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lng&days=3&aqi=no&alerts=no";
             break;
 
-        case "geocode":
+        case "newsData";
+            $countryCode = $_GET['countryCode'];
+            $apiKey = $apiKeyMap["newsdata"];
+            $url = "https://newsdata.io/api/1/latest?apikey=$apiKey&domain=bbc&country=$countryCode";
+            break;
+
+        case "geocode";
             $query = $_GET['query'];
             $apiKey = $apiKeyMap["opencage"];
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$query&key=$apiKey";
             break;
             
-            // case "wikipedia":
-            //     $countryName = str_replace('_', ' ', $_GET['countryname']);
-            //     $url = "https://en.wikipedia.org/api/rest_v1/page/summary/" . rawurlencode($countryName);
-            //     $ch = curl_init();
-            //     curl_setopt($ch, CURLOPT_URL, $url);
-            //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            //     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            //     curl_setopt($ch, CURLOPT_USERAGENT, 'countryExplorer/1.0');
-            //     $response = curl_exec($ch);
-            //     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            //     curl_close($ch);
-            
-            //     // Debugging
-            //     error_log("Raw Wikipedia Response: " . $response);
-            //     header('Content-Type: application/json; charset=utf-8');
-                
-            //     if ($httpCode === 200) {
-            //         // Decode and then re-encode to ensure clean JSON
-            //         $decoded = json_decode($response);
-            //         if (json_last_error() === JSON_ERROR_NONE) {
-            //             // Direct output of the response without additional encoding
-            //             echo $response;
-            //         } else {
-            //             // If response isn't valid JSON, send error
-            //             echo json_encode([
-            //                 'error' => 'Invalid Wikipedia response format',
-            //                 'status' => $httpCode,
-            //                 'message' => json_last_error_msg()
-            //             ]);
-            //         }
-            //     } else {
-            //         echo json_encode([
-            //             'error' => 'Failed to fetch Wikipedia data',
-            //             'status' => $httpCode
-            //         ]);
-            //     }
-            //     break;
 
             case "geocodeReverse";
             $lat = $_GET['lat'];
@@ -91,9 +61,22 @@ if (isset($_GET['type'])) {
             $url = "http://api.geonames.org/earthquakesJSON?north=$north&south=$south&east=$east&west=$west&username=$apiKey";
             break;
 
-            case "airport":
+            case "airport";
+            $countryCode = $_GET['countryCode'];
             $apiKey = $apiKeyMap["geonames"]; 
-            $url = "http://api.geonames.org/searchJSON?q=airport&maxRows=1000&username=$apiKey";
+            $url = "http://api.geonames.org/searchJSON?q=airport&maxRows=10&country=$countryCode&username=$apiKey";
+            break;
+
+            case "hotel";
+            $countryCode = $_GET['countryCode'];
+            $apiKey = $apiKeyMap["geonames"];
+            $url = "http://api.geonames.org/searchJSON?q=hotel&maxRows=10&country=$countryCode&username=$apiKey";
+            break;
+
+            case "city";
+            $countryCode = $_GET['countryCode'];
+            $apiKey = $apiKeyMap["geonames"];
+            $url = "http://api.geonames.org/searchJSON?q=city&maxRows=10&country=$countryCode&username=$apiKey";
             break;
 
         default:
