@@ -1,4 +1,12 @@
-
+// show loader
+function showLoader() {
+    $("#preloader").addClass("active");
+}
+//hide loader
+function hideLoader() {
+    $("#preloader").removeClass("active");
+}
+showLoader();
 
 var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -12,41 +20,10 @@ var googleSat =  L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}'
 });
 
 
-
-
-
 $(document).ready(function () {
     $('body').show();
 
-    // Loading functions
-    let timer;
 
-    // show loader
-    showLoader();
-
-    //api call directory
-    setTimeout(() => {
-        hideLoader();
-    }, 4000); 
-    
-
-
-    function showLoader() {
-        console.log("showLoader called");
-        timer = setTimeout(() => {
-            $("#preloader").addClass("active");
-            console.log("I start loading");
-        }, 2000);
-    }
-
-    function hideLoader() {
-        console.log("hideLoader called");
-        $("#preloader").removeClass("active");
-        clearTimeout(timer);
-        console.log("done loading");
-        $('body').show();
-    }
- 
     const apiUrl = "libs/php/apiHandler.php";
 
     // Initialize marker cluster group globally
@@ -91,8 +68,11 @@ $(document).ready(function () {
             const data = await response.json();
 
             const dropdown = $("#countryDropdown");
-            dropdown.empty(); 
-            dropdown.append('<option value="">Select a country...</option>'); 
+            dropdown.empty();
+            if(userCountryCode){
+                dropdown.append(`<option disabled value="">Select country</option>`);
+            }
+             
     
             data.features.forEach(feature => {
                 if(feature.properties){
@@ -105,7 +85,7 @@ $(document).ready(function () {
 
             countryList.sort((a,b) => a.name.localeCompare(b.name));
             countryList.forEach((country)=> {
-                dropdown.append(`<option value="${country.code}">${country.name} (${country.code})</option>`)
+                dropdown.append(`<option value="${country.code}">${country.name}</option>`)
             });
           
             return countryList;
@@ -853,8 +833,6 @@ $(document).ready(function () {
                     if(allTableHtml){
                         $("#newsTable").html(allTableHtml);
                     }     
-                }else{
-                    console.error("No results found or API status is not success.");
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -975,7 +953,30 @@ $(document).ready(function () {
 
 
     })
+    
+    // List of modal IDs you want to handle
+    const modalIds = ['#exampleModal', '#countryInfoModal', '#weatherInfo', '#wikipediaModal', '#currencyInfoModal', '#newsModal' ]; // Add more IDs here if needed
 
+    // Function to attach event listeners for a single modal
+    function setupModalPreloader(modalId) {
+    // Event listener for when the modal starts to show
+    $(modalId).on('show.bs.modal', function () {
+        $(this).find('.pre-load').removeClass("fadeOut");
+    });
+
+    // Event listener for when the modal is fully shown
+    $(modalId).on('shown.bs.modal', function () {
+        $(this).find('.pre-load').addClass("fadeOut");
+    });
+
+    // Event listener for when the modal is hidden
+    $(modalId).on('hidden.bs.modal', function () {
+        $(this).find('.pre-load').removeClass("fadeOut");
+    });
+    }
+
+// Initialize preloader behavior for all modals
+modalIds.forEach(setupModalPreloader);
 
 
     function getWikipediaInfo(countryName) {
@@ -1242,16 +1243,6 @@ $(document).ready(function () {
         lng = position.coords.longitude;
 
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
-        // showLoader();//show loader while fetching user location
-
-            // //clearing previous markers
-            // if(marker){
-            //     map.removeLayer(marker);
-
-            // }
-            // // update user location maker
-            // marker = L.marker([lat, lng]).addTo(map);
-            // marker.bindPopup(`<strong>Current location: <strong>${description}`).openPopup();
 
             $("#countryDropdown").val(userCountryCode).change();
             //get user country border
@@ -1313,7 +1304,6 @@ startGeolocation();
     
     $("#countryDropdown").on("change", function () {
         showLoader();
-        console.log("im after showLoader");
         const countryCode = $(this).val();
 
         if(!countryCode) return ;
@@ -1389,13 +1379,15 @@ startGeolocation();
             getWikipediaInfo(country.name.common);
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
-            hideLoader();
-            stopGeolocation();
             
+            stopGeolocation();
+            hideLoader();
         });
         
         return selectedCountryCode = countryCode;
 
     });
+
+    
        
 });
