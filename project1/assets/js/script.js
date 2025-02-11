@@ -1,38 +1,52 @@
-// Loading functions
-let timer;
-
-// show loader
-showLoader()
-
-//api call directory
-setTimeout(() => {
-    hideLoader();
-}, 4000); // Adjust the timing as needed 
-   
 
 
-function showLoader() {
-    console.log("showLoader called");
-    timer = setTimeout(() => {
-        $("#preloader").addClass("active");
-        console.log("I start loading");
-    }, 2000);
-}
+var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
 
-function hideLoader() {
-    console.log("hideLoader called");
-    $("#preloader").removeClass("active");
-    clearTimeout(timer);
-    console.log("done loading");
-}
+var googleSat =  L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}',{
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3'],
+    attribution: "google satelite street map"
+});
+
+
 
 
 
 $(document).ready(function () {
     $('body').show();
-  
+
+    // Loading functions
+    let timer;
+
+    // show loader
+    showLoader();
+
+    //api call directory
+    setTimeout(() => {
+        hideLoader();
+    }, 4000); 
+    
 
 
+    function showLoader() {
+        console.log("showLoader called");
+        timer = setTimeout(() => {
+            $("#preloader").addClass("active");
+            console.log("I start loading");
+        }, 2000);
+    }
+
+    function hideLoader() {
+        console.log("hideLoader called");
+        $("#preloader").removeClass("active");
+        clearTimeout(timer);
+        console.log("done loading");
+        $('body').show();
+    }
+ 
     const apiUrl = "libs/php/apiHandler.php";
 
     // Initialize marker cluster group globally
@@ -77,8 +91,8 @@ $(document).ready(function () {
             const data = await response.json();
 
             const dropdown = $("#countryDropdown");
-            dropdown.empty(); // Clear existing options
-            dropdown.append('<option value="">Select a country...</option>'); // Default option
+            dropdown.empty(); 
+            dropdown.append('<option value="">Select a country...</option>'); 
     
             data.features.forEach(feature => {
                 if(feature.properties){
@@ -93,26 +107,17 @@ $(document).ready(function () {
             countryList.forEach((country)=> {
                 dropdown.append(`<option value="${country.code}">${country.name} (${country.code})</option>`)
             });
-            // console.log(countryList);
+          
             return countryList;
         }catch(error){
-            // alert("Failed to load country data. Please refresh the page and try again.");
+            alert("Failed to load country data. Please refresh the page and try again.");
             console.error(error);
         }
     }
     // call fxn to fetch countrylist data
     fetchAndPopulateCountryDropdown();
 
-    var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
 
-    var googleSat =  L.tileLayer('http://{s}.google.com/vt?lyrs=s&x={x}&y={y}&z={z}',{
-        maxZoom: 20,
-        subdomains:['mt0','mt1','mt2','mt3'],
-        attribution: "google satelite street map"
-    });
 
 
 
@@ -187,7 +192,7 @@ $(document).ready(function () {
         weatherBtn.addTo(map);
 
     // Wiki Information easyButton
-    const wikipediaBtn = L.easyButton("fa-newspaper fa-xl", function (btn, map) {
+    const wikipediaBtn = L.easyButton("fa-book fa-xl", function (btn, map) {
         $("#wikipediaModal").modal("show");
       });
       wikipediaBtn.addTo(map);
@@ -212,7 +217,6 @@ $(document).ready(function () {
 
 
     // country border function
-    //using geoJSON to draw country border
     let currentCountryBorder = null;
 
     async function highlightCountryBorders(countryCode){
@@ -232,7 +236,7 @@ $(document).ready(function () {
                     }
                     const polygonOptions = {
                         fillColor: "#fff",
-                        color: "#ff0000", // Change this to your desired border color
+                        color: "#ff0000", 
                         weight: 2,
                         opacity: 1,
                         fillOpacity: 0.5
@@ -241,8 +245,6 @@ $(document).ready(function () {
                     currentCountryBorder = L.geoJSON(country, { style: polygonOptions });
                 currentCountryBorder.addTo(map);
                 map.fitBounds(currentCountryBorder.getBounds());
-            }else{
-                console.log("country not found in GeoJSON data.")
             };
         }
     catch(error){
@@ -250,6 +252,7 @@ $(document).ready(function () {
         }
     };
 
+    // geocode function
     function getGeocodeReverse(lat, lng) {
         return new Promise((resolve, reject)=>{
             $.ajax({
@@ -259,25 +262,18 @@ $(document).ready(function () {
                 dataType: "json",
                 success: function (response){
                     openCageData = response.results;
-                    console.log(openCageData);
-                    
                     userCountryCode = openCageData[0].components["ISO_3166-1_alpha-2"];
                     description = openCageData[0].formatted;
-
-
-
                     const countryNameoObject = countryList.find(country=> userCountryCode === country.code);
                     const countryName = countryNameoObject.name;
                     const currencyCode = openCageData[0].annotations.currency.iso_code
 
-                    // console.log(currencyCode);
                     if(lat && lng && description, countryName){
                         resolve({lat, lng, userCountryCode, description, countryName, currencyCode});
                         };
-
                     },
                     error: function(){
-                        alert("falied to reverse geocode");
+                        alert("Failed to reverse geocode");
                     reject("Failed to reverse geocode for current user location");
                     },
                 });
@@ -290,24 +286,20 @@ $(document).ready(function () {
     function geoCode (query) {
         return new Promise((resolve, reject)=>{
             const urlQuery = encodeURIComponent(query);
-            // console.log(urlQuery);
             $.ajax({
                 url: apiUrl,
                 method: "GET",
                 data: { type: "geocode", query: urlQuery },
                 dataType: "json",
                 success: function(response) {
-                    // console.log(response);
                     if(response.results){
                         const bounds = response.results[0].bounds;
-                        // console.log(bounds);
                         resolve({response, bounds});
                     }else{
                         reject("no geoCode info found")
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-
                     console.error("Error fetching geoCode:", textStatus, errorThrown);
                     reject("Failed to fetch geoCode information.");
                 },
@@ -434,7 +426,6 @@ $(document).ready(function () {
    
 
     //get airprort Data for 
-  
     function getAllAirportData(countryCode){
         return new Promise((resolve, reject)=>{
             $.ajax({
@@ -452,7 +443,7 @@ $(document).ready(function () {
             })
         })
     }
-    // Creates a red marker with the coffee icon
+  
     var airportMarker = L.ExtraMarkers.icon({
         icon: 'fa-plane',
         iconColor:"black",
@@ -464,7 +455,6 @@ $(document).ready(function () {
   async function addAirportsToMap(countryCode) {
     const selectAirportData = await getAllAirportData(countryCode);
     const airportData = selectAirportData.geonames;
-    console.log(selectAirportData);
 
     airportData.forEach(airport => {
         const popupContent = `
@@ -479,20 +469,20 @@ $(document).ready(function () {
       overLayMaps["Airports"].addLayer(marker);
     });
   }
-  
-//   // Event listener for "Airport" checkbox
-map.on('overlayadd', function(eventLayer) {
-    if (eventLayer.name === 'Airports') {
-      addAirportsToMap(selectedCountryCode);
-    }
-  });
 
-  map.on('overlayremove', function(eventLayer) {
-    if (eventLayer.name === 'Airports') {
-      overLayMaps["Airports"].clearLayers();
-    }
-  });
-//******************************************************************************************/
+    // Event listener for "Airport" checkbox
+    map.on('overlayadd', function(eventLayer) {
+        if (eventLayer.name === 'Airports') {
+        addAirportsToMap(selectedCountryCode);
+        }
+    });
+
+    map.on('overlayremove', function(eventLayer) {
+        if (eventLayer.name === 'Airports') {
+        overLayMaps["Airports"].clearLayers();
+        }
+    });
+    //******************************************************************************************/
 
 
      
@@ -515,13 +505,13 @@ map.on('overlayadd', function(eventLayer) {
         })
     }
 
-        // Creates a red marker with the coffee icon
-        var hotelMarker = L.ExtraMarkers.icon({
-            icon: 'fa-hotel',
-            markerColor: 'blue',
-            shape: 'square',
-            prefix: 'fa'
-          });
+        
+    var hotelMarker = L.ExtraMarkers.icon({
+        icon: 'fa-hotel',
+        markerColor: 'blue',
+        shape: 'square',
+        prefix: 'fa'
+        });
 
     // Add hotel markers to the map
     async function addHotelsToMap(countryCode) {
@@ -542,20 +532,20 @@ map.on('overlayadd', function(eventLayer) {
         });
     }
 
-//   // Event listener for "Airport" checkbox
-map.on('overlayadd', function(eventLayer) {
-    if (eventLayer.name === 'Hotels') {
-      addHotelsToMap(selectedCountryCode);
-    }
-  });
+    // Event listener for "Airport" checkbox
+    map.on('overlayadd', function(eventLayer) {
+        if (eventLayer.name === 'Hotels') {
+        addHotelsToMap(selectedCountryCode);
+        }
+    });
 
-  map.on('overlayremove', function(eventLayer) {
-    if (eventLayer.name === 'Hotels') {
-      overLayMaps["Hotels"].clearLayers();
-    }
-  });
+    map.on('overlayremove', function(eventLayer) {
+        if (eventLayer.name === 'Hotels') {
+        overLayMaps["Hotels"].clearLayers();
+        }
+    });
 
-//****************************************************************************** */
+    //****************************************************************************** */
 
 
 
@@ -578,13 +568,13 @@ map.on('overlayadd', function(eventLayer) {
         })
     }
 
-        // Creates a green marker with the city-icon
-        var cityMarker = L.ExtraMarkers.icon({
-            icon: 'fa-city',
-            markerColor: 'green',
-            shape: 'square',
-            prefix: 'fa'
-          });
+    // Creates a green marker with the city-icon
+    var cityMarker = L.ExtraMarkers.icon({
+        icon: 'fa-city',
+        markerColor: 'green',
+        shape: 'square',
+        prefix: 'fa'
+        });
 
     // Add city markers to the map
     async function addCitiesToMap(countryCode) {
@@ -618,7 +608,7 @@ map.on('overlayadd', function(eventLayer) {
         }
     });
 
-//****************************************************************************** */
+    //****************************************************************************** */
 
     function getCountryInfo(countryCode) {
 
@@ -660,13 +650,11 @@ map.on('overlayadd', function(eventLayer) {
                     if (response && response.rates) {
                         dropDowncurrencyList = response;
                         $("#currencyDate").text(`Date: ${response.date}`);
-                        // console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
                         const targetCurrencyDropdown = $("#targetCurrency");
-
-                       
+   
                         // Clear existing options
                         baseCurrencyDropdown.empty();
 
@@ -693,12 +681,6 @@ map.on('overlayadd', function(eventLayer) {
 
                         $("#targetCurrencyAmountInput").val(targetUnit);
                         const baseCode = dropDowncurrencyList.base;
-
-                        // console.log(`base currencyCode: ${baseCode}`);
-                        // console.log(`base unit: ${baseUnit}`);
-
-                        // console.log(`target USD code: ${targetCode}`);
-                        // console.log(`target unit: ${targetUnit}`);
 
                         // Populate dropdown with currency codes from the rates object
                         Object.keys(dropDowncurrencyList.rates).forEach(rateCode => {
@@ -738,7 +720,6 @@ map.on('overlayadd', function(eventLayer) {
                         currencyList = response;
                         
                         $("#currencyDate").text(`Date: ${response.date}`);
-                        console.log(response.date);
                         resolve({response});
                         // return currencyList;
 
@@ -769,8 +750,6 @@ map.on('overlayadd', function(eventLayer) {
                     if (response && response.rates) {
                         userCurrencyList = response;
                         $("#currencyDate").text(`Date: ${response.date}`);
-
-                        // console.log(response.date);
 
                         const baseCurrencyDropdown = $("#baseCurrency");
 
@@ -806,11 +785,6 @@ map.on('overlayadd', function(eventLayer) {
                         $("#targetCurrencyAmountInput").val(targetUnit);
                         const baseCode = userCurrencyList.base;
 
-                        // console.log(`base currencyCode: ${baseCode}`);
-                        // console.log(`base unit: ${baseUnit}`);
-
-                        // console.log(`target USD code: ${targetCode}`);
-                        // console.log(`target unit: ${targetUnit}`);
 
                         // Populate dropdown with currency codes from the rates object
                         Object.keys(userCurrencyList.rates).forEach(rateCode => {
@@ -875,13 +849,10 @@ map.on('overlayadd', function(eventLayer) {
             data: {type: "newsData", countryCode: countryCode},
             success: function(response){
                 if(response.status === "success" && response.results && response.results.length > 0){
-                    console.log(response.results);
                     const allTableHtml = response.results.map(article => generateTableItem(article)).join('');
-                    console.log(allTableHtml);
                     if(allTableHtml){
                         $("#newsTable").html(allTableHtml);
-                    }
-                    
+                    }     
                 }else{
                     console.error("No results found or API status is not success.");
                 }
@@ -889,7 +860,6 @@ map.on('overlayadd', function(eventLayer) {
             error: function (jqXHR, textStatus, errorThrown) {
 
                 console.error("Error fetching newsData:", textStatus, errorThrown);
-                reject("Failed to fetch newsData.");
             },
         })
       }
@@ -902,20 +872,14 @@ map.on('overlayadd', function(eventLayer) {
         stopGeolocation();
 
         if(targetSelectCode){
-            console.log(`select target currency code:${targetSelectCode}`);
             getExchangeRate(baseCurrencyCode).then(({response}) => {
-                // console.log(`base currency data: `, response);
-               
-            //    console.log(`base code now: ${baseCurrencyCode}`);
             //    get target currency unit from select curency object
                 let targetCurrencyUnit = response.rates[targetSelectCode];
                 targetCurrencyUnit = parseFloat(targetCurrencyUnit);
 
-                console.log(`taget unit in base response: ${targetCurrencyUnit}`);
                 let currentBaseUnit = $("#baseCurrencyAmountInput").val();
                 currentBaseUnit = parseFloat(currentBaseUnit);
 
-                console.log({currentBaseUnit, targetCurrencyUnit, rate:response.rates})
                 if(currentBaseUnit){
                     const convertedTargetValue = currentBaseUnit * targetCurrencyUnit;
                     $("#targetCurrencyAmountInput").val(convertedTargetValue);
@@ -934,15 +898,12 @@ map.on('overlayadd', function(eventLayer) {
         stopGeolocation();
 
         if(targetSelectCode){
-            console.log(`select base currency code:${targetSelectCode}`);
             getExchangeRate(targetSelectCode).then(({response}) => {
-                console.log(`base currency data: `, response);
                const targetCurrencyCode = $("#targetCurrency").val();
-               console.log(`target code now: ${targetCurrencyCode}`);
-            //    get target currency unit from select curency ojject
+            
+               //get target currency unit from select curency object
                const targetCurrencyUnit = response.rates[targetCurrencyCode];
                 const currentBaseUnit = $("#baseCurrencyAmountInput").val();
-                console.log({currentBaseUnit, targetCurrencyUnit, rate:response.rates})
                 if(currentBaseUnit){
                     const convertedTargetValue = currentBaseUnit * targetCurrencyUnit;
 
@@ -959,21 +920,16 @@ map.on('overlayadd', function(eventLayer) {
 
     $("#baseCurrencyAmountInput").on("input", function(){
         const currentBaseCode = $("#baseCurrency").val();
-        // console.log(`current base value, ${currentBaseCode}`);
+;
 
         let currentBaseUnit = $(this).val();
         //convert baseUnit to number
         currentBaseUnit = parseFloat(currentBaseUnit);
-        // console.log(`current base unit, ${currentBaseUnit}`);
-        // console.log(typeof(currentBaseUnit));
         
         const currentTargetCode = $("#targetCurrency").val();
-        // console.log(`current target code, ${currentTargetCode}`);
         let currentTargetUnit = $("#targetCurrencyAmountInput").val();
         currentTargetUnit = parseFloat(currentTargetUnit);
-        // console.log(typeof(currentTargetUnit));
 
-        // console.log(`current target unit, ${currentTargetUnit}`);
         //checking if baseUnit is NaN
         if(isNaN(currentBaseUnit)){
             let UnitIntarget = $("#targetCurrencyAmountInput");
@@ -983,34 +939,25 @@ map.on('overlayadd', function(eventLayer) {
         getExchangeRate(currentBaseCode).then(({response})=>{
             if(response.rates){
               let relativeTargetUnit = response.rates[currentTargetCode];
-                console.log(`relative target unit: ${relativeTargetUnit}`);
                 let newTargetValue = currentBaseUnit * relativeTargetUnit;
                 $("#targetCurrencyAmountInput").val(newTargetValue);
             }   
         });
-
-
     })
 
 
     $("#targetCurrencyAmountInput").on("input", function(){
         const currentTargetCode = $("#targetCurrency").val();
-        // console.log(`current base value, ${currentTargetCode}`);
 
         let currentTargetUnit = $(this).val();
         //convert baseUnit to number
         currentTargetUnit = parseFloat(currentTargetUnit);
-        // console.log(`current target unit, ${currentTargetUnit}`);
-        // console.log(typeof(currentTargetUnit));
         
         const currentBaseCode = $("#baseCurrency").val();
-        // console.log(`current target code, ${currentBaseCode}`);
 
         let currentBaseUnit = $("#baseCurrencyAmountInput").val();
         currentBaseUnit = parseFloat(currentBaseUnit);
-        // console.log(typeof(currentBaseUnit));
 
-        // console.log(`current base unit, ${currentBaseUnit}`);
         //checking if targetUnit is NaN
         if(isNaN(currentTargetUnit)){
             let UnitInBase = $("#BaseCurrencyAmountInput");
@@ -1020,7 +967,6 @@ map.on('overlayadd', function(eventLayer) {
         getExchangeRate(currentTargetCode).then(({response})=>{
             if(response.rates){
               let relativeBaseUnit = response.rates[currentBaseCode];
-                console.log(`relative target unit: ${relativeBaseUnit}`);
                 let newBaseValue = currentTargetUnit * relativeBaseUnit;
                 $("#baseCurrencyAmountInput").val(newBaseValue);
             }
@@ -1054,7 +1000,7 @@ map.on('overlayadd', function(eventLayer) {
                 },
                 dataType: "json",
                 beforeSend: function() {
-                    // console.log("Sending request for:", cleanCountryName);
+
                 },
                 success: function(response) {
                     try {
@@ -1089,7 +1035,6 @@ map.on('overlayadd', function(eventLayer) {
                                 };
                                 $("#wikipediaInfo").text(basicContent.mainContent);
                                 $("#wikipediaLink").attr("href", basicContent.url);
-                                console.log(basicContent.url);
                                 resolve(basicContent);
                             });
     
@@ -1161,12 +1106,11 @@ map.on('overlayadd', function(eventLayer) {
                 const weatherInfo = response;
     
                 if (weatherInfo) {
-                    // console.log(weatherInfo);
                     $("#temparatureLay").text(`${parseInt(weatherInfo.current.temp_c)}°C`);
                     $("#temparatureMod").text(`${parseInt(weatherInfo.current.temp_c)}°C`);
                     $("#tempFeelsLike").text(`${parseInt(weatherInfo.current.feelslike_c)}°C`);
                     $("#todayImgIcon").html(`<img src="${weatherInfo.current.condition.icon}" class="mb-3 img-fluid" style="max-width: 40px;">`);
-                    console.log(weatherInfo);
+
                     $("#weatherLocation").text(` ${weatherInfo.location.name}, ${weatherInfo.location.country}`);
                     $("#weatherCoordinates").text(`Latitude: ${weatherInfo.location.lat}, Longitude: ${weatherInfo.location.lon}`);
                     $("#weatherDesc").text(`${weatherInfo.current.condition.text}`);
@@ -1218,7 +1162,6 @@ map.on('overlayadd', function(eventLayer) {
 
     function restModalAndLayoutInfo(country){
         if(country){
-            // console.log(country);
             const languages = country.languages ? Object.values(country.languages).join(", ") : "N/A";
             const currenciesDetail = country.currencies ? Object.entries(country.currencies).map(([key, value]) =>{return `${value.name} (${value.symbol})`}).join(", ") : "N/A";
             const flagUrl = country.flags ? country.flags.png : "N/A";
@@ -1295,12 +1238,8 @@ map.on('overlayadd', function(eventLayer) {
         if(isManualSelection) return; //skip if manual location is active
         if(!onFirstLoad) return;
 
-
         lat = position.coords.latitude;
         lng = position.coords.longitude;
-
-
-
 
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
         // showLoader();//show loader while fetching user location
@@ -1317,9 +1256,6 @@ map.on('overlayadd', function(eventLayer) {
             $("#countryDropdown").val(userCountryCode).change();
             //get user country border
             highlightCountryBorders(userCountryCode); 
-
-            // console.log(`user countryName`, countryName);
-            // console.log(`user currency`, currencyCode);
             //wikipedia info function
             getWikipediaInfo(countryName);
 
@@ -1333,15 +1269,11 @@ map.on('overlayadd', function(eventLayer) {
             
             //geoCode to get earthquake areas
             geoCode(countryName).then(({response, bounds})=>{
-                // console.log(bounds);
                 const north = bounds.northeast.lat;
                 const south = bounds.southwest.lat;
                 const east = bounds.northeast.lng;
                 const west = bounds.southwest.lng;
                 getEarthquake(north, south, east, west);
-
-                // console.log(`selected coordinates: north${north}, south: ${south}, east: ${east}, west: ${west}`);
-
             });
             selectedCountryCode = userCountryCode;
             //return country Info fxn
@@ -1349,7 +1281,6 @@ map.on('overlayadd', function(eventLayer) {
 
             
         }).then((userCountry) =>{
-            // console.log("Country Info:", userCountry);
             const country = userCountry;
             
             //modal and layout info
@@ -1359,7 +1290,7 @@ map.on('overlayadd', function(eventLayer) {
             getWeatherInfo(lat, lng);
 
         }).catch((error) => {
-            console.log("Error in chain", error);
+            console.error("Error in chain", error);
         }).finally(()=>{
             // hideLoader();
             onFirstLoad = false;
@@ -1414,7 +1345,6 @@ startGeolocation();
 
         getCountryInfo(countryCode).then((response) => {
             const country = response; 
-            // console.log(country);
 
             //clear marker if marker is !null
             if(marker){
@@ -1431,10 +1361,6 @@ startGeolocation();
             marker = L.marker([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], {icon: capitalMarker}).addTo(map);
             // add pop up to selected country                
             marker.bindPopup(`<b>Capital City:</b><br>${country.capital[0]} - ${country.name.common}`).openPopup();
-            // //set country map view
-            // map.setView([country.capitalInfo.latlng[0], country.capitalInfo.latlng[1]], 5);
-            // console.log(country);
-            // console.log(`coordinate: ${country.capitalInfo.latlng[0]}, ${country.capitalInfo.latlng[1]}`);
 
             //hightlight selected country's border
             highlightCountryBorders(countryCode);  
@@ -1444,15 +1370,12 @@ startGeolocation();
 
             //geoCode to get earthquake areas
             geoCode(country.name.common).then(({response, bounds})=>{
-                // console.log(bounds);
+
                 const north = bounds.northeast.lat;
                 const south = bounds.southwest.lat;
                 const east = bounds.northeast.lng;
                 const west = bounds.southwest.lng;
                 getEarthquake(north, south, east, west);
-
-                // console.log(`selected coordinates: north${north}, south: ${south}, east: ${east}, west: ${west}`);
-
             });
             
             //calling weather function
@@ -1460,12 +1383,10 @@ startGeolocation();
 
             //getting country currency code
             getGeocodeReverse(country.latlng[0], country.latlng[1]).then(({currencyCode})=>{
-                // console.log(`dropdown country currency code: ${currencyCode}`);
                 dropdownGetExchangeRate(currencyCode);
             })
             //calling wikipedia function
             getWikipediaInfo(country.name.common);
-            // console.log(country.name.common);
             //set manual selection true and stop geolocation updates
             isManualSelection = true;
             hideLoader();

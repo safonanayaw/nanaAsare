@@ -2,16 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 /* General Styling */
 body {
-    display: none;
-    /* background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920') no-repeat center center fixed;
     background-size: cover;
     color: #ffffff;
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 0; */
+    padding: 0;
 }
-
-
 
 * {
     font-family: 'Roboto', sans-serif;
@@ -125,16 +121,6 @@ body {
     margin: 0 auto;
   }
 
-/* hover effect on weather icon and flag */
-img {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-
-img:hover {
-    transform: scale(1.1); 
-    opacity: 0.9; 
-}
 
 /* Country Info Section */
 #countryTitle {
@@ -143,31 +129,6 @@ img:hover {
     margin-bottom: 20px;
 }
 
-.container h3 {
-    color: #3cb371;
-}
-
-.list-group-item {
-    font-size: 1rem;
-    padding: 10px 20px;
-    background: #f8f9fa;
-    border: none;
-    border-left: 4px solid #3cb371;
-    margin-bottom: 10px;
-}
-
-
-.list-group-item:hover {
-    background-color: #3cb371; 
-    color: white; 
-    transition: all 0.3s ease-in-out; 
-    border-left-color: #2b6b6e; 
-    cursor: pointer; 
-}
-
-ul.list-group {
-    border-radius: 8px;
-}
 
 /* Weather Section */
 .container h4 {
@@ -178,45 +139,67 @@ img.img-fluid {
     margin-bottom: 10px;
 }
 
-div#weatherDesc {
-    background: #3cb371;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-}
 @media (max-width: 576px) {
     .card {
-        max-width: 300px;
-        /* width: 150px; */
+        max-width: 200px;
+        padding-left: 4px 0px;
     }
     .weather-modal{
-        max-width: 300px;
+        max-width: 70%;
+        width:320px;
+        padding-left: 35px;
     }
 }
 
-/* Modal */
-.modal-header {
-    background: linear-gradient(45deg, #2b6b6e, #3cb371);
-}
 
-.modal-title {
-    font-weight: bold;
-    color: white;
-}
-
-.modal-body a:hover {
-    color: #3cb371;
-    text-decoration: underline;
-    transition: color 0.2s ease-in;
-}
-
-.table-striped > tbody > tr:nth-child(odd) > td {
-    background-color: #e9f5e9;
-}
-/*button: hover*/
-button:hover {
-    background-color: #3cb371;
-    color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    transition: all 0.3s ease-in-out;
-}
+#pre-load {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    overflow: hidden;
+    background: #fff;
+  }
+  
+  #pre-load:before {
+      content: "";
+      position: fixed;
+      top: calc(50% - 30px);
+      left: calc(50% - 30px);
+      border: 6px solid #f2f2f2;
+      border-top: 6px solid #2D8E5D ;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      -webkit-animation: animate-preloader 1s linear infinite;
+      animation: animate-preloader 1s linear infinite;
+  }
+  
+  @-webkit-keyframes animate-preloader {
+      0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+      }
+      100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+      }
+      }
+      @keyframes animate-preloader {
+      0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+      }
+      100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+      }
+  }
+  
+  .fadeOut {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 1s, opacity 1s linear;
+  }
