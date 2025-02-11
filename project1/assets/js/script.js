@@ -1298,7 +1298,7 @@ modalIds.forEach(setupModalPreloader);
     }
 //start geolocation tracking
 startGeolocation();
-//**********getting user live location on app refresh ends here****************
+//**********getting user country on app refresh ends here****************
 
     // Fetch Country Info selected on Dropdown Change
     
