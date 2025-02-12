@@ -8,6 +8,7 @@ function hideLoader() {
 }
 showLoader();
 
+//initialise tile layers
 var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -293,7 +294,7 @@ $(document).ready(function () {
             $.ajax({
                 url: apiUrl,
                 method: "GET",
-                data: { type: "earthquarkes", north: north, south: south, east: east, west: west },
+                data: { type: "earthquakes", north: north, south: south, east: east, west: west },
                 dataType: "json",
                 success: function(response) {
                     if (response.earthquakes) {
@@ -1381,13 +1382,11 @@ startGeolocation();
             isManualSelection = true;
             
             stopGeolocation();
-            hideLoader();
+        return selectedCountryCode  = countryCode;
+            
         });
         
-        return selectedCountryCode = countryCode;
-
-    });
-
-    
+        hideLoader();
+    });  
        
 });
