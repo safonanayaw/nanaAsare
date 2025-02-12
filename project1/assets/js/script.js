@@ -6,7 +6,7 @@ function showLoader() {
 function hideLoader() {
     $("#preloader").removeClass("active");
 }
-showLoader();
+// showLoader();
 
 //initialise tile layers
 var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -50,7 +50,7 @@ $(document).ready(function () {
     let countryList = []; 
     
     //set user selecting location to false on app initial load
-    let isManualSelection = false; 
+    // let isManualSelection = false; 
     let watchId;
 
 
@@ -678,9 +678,10 @@ $(document).ready(function () {
                         reject("No currency information found.");
                     }
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.error("Error fetching currency:", textStatus, errorThrown);
-                    reject("Failed to fetch currency information.");
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Currency fetch failed");
+                    console.error(`Status: ${textStatus}`);
+                    console.error(`Error: ${errorThrown}`);
                 },
             });
         });
@@ -1237,7 +1238,7 @@ modalIds.forEach(setupModalPreloader);
 
     function userLocation(position){
 
-        if(isManualSelection) return; //skip if manual location is active
+        // if(isManualSelection) return; //skip if manual location is active
         if(!onFirstLoad) return;
 
         lat = position.coords.latitude;
@@ -1378,8 +1379,8 @@ startGeolocation();
             })
             //calling wikipedia function
             getWikipediaInfo(country.name.common);
-            //set manual selection true and stop geolocation updates
-            isManualSelection = true;
+            // //set manual selection true and stop geolocation updates
+            // isManualSelection = true;
             
             stopGeolocation();
         return selectedCountryCode  = countryCode;
