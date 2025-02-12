@@ -6,7 +6,7 @@ function showLoader() {
 function hideLoader() {
     $("#preloader").removeClass("active");
 }
-// showLoader();
+showLoader();
 
 //initialise tile layers
 var road = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
