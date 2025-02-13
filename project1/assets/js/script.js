@@ -1245,7 +1245,7 @@ modalIds.forEach(setupModalPreloader);
         lng = position.coords.longitude;
 
         getGeocodeReverse(lat, lng).then(({lat, lng, userCountryCode, description, countryName, currencyCode}) => {
-
+            //select user country in dropdown list.
             $("#countryDropdown").val(userCountryCode).change();
             //get user country border
             highlightCountryBorders(userCountryCode); 
@@ -1255,8 +1255,6 @@ modalIds.forEach(setupModalPreloader);
             //newsData
             fetchCountryNews(userCountryCode);
             
-
-            baseSelect = false;
             //user currency info
             getUserExchangeRate(currencyCode);
             
@@ -1280,7 +1278,7 @@ modalIds.forEach(setupModalPreloader);
             restModalAndLayoutInfo(country);
 
             //weather info function
-            getWeatherInfo(lat, lng);
+            // getWeatherInfo(lat, lng);
 
         }).catch((error) => {
             console.error("Error in chain", error);

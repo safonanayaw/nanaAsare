@@ -47,7 +47,7 @@ try {
             $requiredParams = ['countryCode'];
             validateCountryCode($_GET['countryCode']);
             $apiKey = getApiKey($apiKeyMap, "newsdata");
-            $url = "https://newsdata.io/api/1/latest?apikey=$apiKey&domain=bbc&country={$_GET['countryCode']}";
+            $url = "https://newsdata.io/api/1/latest?apikey=$apiKey&domain=bbc&country={$_GET['countryCode']}&language=en";
             break;
 
         case "geocode":
