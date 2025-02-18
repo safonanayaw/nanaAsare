@@ -1,0 +1,33 @@
+html,
+body {
+  background-color: #f9f6ee;
+  margin: 5px 0px 5px 2px;
+  padding: 5px 0px 5px 2px;
+  overflow: hidden;
+}
+
+section {
+  display: flex;
+  flex-flow: column;
+  height: calc(100vh - 20px);
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+tr {
+  cursor: default;
+}
+
+.myBtn {
+  width: 70px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* Ensure the background color matches your table */
+  z-index: 1; /* Ensure it stays above the table rows */
+}
