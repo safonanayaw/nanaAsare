@@ -1,3 +1,4 @@
+//fetch and populate personnel data
 function populatePersonnelData(){
   $.ajax({
     url: '/nanaAsare/project2/api/personnelAPI.php',
@@ -16,7 +17,7 @@ function populatePersonnelData(){
             <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.id}</td>
             <td class="align-middle text-nowrap">${personnel.firstName}, ${personnel.lastName}</td>
             <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.departmentID}</td>
+            <td class="align-middle text-nowrap d-none d-md-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
             <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
             <td class="text-end text-nowrap">
               <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
@@ -37,14 +38,54 @@ function populatePersonnelData(){
   });
 }
 
-$(document).ready(function (){
+
+//fetch and populate personnel data
+function populateDepartmentData(){
+  $.ajax({
+    url: '/nanaAsare/project2/api/personnelAPI.php',
+    method: 'GET',
+    dataType: 'json',
+    data: {type: "getDepartment"},
+    success: function(data) {
+      // console.log(data);
+      // Clear the existing table body
+      $('#departmentTableBody').empty();
+
+      // Iterate over the data and create table rows
+      data.forEach(function(department) {
+        var row = `
+          <tr>
+            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.id}</td>
+            <td class="align-middle text-nowrap">${department.name}</td>
+            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.departmentLocation}</td>
+
+            <td class="text-end text-nowrap">
+              <button type="button" class="btn btn-primary btn-sm updateDepartmentBtn" data-bs-toggle="modal" data-bs-target="#createDepartmentModal" data-id="${department.id}">
+                <i class="fa-solid fa-pencil fa-fw"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        $('#departmentTableBody').append(row);
+      });
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+    }
+  });
+}
+
+// $("#departments-tab-pane").on('click', function(){
+//   populateDepartmentData();
+// })
+
+
+//fetch de[artment data and fill the department table;
+populateDepartmentData();
+
 
 //fetch personnel data and fill personnel table
 populatePersonnelData();
-
-
-
-
 
 //department data function
 function fetchAllDepartment() {
@@ -63,6 +104,131 @@ function fetchAllDepartment() {
   });
 }
 
+
+//location functions*****************************************
+function fetchAllLocation() {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: '/nanaAsare/project2/api/personnelAPI.php',
+      method: 'GET',
+      data: { type: "getLocation" },
+      success: function(data) {
+        resolve(data);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error details:', {
+          status: jqXHR.status,
+          statusText: jqXHR.statusText,
+          responseText: jqXHR.responseText,
+          textStatus: textStatus,
+          errorThrown: errorThrown
+        });
+        reject('Error: ' + textStatus + ', ' + errorThrown);
+      }
+    });
+  });
+}
+
+$(document).ready(function (){
+  //show or hide search and btn container
+  $("#departmentsBtn").on('click', function(){
+    $("#searchAndButttons").hide();
+  });
+  
+  
+  $("#personnelBtn").on('click', function(){
+    $("#searchAndButttons").show();
+  });
+  
+  $("#locationsBtn").on('click', function(){
+    $("#searchAndButttons").hide();
+  });
+
+
+
+$("#refreshBtn").on('click', function(){
+  location.reload();
+})
+
+//populate department when add personnel btn is click
+$("#addBtn").on('click', function(){
+  console.log("create btn click");
+  fetchAllDepartment().then(departmentData => {
+    // console.log(departmentData); // Log the department data for debugging
+
+    let departmentDropdown = $("#createPersonnelDepartmentID");
+    departmentDropdown.empty(); // Clear existing options
+    departmentDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
+
+    // Iterate over the department data and append options
+    departmentData.forEach(department => {
+      departmentDropdown.append(`<option value="${department.id}">${department.name}</option>`);
+    });
+  })
+  .catch(error => {
+    console.error(error);
+  });
+});
+
+// adding personnel data****************************************************
+$(document).on('click', '#createPersonnelBtn', function(event) {
+  event.preventDefault();//prevent the form from submitting
+  console.log("Add Button clicked");
+  $("#createPersonnelModal").modal("hide");
+
+  let personnelData = {
+      firstName: $("#createPersonnelFirstName").val(),
+      lastName: $("#createPersonnelLastName").val(),
+      jobTitle: $("#createPersonnelJobTitle").val(),
+      email: $("#createPersonnelEmailAddress").val(),
+      departmentID: parseInt($("#createPersonnelDepartmentID").val())
+  };
+
+  // Debug: Log the data being sent
+  console.log("Personnel Data before sending:", personnelData);
+
+  let requestData = JSON.stringify({ 
+      type: "createPersonnel", 
+      ...personnelData 
+  });
+  
+  // Debug: Log the final request data
+  console.log("Request data:", requestData);
+
+  $.ajax({
+      url: '/nanaAsare/project2/api/personnelAPI.php',
+      method: 'POST',
+      data: requestData,
+      contentType: 'application/json',
+      success: function(response) {
+          console.log("Success response:", response);
+          // populatePersonnelData();
+          //refresh the page after 
+          location.reload();
+          alert(`Personnel added successfully`);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+          console.error('Error details:', {
+              status: jqXHR.status,
+              statusText: jqXHR.statusText,
+              responseText: jqXHR.responseText,
+              textStatus: textStatus,
+              errorThrown: errorThrown
+          });
+          alert("Failed to add personnel. Check console for details.");
+      }
+  });
+});
+})
+
+// adding personnel data****************************************************
+
+
+
+
+
+
+
 //populate modal with personnel id data when updatePersonnelBtn is clicked
 let selectedPersonnelID
 $(document).on('click', '.updatePersonnelBtn', function() {
@@ -75,25 +241,28 @@ $(document).on('click', '.updatePersonnelBtn', function() {
     method: "GET",
     data : {type: "getPersonnelByID", id: selectedPersonnelID},
     success: function (data) {
-      console.log(data);
-      console.log(data.firstName);
 
-      $("#editPersonnelFirstName").val(data.firstName);
-      $("#editPersonnelLastName").val(data.lastName);
-      $("#editPersonnelJobTitle").val(data.jobTitle);
-      $("#editPersonnelEmailAddress").val(data.email);
-      
-      fetchAllDepartment().then(departmentData => {
+        let personnelDepartment = data.departmentID;
+
+        console.log("personnel department", personnelDepartment);
+        $("#editPersonnelFirstName").val(data.firstName);
+        $("#editPersonnelLastName").val(data.lastName);
+        $("#editPersonnelJobTitle").val(data.jobTitle);
+        $("#editPersonnelEmailAddress").val(data.email);
+        
+        fetchAllDepartment().then(departmentData => {
         // console.log(departmentData); // Log the department data for debugging
 
         let departmentDropdown = $("#editPersonnelDepartment");
         departmentDropdown.empty(); // Clear existing options
         departmentDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
 
-        // Iterate over the department data and append options
+      // Iterate over the department data and append options
         departmentData.forEach(department => {
-          departmentDropdown.append(`<option value="${department.id}">${department.name}</option>`);
+        departmentDropdown.append(`<option selected value="${department.id}">${department.name}</option>`);
         });
+        //change department option to selected personnel
+        $("#editPersonnelDepartment").val(personnelDepartment).change();
       })
       .catch(error => {
         console.error(error);
@@ -108,7 +277,7 @@ return selectedPersonnelID
 
 
 //updating personnel by id function
-$(document).on('click', '#updatePersonnelBtn', function(event) {
+$("#updatePersonnelBtn").on('click', function(event) {
   event.preventDefault();
   console.log("Button clicked");
   $('#editPersonnelModal').modal('hide');
@@ -140,8 +309,9 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       contentType: 'application/json',
       success: function(response) {
           console.log("Success response:", response);
-          populatePersonnelData();
-          
+          // populatePersonnelData();
+        //refresh the page after 
+        location.reload();
           alert(`Personnel with ID: ${selectedPersonnelID} updated successfully`);
       },
       error: function(jqXHR, textStatus, errorThrown) {
@@ -156,7 +326,7 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       }
   });
 });
-})
+
 
 let selectedPersonnelDeleteID;
 $(document).on('click', '.deletePersonnelBtn', function(){
@@ -171,9 +341,11 @@ $(document).on('click', '.deletePersonnelBtn', function(){
       method: "GET",
       data: { type: "deletePersonnelByID", id: selectedPersonnelDeleteID },
       success: function(data) {
-        console.log(data);
+        // console.log(data);
         populatePersonnelData();
         alert(`Personnel with ID: ${selectedPersonnelDeleteID} deleted successfully`);
+        //refresh the page after 
+        location.reload();
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('Error details:', {
@@ -190,129 +362,157 @@ $(document).on('click', '.deletePersonnelBtn', function(){
 });
 
 
-// $("#searchInp").on("keyup", function () {
-  
-//     // your code
-    
-//   });
-  
-//   $("#refreshBtn").click(function () {
-    
-//     if ($("#personnelBtn").hasClass("active")) {
-      
-//       // Refresh personnel table
-      
-//     } else {
-      
-//       if ($("#departmentsBtn").hasClass("active")) {
+$("#searchInp").on("keyup", function (event) {
+  event.preventDefault();
+
+  let searchValue = $(this).val();
+  if (searchValue !== '') {
+    $("#personnelTableBody").empty();
+
+    $.ajax({
+      url: '/nanaAsare/project2/api/personnelAPI.php',
+      method: "GET",
+      data: { type: "search", searchValue: searchValue },
+      dataType: 'json', // Ensure the response is parsed as JSON
+      success: function(data) {
+        // console.log(data);
+        // Iterate over the data and create table rows
+        data.forEach(function(personnel) {
+          var row = `
+            <tr>
+              <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.id}</td>
+              <td class="align-middle text-nowrap">${personnel.firstName}, ${personnel.lastName}</td>
+              <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
+            <td class="align-middle text-nowrap d-none d-md-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
+              <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
+              <td class="text-end text-nowrap">
+                <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
+                  <i class="fa-solid fa-pencil fa-fw"></i>
+                </button>
+                <button type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${personnel.id}">
+                  <i class="fa-solid fa-trash fa-fw"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+          $('#personnelTableBody').append(row);
+        });
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error details:', {
+          status: jqXHR.status,
+          statusText: jqXHR.statusText,
+          responseText: jqXHR.responseText,
+          textStatus: textStatus,
+          errorThrown: errorThrown
+        });
+        $("#personnelTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" </h3>`);
+      }
+    });
+  } else {
+    populatePersonnelData();
+  }
+});
+
+
+
+
+
+//populate modal with deparment id data when updatedepartmentBtn is clicked
+let selectedDepartmentlID;
+$(document).on('click', '.updateDepartmentBtn', function() {
+  selectedDepartmentlID = $(this).data('id');
+  console.log("I got in department id:", selectedDepartmentlID);
+
+  $.ajax({
+    url: '/nanaAsare/project2/api/personnelAPI.php',
+    method: "GET",
+    data : {type: "getDepartmentByID", id: selectedDepartmentlID},
+    success: function (data) {
+        // console.log(data);
+        let departmentLocation = data.locationID;
+
+        // console.log("department location", departmentLocation);
+        $("#updateDepartment").val(data.name);
         
-//         // Refresh department table
-        
-//       } else {
-        
-//         // Refresh location table
-        
-//       }
+        fetchAllLocation().then(locationData => {
+        // console.log(locationData); // Log the location data for debugging
+
+        let locationDropdown = $("#updateDepartmentLocation");
+        locationDropdown.empty(); // Clear existing options
+        locationDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
+
+      // Iterate over the location data and append options
+        locationData.forEach(location => {
+        locationDropdown.append(`<option selected value="${location.id}">${location.name}</option>`);
+        });
+        //change location option to selected department
+        $("#updateDepartmentLocation").val(departmentLocation).change();
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
+
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.error('Error details:', {
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        responseText: jqXHR.responseText,
+        textStatus: textStatus,
+        errorThrown: errorThrown
+      });
       
-//     }
-    
-//   });
+    }
+  })
+  console.log("selectedDepartmentlID",selectedDepartmentlID);
+return selectedDepartmentlID;
+});
   
-//   $("#filterBtn").click(function () {
-    
-//     // Open a modal of your own design that allows the user to apply a filter to the personnel table on either department or location
-    
-//   });
+$('#updateDepartmentBtn').on('click', function(event) {
+  event.preventDefault();
+
+  $('#createDepartmentModal').modal('hide');
+  let departmentData = {
+      id: selectedDepartmentlID,
+      name: $("#updateDepartment").val(),
+      locationID: $("#updateDepartmentLocation").val()
+  };
+
+  // Debug: Log the data being sent
+  console.log("Department Data before sending:", departmentData);
+  console.log("Selected ID:", selectedDepartmentlID);
+
+  let requestData = JSON.stringify({ 
+      type: "updateDepartment",
+      ...departmentData
+  });
   
-//   $("#addBtn").click(function () {
-    
-//     // Replicate the logic of the refresh button click to open the add modal for the table that is currently on display
-    
-//   });
-  
-//   $("#personnelBtn").click(function () {
-    
-//     // Call function to refresh personnel table
-    
-//   });
-  
-//   $("#departmentsBtn").click(function () {
-    
-//     // Call function to refresh department table
-    
-//   });
-  
-//   $("#locationsBtn").click(function () {
-    
-//     // Call function to refresh location table
-    
-//   });
-  
-//   $("#editPersonnelModal").on("show.bs.modal", function (e) {
-    
-//     $.ajax({
-//       url:
-//         "https://coding.itcareerswitch.co.uk/companydirectory/libs/php/getPersonnelByID.php",
-//       type: "POST",
-//       dataType: "json",
-//       data: {
-//         // Retrieve the data-id attribute from the calling button
-//         // see https://getbootstrap.com/docs/5.0/components/modal/#varying-modal-content
-//         // for the non-jQuery JavaScript alternative
-//         id: $(e.relatedTarget).attr("data-id") 
-//       },
-//       success: function (result) {
-//         var resultCode = result.status.code;
-  
-//         if (resultCode == 200) {
+  // Debug: Log the final request data
+  console.log("Request data:", requestData);
+
+  $.ajax({
+      url: '/nanaAsare/project2/api/personnelAPI.php',
+      method: 'POST',
+      data: requestData,
+      contentType: 'application/json',
+      success: function(response) {
+          console.log("Success response:", response);
           
-//           // Update the hidden input with the employee id so that
-//           // it can be referenced when the form is submitted
-  
-//           $("#editPersonnelEmployeeID").val(result.data.personnel[0].id);
-  
-//           $("#editPersonnelFirstName").val(result.data.personnel[0].firstName);
-//           $("#editPersonnelLastName").val(result.data.personnel[0].lastName);
-//           $("#editPersonnelJobTitle").val(result.data.personnel[0].jobTitle);
-//           $("#editPersonnelEmailAddress").val(result.data.personnel[0].email);
-  
-//           $("#editPersonnelDepartment").html("");
-  
-//           $.each(result.data.department, function () {
-//             $("#editPersonnelDepartment").append(
-//               $("<option>", {
-//                 value: this.id,
-//                 text: this.name
-//               })
-//             );
-//           });
-  
-//           $("#editPersonnelDepartment").val(result.data.personnel[0].departmentID);
-          
-//         } else {
-//           $("#editPersonnelModal .modal-title").replaceWith(
-//             "Error retrieving data"
-//           );
-//         }
-//       },
-//       error: function (jqXHR, textStatus, errorThrown) {
-//         $("#editPersonnelModal .modal-title").replaceWith(
-//           "Error retrieving data"
-//         );
-//       }
-//     });
-//   });
-  
-//   // Executes when the form button with type="submit" is clicked
-  
-//   $("#editPersonnelForm").on("submit", function (e) {
-    
-//     // Executes when the form button with type="submit" is clicked
-//     // stop the default browser behviour
-  
-//     e.preventDefault();
-  
-//     // AJAX call to save form data
-    
-//   });
-  
+        //refresh the page after 
+        location.reload();
+          alert(`Department with ID: ${selectedDepartmentlID} updated successfully`);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+          console.error('Error details:', {
+              status: jqXHR.status,
+              statusText: jqXHR.statusText,
+              responseText: jqXHR.responseText,
+              textStatus: textStatus,
+              errorThrown: errorThrown
+          });
+          alert("Failed to update department. Check console for details.");
+      }
+  });
+});

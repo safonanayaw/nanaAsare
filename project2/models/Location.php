@@ -3,7 +3,7 @@
 $database = new Database();
 $db = $database->getConnection();
 
-class Personnel{
+class Location{
     private $conn;
     private $personnelTable = 'personnel';
     private $departmentTable = 'department';
@@ -13,11 +13,11 @@ class Personnel{
         $this->conn = $db;
     }
 
-//personnel database queries functions ends here *****************
+//Location database queries functions ends here *****************
 
-    public function createPersonnel($data) {
+    public function createLocation($data) {
         try{
-            $query = "INSERT INTO " . $this->personnelTable . " 
+            $query = "INSERT INTO " . $this->locationTable . " 
             SET firstName = :firstName, 
                 lastName = :lastName,
                 jobTitle = :jobTitle,
@@ -40,24 +40,43 @@ class Personnel{
             return true;
         }catch(Exception $e){
             //log the error and return false
-            error_log("Falied to add personnel to database:" . $e->getMessage());
+            error_log("Falied to add Location to database:" . $e->getMessage());
             return false;
         }
 
     }
 
-    public function readPersonnel() {
-        $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
-          FROM " . $this->personnelTable . " 
-          JOIN " . $this->departmentTable . " 
-          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function readLocation() {
+        try {
+            $query = "SELECT * FROM " . $this->locationTable;
+            $stmt = $this->conn->prepare($query);
+    
+            // Execute the query and check for errors
+            if ($stmt->execute()) {
+                // Fetch all records
+                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                if ($results) {
+                    return $results;
+                } else {
+                    // Log if no results found
+                    error_log("No locations found in table: " . $this->locationTable);
+                    return [];
+                }
+            } else {
+                // Log query error
+                $errorInfo = $stmt->errorInfo();
+                error_log("Query error: " . $errorInfo[2]);
+                return false;
+            }
+        } catch (Exception $e) {
+            // Log exception
+            error_log("Exception occurred: " . $e->getMessage());
+            return false;
+        }
     }
 
-    public function readPersonnelByID($id){
-        $query = "SELECT * FROM " . $this->personnelTable . " WHERE id = :id";
+    public function readLocationByID($id){
+        $query = "SELECT * FROM " . $this->locationTable . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -67,9 +86,9 @@ class Personnel{
 
 
 
-    public function updatePersonnel($data) {
+    public function updateLocation($data) {
         try {
-            $query = "UPDATE " . $this->personnelTable . "
+            $query = "UPDATE " . $this->locationTable . "
                      SET firstName = :firstName,
                          lastName = :lastName,
                          jobTitle = :jobTitle,
@@ -103,31 +122,31 @@ class Personnel{
             
         } catch (Exception $e) {
             // Log the error and return false
-            error_log("Error updating personnel: " . $e->getMessage());
+            error_log("Error updating location: " . $e->getMessage());
             return false;
         }
     }
 
-    public function deletePersonnelByID($id){
-        $query = "DELETE FROM " . $this->personnelTable . " WHERE id = :id";
+    public function deleteLocationByID($id){
+        $query = "DELETE FROM " . $this->locationTable . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
 
 
-    public function searchPersonnel($searchValue) {
+    public function searchLocation($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT " . $this->personnelTable . ".*, " .
+            $query = "SELECT " . $this->locationTable . ".*, " .
             $this->departmentTable . ".name AS departmentName 
-            FROM " . $this->personnelTable . " 
+            FROM " . $this->locationTable . " 
             JOIN " . $this->departmentTable . " 
-            ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
-            WHERE " . $this->personnelTable . ".firstName LIKE :searchValue 
-            OR " . $this->personnelTable . ".lastName LIKE :searchValue 
-            OR " . $this->personnelTable . ".jobTitle LIKE :searchValue 
-            OR " . $this->personnelTable . ".email LIKE :searchValue 
+            ON " . $this->locationTable . ".departmentID = " . $this->departmentTable . ".id 
+            WHERE " . $this->locationTable . ".firstName LIKE :searchValue 
+            OR " . $this->locationTable . ".lastName LIKE :searchValue 
+            OR " . $this->locationTable . ".jobTitle LIKE :searchValue 
+            OR " . $this->locationTable . ".email LIKE :searchValue 
             OR " . $this->departmentTable . ".name LIKE :searchValue";
             
             $stmt = $this->conn->prepare($query);
@@ -139,7 +158,7 @@ class Personnel{
             return false;
         }
     }
-//personnel database queries functions ends here ********************
+//location database queries functions ends here ********************
 
 
 

@@ -5,7 +5,8 @@ ini_set('display_errors', 1);
 
 require_once '../config/Database.php';
 require_once '../models/Personnel.php';
-
+require_once '../models/Department.php';
+require_once '../models/Location.php';
 header("Content-Type: application/json");
 
 try {
@@ -17,6 +18,8 @@ try {
     }
 
     $personnelModel = new Personnel($db);
+    $departmentModel = new Department($db);
+    $locationModel = new Location($db);
 
     $requestMethod = $_SERVER['REQUEST_METHOD'];
     $jsonData = null;
@@ -53,25 +56,68 @@ try {
                     }
                     break;
 
-                    case 'deletePersonnelByID':
-                        if (isset($_GET['id'])) {
-                            $id = $_GET['id'];
-                            $result = $personnelModel->deletePersonnelByID($id);
+                case 'search':
+                    if (isset($_GET['searchValue'])) {
+                        $searchValue = htmlspecialchars($_GET['searchValue']); // Sanitize input
+                        try {
+                            $result = $personnelModel->searchPersonnel($searchValue);
                             if ($result) {
-                                echo json_encode(["message" => "Personnel deleted successfully"]);
+                                echo json_encode($result);
                             } else {
-                                http_response_code(500); // Internal Server Error
-                                echo json_encode(["message" => "Failed to delete personnel"]);
+                                http_response_code(404); // Not Found
+                                echo json_encode(["message" => "No results found"]);
                             }
-                        } else {
-                            http_response_code(400); // Bad Request
-                            echo json_encode(["message" => "ID parameter is required"]);
+                        } catch (Exception $e) {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
                         }
-                        break;  
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "Search parameter is required"]);
+                    }
+                    break;
+
+                case 'deletePersonnelByID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $personnelModel->deletePersonnelByID($id);
+                        if ($result) {
+                            echo json_encode(["message" => "Personnel deleted successfully"]);
+                        } else {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "Failed to delete personnel"]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break;  
 
                 case 'getDepartment':
-                    $result = $personnelModel->readDepartment();
+                    $result = $departmentModel->readDepartment();
                     echo json_encode($result);
+                    break;
+
+                case 'getDepartmentByID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $departmentModel->readDepartmentByID($id);
+                        echo json_encode($result);
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break;
+
+                case 'getLocation':
+                    $result = $locationModel->readLocation();
+                    if ($result !== false) {
+                        header('Content-Type: application/json');
+                        echo json_encode($result);
+                    } else {
+                        http_response_code(500); // Internal Server Error
+                        echo json_encode(["message" => "Failed to fetch locations"]);
+                    }
                     break;
 
                 default:
@@ -90,16 +136,29 @@ try {
 
             switch ($type) {
                 case 'createPersonnel':
-                    $query = "INSERT INTO personnel (firstName, lastName, email, departmentID) VALUES (?, ?, ?, 1)";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$jsonData['firstName'], $jsonData['lastName'], $jsonData['email']]);
-                    echo json_encode(["message" => "Personnel added successfully"]);
+                    $result = $personnelModel->createPersonnel($jsonData);
+                    if($result){
+                    echo json_encode(["message" => "Personnel data added to database successfully"]);   
+                    }else{
+                        http_response_code(500);
+                        echo json_encode(["success" => false, "message" => "Failed to add personnel detail to database"]);
+                    }
                     break;
 
                 case 'updatePersonnel':
                     $result = $personnelModel->updatePersonnel($jsonData);
                     if ($result) {
                         echo json_encode(["success" => true, "message" => "Personnel updated successfully"]);
+                    } else {
+                        http_response_code(500);
+                        echo json_encode(["success" => false, "message" => "Failed to update personnel"]);
+                    }
+                    break;
+
+                case 'updateDepartment':
+                    $result = $departmentModel->updateDepartment($jsonData);
+                    if ($result) {
+                        echo json_encode(["success" => true, "message" => "department updated successfully"]);
                     } else {
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to update personnel"]);

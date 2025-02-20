@@ -18,7 +18,7 @@
 
     <div class="appHeader">
   
-      <div class="row">
+      <div class="row" id="searchAndButttons">
   
         <div class="col">
           <input id="searchInp" class="form-control mb-3" placeholder="search">
@@ -81,7 +81,7 @@
             </tr>
           </thead>
           <tbody id="personnelTableBody">
-            <!-- Rows will be dynamically inserted here by the script -->
+            <!-- insect rows dynamically script -->
           </tbody>
         </table>
         
@@ -90,29 +90,15 @@
       <div class="tab-pane" id="departments-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
         
         <table class="table table-hover">
-          
-          <tbody id="departmentTableBody">
-          
-            <!-- Below is an example row. Create a JS function that interogates the database and 
-            dynamically creates the HTML for the table contents. -->
-  
+          <thead class="nav-item">
             <tr>
-              <td class="align-middle text-nowrap">
-                Human resources
-              </td>
-              <td class="align-middle text-nowrap d-none d-md-table-cell">
-                London
-              </td>
-              <td class="align-middle text-end text-nowrap">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDepartmentModal" data-id="1">
-                  <i class="fa-solid fa-pencil fa-fw"></i>
-                </button>
-                <button type="button" class="btn btn-primary btn-sm deleteDepartmentBtn" data-id="1">
-                  <i class="fa-solid fa-trash fa-fw"></i>
-                </button>
-              </td>
-            </tr> 
-            
+              <th>ID#</th>
+              <th>Department</th>
+              <th>City</th>
+            </tr>
+          </thead>
+          <tbody id="departmentTableBody">
+            <!-- insect rows dynamically script -->
           </tbody>
   
         </table>
@@ -124,11 +110,18 @@
         <table class="table table-hover">
         
           <tbody id="locationTableBody">
+            <thead>
+              <th>#ID</th>
+              <th>City</th>
+            </thead>
             
             <!-- Below is an example row. Create a JS function that interogates the database and 
             dynamically creates the HTML for the table contents. -->
   
             <tr>
+              <td>
+
+              </td>
               <td class="align-middle text-nowrap">
                 London
               </td>
@@ -220,14 +213,14 @@
           </div>
           <div class="form-floating">
               <select class="form-select" 
-                      id="createPersonnelDepartment" 
+                      id="createPersonnelDepartmentID" 
                       required>
-                  <option value="">Select Department</option>
+
               </select>
-              <label for="createPersonnelDepartment">Department</label>
+              <label for="createLocation">Department</label>
           </div>
           <div class="modal-footer">
-              <button id="updatePersonnelBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+              <button id="createDepartmentBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">ADD</button>
               <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
           </div>
       </form>
@@ -258,7 +251,7 @@
       <div class="modal-content shadow"> 
         
         <div class="modal-header bg-primary bg-gradient text-white">
-          <h5 class="modal-title">Edit employee</h5>
+          <h5 class="modal-title">Update Employee</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
   
@@ -316,7 +309,7 @@
                 <label for="editPersonnelDepartment">Department</label>
             </div>
             <div class="modal-footer">
-                <button id="updatePersonnelBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+                <button id="updatePersonnelBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">UPDATE</button>
                 <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
             </div>
         </form>
@@ -349,6 +342,62 @@
     </div>
   </div>
 
+
+<!-- add department modal -->
+ <!-- add Department to db******************************************** -->
+<div id="createDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    
+  <!--   the last two classes centre the modal and, if the content is too long, ensures  -->
+  <!--   that the header and footer are always on display by making the body scroll -->
+  
+  <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+       
+    <div class="modal-content shadow"> 
+      
+      <div class="modal-header bg-primary bg-gradient text-white">
+        <h5 class="modal-title">Update Department</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+          
+        <form id="updateDepartmentForm" action="" method="POST" novalidate>
+          <input type="hidden" id="updateDepartmentEmployeeID">
+          <div class="form-floating mb-3">
+              <input type="text" 
+                     class="form-control" 
+                     id="updateDepartment" 
+                     placeholder="First name" 
+                     required
+                     pattern="[A-Za-z\s-]+"
+                     minlength="2"
+                     maxlength="50">
+              <label for="updateDepartment">Department</label>
+          </div>
+          
+          <div class="form-floating">
+            <select class="form-select" 
+                    id="updateDepartmentLocation" 
+                    required>
+
+            </select>
+            <label for="updateDepartmentLocation">Location</label>
+        </div>
+          <div class="modal-footer">
+              <button id="updateDepartmentBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">UPDATE</button>
+              <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+          </div>
+      </form>
+
+      </div>
+
+
+ 
+    </div>
+    
+  </div>
+  
+</div>
 
 
     <!-- Include Bootstrap JS and dependencies -->
