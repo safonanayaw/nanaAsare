@@ -1,5 +1,5 @@
 <?php 
- require_once '/Applications/XAMPP/xamppfiles/htdocs/nanaAsare/project2/config/Database.php';
+ require_once '../config/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
@@ -105,6 +105,26 @@ class Department{
     }
 
 
+    public function searchDepartment($searchValue) {
+        if ($searchValue) {
+
+            $query = "SELECT " . $this->departmentTable . ".*, " .
+            $this->locationTable . ".name AS locationName 
+            FROM " . $this->departmentTable . " 
+            JOIN " . $this->locationTable . " 
+            ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
+            WHERE " . $this->departmentTable . ".name LIKE :searchValue 
+            OR " . $this->locationTable . ".name LIKE :searchValue";
+            
+            $stmt = $this->conn->prepare($query);
+            $searchTerm = '%' . $searchValue . '%';
+            $stmt->bindParam(':searchValue', $searchTerm, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return false;
+        }
+    }
 
 //  department db query functions***********************************
 

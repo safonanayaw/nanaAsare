@@ -56,11 +56,32 @@ try {
                     }
                     break;
 
-                case 'search':
+                case 'searchPersonnel':
                     if (isset($_GET['searchValue'])) {
                         $searchValue = htmlspecialchars($_GET['searchValue']); // Sanitize input
                         try {
                             $result = $personnelModel->searchPersonnel($searchValue);
+                            if ($result) {
+                                echo json_encode($result);
+                            } else {
+                                http_response_code(404); // Not Found
+                                echo json_encode(["message" => "No results found"]);
+                            }
+                        } catch (Exception $e) {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "Search parameter is required"]);
+                    }
+                    break;
+
+                case 'searchDepartment':
+                    if (isset($_GET['searchValue'])) {
+                        $searchValue = htmlspecialchars($_GET['searchValue']); // Sanitize input
+                        try {
+                            $result = $departmentModel->searchDepartment($searchValue);
                             if ($result) {
                                 echo json_encode($result);
                             } else {
@@ -92,6 +113,22 @@ try {
                         echo json_encode(["message" => "ID parameter is required"]);
                     }
                     break;  
+
+                case 'deleteDepartmentByID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $departmentModel->deleteDepartmentByID($id);
+                        if ($result) {
+                            echo json_encode(["message" => "Department deleted successfully"]);
+                        } else {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "Failed to delete department"]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break; 
 
                 case 'getDepartment':
                     $result = $departmentModel->readDepartment();
@@ -142,6 +179,16 @@ try {
                     }else{
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to add personnel detail to database"]);
+                    }
+                    break;
+
+                case 'createDepartment':
+                    $result = $departmentModel->createDepartment($jsonData);
+                    if($result){
+                    echo json_encode(["message" => "Department data added to database successfully"]);   
+                    }else{
+                        http_response_code(500);
+                        echo json_encode(["success" => false, "message" => "Failed to add department detail to database"]);
                     }
                     break;
 

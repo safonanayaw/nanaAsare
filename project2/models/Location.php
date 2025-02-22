@@ -1,5 +1,5 @@
 <?php 
- require_once '/Applications/XAMPP/xamppfiles/htdocs/nanaAsare/project2/config/Database.php';
+ require_once '../config/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
@@ -18,19 +18,13 @@ class Location{
     public function createLocation($data) {
         try{
             $query = "INSERT INTO " . $this->locationTable . " 
-            SET firstName = :firstName, 
-                lastName = :lastName,
-                jobTitle = :jobTitle,
-                email = :email,
-                departmentID = :departmentID";
+            SET name = :name, 
+                locationID = :locationID";
    
             $stmt = $this->conn->prepare($query);
             // Bind data and execute
-            $stmt->bindParam(':firstName', $data['firstName']);
-            $stmt->bindParam(':lastName', $data['lastName']);
-            $stmt->bindParam(':jobTitle', $data['jobTitle']);
-            $stmt->bindParam(':email', $data['email']);
-            $stmt->bindParam(':departmentID', $data['departmentID']);
+            $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':locationID', $data['locationID']);
             //execute the query
             $stmt->execute();
             //check if anyrow was added
@@ -89,26 +83,19 @@ class Location{
     public function updateLocation($data) {
         try {
             $query = "UPDATE " . $this->locationTable . "
-                     SET firstName = :firstName,
-                         lastName = :lastName,
-                         jobTitle = :jobTitle,
-                         email = :email,
-                         departmentID = :departmentID
+                     SET name = :name,
+                         locationID = :locationID
                      WHERE id = :id";
                      
             $stmt = $this->conn->prepare($query);
             
             // Validate that required data exists
-            if (!isset($data['id']) || !isset($data['firstName']) || !isset($data['lastName']) || 
-                !isset($data['jobTitle']) || !isset($data['email']) || !isset($data['departmentID'])) {
+            if (!isset($data['id']) || !isset($data['name']) || !isset($data['locationID'])) {
                 throw new Exception("Missing required fields");
             }
             
-            $stmt->bindParam(':firstName', $data['firstName']);
-            $stmt->bindParam(':lastName', $data['lastName']);
-            $stmt->bindParam(':jobTitle', $data['jobTitle']);
-            $stmt->bindParam(':email', $data['email']);
-            $stmt->bindParam(':departmentID', $data['departmentID']);
+            $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':locationID', $data['locationID']);
             $stmt->bindParam(':id', $data['id']);
             
             $result = $stmt->execute();
@@ -138,16 +125,7 @@ class Location{
     public function searchLocation($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT " . $this->locationTable . ".*, " .
-            $this->departmentTable . ".name AS departmentName 
-            FROM " . $this->locationTable . " 
-            JOIN " . $this->departmentTable . " 
-            ON " . $this->locationTable . ".departmentID = " . $this->departmentTable . ".id 
-            WHERE " . $this->locationTable . ".firstName LIKE :searchValue 
-            OR " . $this->locationTable . ".lastName LIKE :searchValue 
-            OR " . $this->locationTable . ".jobTitle LIKE :searchValue 
-            OR " . $this->locationTable . ".email LIKE :searchValue 
-            OR " . $this->departmentTable . ".name LIKE :searchValue";
+            $query = "SELECT * FROM " . $this->locationTable  . " WHERE " . $this->locationTable . ".name LIKE :searchValue";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';

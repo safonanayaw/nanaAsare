@@ -1,5 +1,5 @@
 <?php 
- require_once '/Applications/XAMPP/xamppfiles/htdocs/nanaAsare/project2/config/Database.php';
+ require_once '../config/Database.php';
 $database = new Database();
 $db = $database->getConnection();
 
