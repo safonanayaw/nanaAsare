@@ -98,6 +98,27 @@ try {
                     }
                     break;
 
+                case 'searchLocation':
+                    if (isset($_GET['searchValue'])) {
+                        $searchValue = htmlspecialchars($_GET['searchValue']); // Sanitize input
+                        try {
+                            $result = $locationModel->searchLocation($searchValue);
+                            if ($result) {
+                                echo json_encode($result);
+                            } else {
+                                http_response_code(404); // Not Found
+                                echo json_encode(["message" => "No results found"]);
+                            }
+                        } catch (Exception $e) {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "Search parameter is required"]);
+                    }
+                    break;
+
                 case 'deletePersonnelByID':
                     if (isset($_GET['id'])) {
                         $id = $_GET['id'];
@@ -157,6 +178,33 @@ try {
                     }
                     break;
 
+                case 'getLocationByID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $locationModel->readLocationByID($id);
+                        echo json_encode($result);
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break;
+
+                case 'deleteLocationByID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $locationModel->deleteLocationByID($id);
+                        if ($result) {
+                            echo json_encode(["message" => "Location deleted successfully"]);
+                        } else {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["message" => "Failed to delete location"]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break;
+
                 default:
                     http_response_code(400); // Bad Request
                     echo json_encode(["message" => "Invalid type parameter"]);
@@ -192,6 +240,16 @@ try {
                     }
                     break;
 
+                case 'createLocation':
+                    $result = $locationModel->createLocation($jsonData);
+                    if($result){
+                    echo json_encode(["message" => "Location data added to database successfully"]);   
+                    }else{
+                        http_response_code(500);
+                        echo json_encode(["success" => false, "message" => "Failed to add location detail to database"]);
+                    }
+                    break;
+
                 case 'updatePersonnel':
                     $result = $personnelModel->updatePersonnel($jsonData);
                     if ($result) {
@@ -212,6 +270,16 @@ try {
                     }
                     break;
 
+                case 'updateLocation':
+                    $result = $locationModel->updateLocation($jsonData);
+                    if ($result) {
+                        echo json_encode(["success" => true, "message" => "Location updated successfully"]);
+                    } else {
+                        http_response_code(500);
+                        echo json_encode(["success" => false, "message" => "Failed to update location"]);
+                    }
+                    break;
+
                 default:
                     http_response_code(400);
                     echo json_encode(["message" => "Invalid type parameter"]);
@@ -227,10 +295,10 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        "error" => $e->getMessage(),
-        "file" => $e->getFile(),
-        "line" => $e->getLine()
-    ]);
+    // echo json_encode([
+    //     "error" => $e->getMessage(),
+    //     "file" => $e->getFile(),
+    //     "line" => $e->getLine()
+    // ]);
     exit; // Ensure no further output is sent
 }

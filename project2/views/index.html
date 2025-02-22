@@ -370,6 +370,102 @@
 
 <!-- department add, update, delete modal start here********** -->
 
+
+
+<!-- location add, update, delete modal start here********** -->
+<!-- create location Modal -->
+<div id="createLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm modal-fullscreen-sm-down">
+    <div class="modal-content shadow"> 
+      <div class="modal-header bg-primary bg-gradient text-white">
+        <h5 class="modal-title">Create Location</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="createLocationForm" action="" method="POST" novalidate>
+          <input type="hidden" id="createLocationEmployeeID">
+          <div class="form-floating mb-3">
+            <input type="text" 
+                   class="form-control" 
+                   id="createLocation" 
+                   placeholder="Location name" 
+                   required
+                   pattern="[A-Za-z\s-]+"
+                   minlength="2"
+                   maxlength="50">
+            <label for="createLocation">Location</label>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button id="createLocationBtn" type="submit" class="btn btn-outline-primary btn-sm myBtn">ADD</button>
+            <button type="button" class="btn btn-outline-danger btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Location Modal -->
+<div id="UpdateLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm modal-fullscreen-sm-down">
+    <div class="modal-content shadow"> 
+      <div class="modal-header bg-primary bg-gradient text-white">
+        <h5 class="modal-title">Update Location</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="updateLocationForm" action="" method="POST" novalidate>
+          <input type="hidden" id="updateLocationEmployeeID">
+          <div class="form-floating mb-3">
+            <input type="text" 
+                   class="form-control" 
+                   id="updateLocation" 
+                   placeholder="Location name" 
+                   required
+                   pattern="[A-Za-z\s-]+"
+                   minlength="2"
+                   maxlength="50">
+            <label for="updateLocation">Location</label>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2">
+            <button id="updateLocationBtnConfirm" type="submit" class="btn btn-outline-primary btn-sm myBtn">UPDATE</button>
+            <button type="button" class="btn btn-outline-danger btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Location Modal -->
+<div class="modal fade" id="deleteLocationModal" tabindex="-1" aria-labelledby="deleteLocationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header bg-primary bg-gradient text-white">
+        <h5 class="modal-title" id="deleteLocationModalLabel">Delete Location</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-center">Are you sure you want to delete this Location?</p>
+      </div>
+      <div class="modal-footer">
+        <div class="d-flex justify-content-end gap-2 w-100">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">CLOSE</button>
+          <button id="confirmDeleteLocationBtn" type="button" class="btn btn-outline-danger btn-sm">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Location add, update, delete modal start here********** -->
+
     <footer class="border-top text-center fw-bold">
       <p class="fw-light my-3">Company Directory version 1.0</p>
     </footer>

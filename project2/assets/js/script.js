@@ -122,8 +122,11 @@ function populateLocationData(){
 
 
             <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updateLocationBtn" data-bs-toggle="modal" data-bs-target="#createLocationModal" data-id="${location.id}">
+              <button type="button" class="btn btn-primary btn-sm updateLocationBtn" data-bs-toggle="modal" data-bs-target="#UpdateLocationModal" data-id="${location.id}">
                 <i class="fa-solid fa-pencil fa-fw"></i>
+              </button>
+              <button id="deleteLocationBtn" type="button" class="btn deleteLocationBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteLocationModal" data-id="${location.id}">
+              <i class="fa-solid fa-trash fa-fw"></i>
               </button>
             </td>
           </tr>
@@ -292,7 +295,7 @@ $(document).ready(function (){
             <button id="filterBtnLocation" type="button" class="btn btn-primary filterBtnLocation">
               <i class="fa-solid fa-filter fa-fw"></i>
             </button>          
-            <button id="addBtnLocation" type="button" class="btn btn-primary addBtnLocation" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
+            <button id="addBtnLocation" type="button" class="btn btn-primary addBtnLocation" data-bs-toggle="modal" data-bs-target="#createLocationModal">
               <i class="fa-solid fa-plus fa-fw"></i>
             </button>
           </div>
@@ -657,7 +660,7 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
 
 // updating department data****************************************************
 //populate modal with deparment id data when updatedepartmentBtn is clicked
-let selectedDepartmentDeleteID;
+let selectedDepartmentlID;
 $(document).on('click', '.updateDepartmentBtn', function() {
   selectedDepartmentlID = $(this).data('id');
   console.log("I got in department id:", selectedDepartmentlID);
@@ -797,6 +800,7 @@ $(document).on('click', '.deletePersonnelBtn', function(){
   })
 });
 
+// searching department
 $(document).on("keyup", ".searchInputDepartment",function (event) {
   event.preventDefault();
   console.log("department search btn clicked");
@@ -850,3 +854,225 @@ $(document).on("keyup", ".searchInputDepartment",function (event) {
 });
 
 
+// creating location data****************************************************
+$(document).on('click', '#createLocationBtn', function(event) {
+  event.preventDefault();//prevent the form from submitting
+  // console.log("Add Button clicked");
+  $("#createLocationModal").modal("hide");
+  
+  let locationData = {
+      name: $("#createLocation").val()
+  };
+
+
+
+  let requestData = JSON.stringify({ 
+      type: "createLocation", 
+      ...locationData 
+  });
+  
+  // Debug: Log the final request data
+  // console.log("Request data:", requestData);
+
+  $.ajax({
+      url: './../api/personnelAPI.php',
+      method: 'POST',
+      data: requestData,
+      contentType: 'application/json',
+      success: function(response) {
+          // console.log("Success response:", response);
+          // populatePersonnelData();
+          //refresh the page after 
+          // location.reload();
+          $("#LocationBtn").click();
+          alert(`Location added successfully`);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+          console.error('Error details:', {
+              status: jqXHR.status,
+              statusText: jqXHR.statusText,
+              responseText: jqXHR.responseText,
+              textStatus: textStatus,
+              errorThrown: errorThrown
+          });
+          alert("Failed to add department. Check console for details.");
+      }
+  });
+  
+});
+
+
+// updating location data****************************************************
+//populate modal with location id data when updatelocationBtn is clicked
+let selectedLocationID;
+$(document).on('click', '.updateLocationBtn', function() {
+  selectedLocationID = $(this).data('id');
+  console.log("btn clicked in location id:", selectedLocationID);
+
+  
+
+  $.ajax({
+    url: './../api/personnelAPI.php',
+    method: "GET",
+    data : {type: "getLocationByID", id: selectedLocationID},
+    success: function (data) {
+        // console.log(data);
+        // let departmentLocation = data.id;
+
+        // console.log("department location", departmentLocation);
+        $("#updateLocation").val(data.name);
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.error('Error details:', {
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        responseText: jqXHR.responseText,
+        textStatus: textStatus,
+        errorThrown: errorThrown
+      });
+      
+    }
+  })
+  console.log("selectedLocationDeleteID",selectedLocationID);
+return selectedLocationID;
+});
+
+$('#updateLocationBtnConfirm').on('click', function(event) {
+  event.preventDefault();
+
+  $('#UpdateLocationModal').modal('hide');
+  let locationData = {
+      id: selectedLocationID,
+      name: $("#updateLocation").val()
+  };
+
+  // Debug: Log the data being sent
+  console.log("Location Data before sending:", locationData);
+  console.log("Selected ID:", selectedLocationID);
+
+  let requestData = JSON.stringify({ 
+      type: "updateLocation",
+      ...locationData
+  });
+  
+  // Debug: Log the final request data
+  console.log("Request data:", requestData);
+
+  $.ajax({
+      url: './../api/personnelAPI.php',
+      method: 'POST',
+      data: requestData,
+      contentType: 'application/json',
+      success: function(response) {
+          console.log("Success response:", response);
+          
+        //refresh the page after 
+        $("#locationBtn").click();
+          alert(`Location with ID: ${selectedLocationID} updated successfully`);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+          console.error('Error details:', {
+              status: jqXHR.status,
+              statusText: jqXHR.statusText,
+              responseText: jqXHR.responseText,
+              textStatus: textStatus,
+              errorThrown: errorThrown
+          });
+          alert("Failed to update location. Check console for details.");
+      }
+  });
+});
+
+// deleting location 
+$(document).on('click', '.deleteLocationBtn', function(){
+  console.log("delete btn click in location")
+
+  selectedLocationDeleteID = $(this).data('id');
+  console.log(selectedLocationDeleteID);
+
+
+  $('#confirmDeleteLocationBtn').on('click',function(){
+    $('#deleteLocationModal').modal('hide');
+    // location.reload();
+    $.ajax({
+      url: './../api/personnelAPI.php',
+      method: "GET",
+      data: { type: "deleteLocationByID", id: selectedLocationDeleteID },
+      success: function(data) {
+        console.log(data);
+        $("#locationBtn").click();
+        alert(`Location with ID: ${selectedLocationDeleteID} deleted successfully`);
+        
+        //refresh the page after 
+        
+        
+
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error details:', {
+          status: jqXHR.status,
+          statusText: jqXHR.statusText,
+          responseText: jqXHR.responseText,
+          textStatus: textStatus,
+          errorThrown: errorThrown
+        });
+        
+      }
+    });
+
+  })
+});
+
+// searchng location
+$(document).on("keyup", ".searchInputLocation",function (event) {
+  event.preventDefault();
+  console.log("Location search input active");
+  let searchValue = $(this).val();
+  console.log("search value",searchValue);
+  if (searchValue !== '') {
+    $("#locationTableBody").empty();
+    // $("#departmentTableBody").empty();
+    // $("#locationTableBody").empty();
+    $.ajax({
+      url: './../api/personnelAPI.php',
+      method: "GET",
+      data: { type: "searchLocation", searchValue: searchValue },
+      dataType: 'json', // Ensure the response is parsed as JSON
+      success: function(data) {
+        // console.log(data);
+        // Iterate over the data and create table rows
+        data.forEach(function(location) {
+          var row = `
+          <tr>
+            <td class="align-middle text-nowrap d-none d-md-table-cell">${location.id}</td>
+            <td class="align-middle text-nowrap">${location.name}</td>
+
+
+            <td class="text-start text-nowrap">
+              <button type="button" class="btn btn-primary btn-sm updateLocationBtn" data-bs-toggle="modal" data-bs-target="#UpdateLocationModal" data-id="${location.id}">
+                <i class="fa-solid fa-pencil fa-fw"></i>
+              </button>
+              <button id="deleteLocationBtn" type="button" class="btn deleteLocationBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteLocationModal" data-id="${location.id}">
+              <i class="fa-solid fa-trash fa-fw"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        $('#locationTableBody').append(row);
+        });
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error details:', {
+          status: jqXHR.status,
+          statusText: jqXHR.statusText,
+          responseText: jqXHR.responseText,
+          textStatus: textStatus,
+          errorThrown: errorThrown
+        });
+        $("#locationTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Location</h3>`);
+      }
+    });
+  } else {
+    populateLocationData();
+  }
+});

@@ -18,13 +18,11 @@ class Location{
     public function createLocation($data) {
         try{
             $query = "INSERT INTO " . $this->locationTable . " 
-            SET name = :name, 
-                locationID = :locationID";
+            SET name = :name";
    
             $stmt = $this->conn->prepare($query);
             // Bind data and execute
             $stmt->bindParam(':name', $data['name']);
-            $stmt->bindParam(':locationID', $data['locationID']);
             //execute the query
             $stmt->execute();
             //check if anyrow was added
@@ -83,19 +81,17 @@ class Location{
     public function updateLocation($data) {
         try {
             $query = "UPDATE " . $this->locationTable . "
-                     SET name = :name,
-                         locationID = :locationID
+                     SET name = :name
                      WHERE id = :id";
                      
             $stmt = $this->conn->prepare($query);
             
             // Validate that required data exists
-            if (!isset($data['id']) || !isset($data['name']) || !isset($data['locationID'])) {
+            if (!isset($data['id']) || !isset($data['name'])) {
                 throw new Exception("Missing required fields");
             }
             
             $stmt->bindParam(':name', $data['name']);
-            $stmt->bindParam(':locationID', $data['locationID']);
             $stmt->bindParam(':id', $data['id']);
             
             $result = $stmt->execute();
@@ -125,7 +121,7 @@ class Location{
     public function searchLocation($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT * FROM " . $this->locationTable  . " WHERE " . $this->locationTable . ".name LIKE :searchValue";
+            $query = "SELECT * FROM " . $this->locationTable . " WHERE name LIKE :searchValue";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';
