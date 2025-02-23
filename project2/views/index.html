@@ -65,9 +65,9 @@
                 <thead>
                     <tr>
                         <th class="d-none d-sm-table-cell">ID#</th>
-                        <th>Department</th>
+                        <th class="d-none d-md-table-cell">Department</th>
                         <th class="d-none d-md-table-cell">Location</th>
-                        <th class="d-none d-md-table-cell">Actions</th>
+                        <th class="d-none d-sm-table-cell">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="departmentTableBody">
@@ -84,7 +84,7 @@
               <tr>
                 <th class="d-none d-sm-table-cell">ID#</th>
                 <th class="d-none d-md-table-cell">City</th>
-                <th class="d-none d-md-table-cell">Actions</th>
+                <th class="d-none d-sm-table-cell">Actions</th>
               </tr>
             </thead>
             <tbody id="locationTableBody">
@@ -106,7 +106,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="createPersonnelForm" action="" method="POST" novalidate>
+        <form id="createPersonnelForm" action="" method="POST" >
           <input type="hidden" id="createPersonnelEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -114,7 +114,7 @@
                    id="createPersonnelFirstName" 
                    placeholder="First name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="createPersonnelFirstName">First name</label>
@@ -125,7 +125,7 @@
                    id="createPersonnelLastName" 
                    placeholder="Last name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="createPersonnelLastName">Last name</label>
@@ -177,7 +177,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="editPersonnelForm" action="" method="POST" novalidate>
+        <form id="editPersonnelForm" action="" method="POST" >
           <input type="hidden" id="editPersonnelEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -185,7 +185,7 @@
                    id="editPersonnelFirstName" 
                    placeholder="First name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="editPersonnelFirstName">First name</label>
@@ -196,7 +196,7 @@
                    id="editPersonnelLastName" 
                    placeholder="Last name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="editPersonnelLastName">Last name</label>
@@ -273,7 +273,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="createDepartmentForm" action="" method="POST" novalidate>
+        <form id="createDepartmentForm" action="" method="POST" >
           <input type="hidden" id="createDepartmentEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -281,7 +281,7 @@
                    id="createDepartment" 
                    placeholder="Department name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="createDepartment">Department</label>
@@ -314,7 +314,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="updateDepartmentForm" action="" method="POST" novalidate>
+        <form id="updateDepartmentForm" action="" method="POST" >
           <input type="hidden" id="updateDepartmentEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -322,7 +322,7 @@
                    id="updateDepartment" 
                    placeholder="Department name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="updateDepartment">Department</label>
@@ -383,7 +383,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="createLocationForm" action="" method="POST" novalidate>
+        <form id="createLocationForm" action="" method="POST" >
           <input type="hidden" id="createLocationEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -391,7 +391,7 @@
                    id="createLocation" 
                    placeholder="Location name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="createLocation">Location</label>
@@ -417,7 +417,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="updateLocationForm" action="" method="POST" novalidate>
+        <form id="updateLocationForm" action="" method="POST" >
           <input type="hidden" id="updateLocationEmployeeID">
           <div class="form-floating mb-3">
             <input type="text" 
@@ -425,7 +425,7 @@
                    id="updateLocation" 
                    placeholder="Location name" 
                    required
-                   pattern="[A-Za-z\s-]+"
+                   
                    minlength="2"
                    maxlength="50">
             <label for="updateLocation">Location</label>

@@ -147,20 +147,21 @@ thead th {
   }
   
   /* Optimal column widths */
-  #personnel-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
+  #personnel-tab-pane th:nth-child(1) { width: 10%; }  /* ID */
   #personnel-tab-pane th:nth-child(2) { width: 20%; } /* Name */
   #personnel-tab-pane th:nth-child(3) { width: 17%; } /* Job Title */
   #personnel-tab-pane th:nth-child(4) { width: 15%; } /* departments */
   #personnel-tab-pane th:nth-child(5) { width: 25%; } /* Email */
   #personnel-tab-pane th:nth-child(6) { width: 15%; } /* Actions */
 
-  #departments-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
+  #departments-tab-pane th:nth-child(1) { width: 10%; }  /* ID */
   #departments-tab-pane th:nth-child(2) { width: 15%; } /* department */  
-  #departments-tab-pane th:nth-child(3) { width: 15%; } /* location */
+  #departments-tab-pane th:nth-child(3) { width: 25%; } /* location */
+  #departments-tab-pane th:nth-child(4) { width: 15%; } /* Actions */
 
-  #locations-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
-  #locations-tab-pane th:nth-child(2) { width: 20%; } /* City */
-  #locations-tab-pane th:nth-child(6) { width: 15%; } /* Actions */
+  #locations-tab-pane th:nth-child(1) { width: 15%; }  /* ID */
+  #locations-tab-pane th:nth-child(2) { width: 25%; } /* City */
+  #locations-tab-pane th:nth-child(3) { width: 15%; } /* Actions */
 
 
 }

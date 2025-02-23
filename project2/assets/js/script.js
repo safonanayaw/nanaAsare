@@ -348,8 +348,14 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
       departmentID: parseInt($("#createPersonnelDepartmentID").val())
   };
 
-  // Debug: Log the data being sent
-  // console.log("Personnel Data before sending:", personnelData);
+  // Validate form data
+  if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
+    // Show error message if any field is empty or invalid
+    $("#notificationMessage").text("Please fill out all fields correctly.");
+    $("#notificationModal").modal("show");
+    return; // Stop further execution
+  }
+
 
   let requestData = JSON.stringify({ 
       type: "createPersonnel", 
@@ -370,6 +376,8 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
               $("#notificationModal").modal("show");
+              //reset the form
+              $("#createPersonnelForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -455,6 +463,14 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       departmentID: $("#editPersonnelDepartment").val()
   };
 
+    // Validate form data
+    if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
+      // Show error message if any field is empty or invalid
+      $("#notificationMessage").text("Please fill out all fields correctly.");
+      $("#notificationModal").modal("show");
+      return; 
+  }
+
   // Debug: Log the data being sent
   console.log("Personnel Data before sending:", personnelData);
   console.log("Selected ID:", selectedPersonnelID);
@@ -478,6 +494,8 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
               $("#notificationModal").modal("show");
+              //reset the form
+              $("#editPersonnelForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -627,15 +645,24 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
   // console.log("Add Button clicked");
   $("#createDepartmentModal").modal("hide");
   
-  let locationData = {
+  let departmentData = {
       name: $("#createDepartment").val(),
       locationID: parseInt($("#createDepartmentLocation").val())
   };
 
+  //validate form data
+  if(!departmentData.name || isNaN(departmentData.locationID)){
+    //show error message if any fileds is empty
+    $("#notificationMessage").text("Please fill out all fields correctly.");
+    $("#notificationModal").modal("show");
+    return;
+  }
+
   let requestData = JSON.stringify({ 
       type: "createDepartment", 
-      ...locationData 
+      ...departmentData 
   });
+  
   
 
   $.ajax({
@@ -648,6 +675,8 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnDepartment").click();
               $("#notificationModal").modal("show");
+              //reset the form after success
+              $("#createDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -737,6 +766,14 @@ $('#updateDepartmentBtn').on('click', function(event) {
       locationID: $("#updateDepartmentLocation").val()
   };
 
+    //validate form data
+    if(!departmentData.name || isNaN(departmentData.locationID)){
+      //show error message if any fileds is empty
+      $("#notificationMessage").text("Please fill out all fields correctly.");
+      $("#notificationModal").modal("show");
+      return;
+    }
+
 
   let requestData = JSON.stringify({ 
       type: "updateDepartment",
@@ -754,6 +791,7 @@ $('#updateDepartmentBtn').on('click', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnDepartment").click();
               $("#notificationModal").modal("show");
+              $("#updateDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -879,6 +917,14 @@ $(document).on('click', '#createLocationBtn', function(event) {
       name: $("#createLocation").val()
   };
 
+    //validate form data
+    if(!locationData.name){
+      //show error message if any fileds is empty
+      $("#notificationMessage").text("Please fill out all fields correctly.");
+      $("#notificationModal").modal("show");
+      return;
+    }
+
 
 
   let requestData = JSON.stringify({ 
@@ -899,6 +945,7 @@ $(document).on('click', '#createLocationBtn', function(event) {
             $("#notificationMessage").text(data.message);
             $("#refreshBtnLocation").click();
             $("#notificationModal").modal("show");
+            $("#createLocationForm")[0].reset();
         } else {
             throw new Error("Unexpected response format");
         }
@@ -964,6 +1011,14 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
       name: $("#updateLocation").val()
   };
 
+    //validate form data
+    if(!locationData.name){
+      //show error message if any fileds is empty
+      $("#notificationMessage").text("Please fill out all fields correctly.");
+      $("#notificationModal").modal("show");
+      return;
+    }
+
   let requestData = JSON.stringify({ 
       type: "updateLocation",
       ...locationData
@@ -982,6 +1037,8 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
             $("#notificationMessage").text(data.message);
             $("#refreshBtnLocation").click();
             $("#notificationModal").modal("show");
+            // Reset the form field
+            $("#updateLocationForm")[0].reset();
         } else {
             throw new Error("Unexpected response format");
         }

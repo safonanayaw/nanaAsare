@@ -52,7 +52,7 @@ try {
                         echo json_encode($result);
                     } else {
                         http_response_code(400); // Bad Request
-                        echo json_encode(["message" => "ID parameter is required"]);
+                        echo json_encode(["success" => false, "message" => "ID parameter is required"]);
                     }
                     break;
 
@@ -65,7 +65,7 @@ try {
                                 echo json_encode($result);
                             } else {
                                 http_response_code(404); // Not Found
-                                echo json_encode(["message" => "No results found"]);
+                                echo json_encode(["success" => false, "message" => "No results found"]);
                             }
                         } catch (Exception $e) {
                             http_response_code(500); // Internal Server Error
@@ -86,7 +86,7 @@ try {
                                 echo json_encode($result);
                             } else {
                                 http_response_code(404); // Not Found
-                                echo json_encode(["message" => "No results found"]);
+                                echo json_encode(["success" => false, "message" => "No results found"]);
                             }
                         } catch (Exception $e) {
                             http_response_code(500); // Internal Server Error
@@ -107,7 +107,7 @@ try {
                                 echo json_encode($result);
                             } else {
                                 http_response_code(404); // Not Found
-                                echo json_encode(["message" => "No results found"]);
+                                echo json_encode(["success" => false, "message" => "No results found"]);
                             }
                         } catch (Exception $e) {
                             http_response_code(500); // Internal Server Error
@@ -124,10 +124,10 @@ try {
                         $id = $_GET['id'];
                         $result = $personnelModel->deletePersonnelByID($id);
                         if ($result) {
-                            echo json_encode(["message" => "Personnel deleted successfully"]);
+                            echo json_encode(["success" => true, "message" => "Personnel deleted successfully"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["message" => "Failed to delete personnel"]);
+                            echo json_encode(["success" => false,"message" => "Failed to delete personnel"]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -140,10 +140,10 @@ try {
                         $id = $_GET['id'];
                         $result = $departmentModel->deleteDepartmentByID($id);
                         if ($result) {
-                            echo json_encode(["message" => "Department deleted successfully"]);
+                            echo json_encode(["success" => true,"message" => "Department deleted successfully"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["message" => "Sorry cannot Delete this department, because is referrenced in personnel data."]);
+                            echo json_encode(["success" => false,"message" => "Sorry cannot Delete this department, because is referrenced in personnel data."]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -163,7 +163,7 @@ try {
                         echo json_encode($result);
                     } else {
                         http_response_code(400); // Bad Request
-                        echo json_encode(["message" => "ID parameter is required"]);
+                        echo json_encode(["success" => false,"message" => "ID parameter is required"]);
                     }
                     break;
 
@@ -174,7 +174,7 @@ try {
                         echo json_encode($result);
                     } else {
                         http_response_code(500); // Internal Server Error
-                        echo json_encode(["message" => "Failed to fetch locations"]);
+                        echo json_encode(["success" => false,"message" => "Failed to fetch locations"]);
                     }
                     break;
 
@@ -185,7 +185,7 @@ try {
                         echo json_encode($result);
                     } else {
                         http_response_code(400); // Bad Request
-                        echo json_encode(["message" => "ID parameter is required"]);
+                        echo json_encode(["success" => false,"message" => "ID parameter is required"]);
                     }
                     break;
 
@@ -194,7 +194,7 @@ try {
                         $id = $_GET['id'];
                         $result = $locationModel->deleteLocationByID($id);
                         if ($result) {
-                            echo json_encode(["message" => "Location deleted successfully"]);
+                            echo json_encode(["success" => true, "message" => "Location deleted successfully"]);
                         } else {
                             http_response_code(500); // Internal Server Error
                             echo json_encode(["message" => "Sorry cannot Delete this department, because is referrenced in department data."]);
@@ -223,7 +223,7 @@ try {
                 case 'createPersonnel':
                     $result = $personnelModel->createPersonnel($jsonData);
                     if($result){
-                    echo json_encode(["message" => "Personnel data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Personnel data added to database successfully"]);   
                     }else{
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to add personnel detail to database"]);
