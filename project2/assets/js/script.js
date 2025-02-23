@@ -34,7 +34,6 @@ function populatePersonnelData(){
     dataType: 'json',
     data: {type: "getAllPersonnel"},
     success: function(data) {
-      // console.log(data);
       // Clear the existing table body
       $('#personnelTableBody').empty();
 
@@ -77,7 +76,6 @@ function populateDepartmentData(){
     dataType: 'json',
     data: {type: "getDepartment"},
     success: function(data) {
-      console.log(data);
       // Clear the existing table body
       $('#departmentTableBody').empty();
 
@@ -117,7 +115,6 @@ function populateLocationData(){
     dataType: 'json',
     data: {type: "getLocation"},
     success: function(data) {
-      console.log(data);
       // Clear the existing table body
     
       $('#locationTableBody').empty();
@@ -148,10 +145,6 @@ function populateLocationData(){
     }
   });
 }
-
-$("#locationsBtn").on('click', function(){
-  console.log("location btn clicked");
-})
 
 // fetch personnel data and fill personnel table
 populatePersonnelData();
@@ -211,27 +204,22 @@ $(document).ready(function (){
   //???????????????? add reloader spinner************???????
   // refresh btn for personnel
   $(document).on('click', '#refreshBtnPersonnel', function(){
-
     $("#personnelBtn").click();
-    console.log("you clicked me personnel");
   });
 
    // refresh btn for department
    $(document).on('click', '#refreshBtnDepartment', function(){
-
     $("#departmentsBtn").click();
-    console.log("you clicked me department");
   });
 
    // refresh btn for location
    $(document).on('click', '#refreshBtnLocation', function(){
-
     $("#locationsBtn").click();
-    console.log("you clicked me location");
   });
 
   //setTimeout for spinner when btn is clicked********
   $(document).on('click', '#personnelBtn',function(){
+    
     showLoader();
     setTimeout(hideLoader, 1000);
   });
@@ -335,25 +323,14 @@ $(document).ready(function (){
   });
 
 
-
-
-// $(document).on('click', '#refreshBtnPersonnel',function(){
-//   location.reload();
-
-//   setTimeout(function(){
-//     $("#personnelBtn").click();
-//   }, 3000);
-// });
-
 //populate department when add personnel btn is click
 $(document).on('click', '#addBtnPersonnel', function(){
-  console.log("create btn click");
+
   fetchAllDepartment().then(departmentData => {
-    // console.log(departmentData); // Log the department data for debugging
 
     let departmentDropdown = $("#createPersonnelDepartmentID");
-    departmentDropdown.empty(); // Clear existing options
-    departmentDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
+    departmentDropdown.empty();
+    departmentDropdown.append(`<option disabled value="">Select department</option>`); 
 
     // Iterate over the department data and append options
     departmentData.forEach(department => {
@@ -368,7 +345,7 @@ $(document).on('click', '#addBtnPersonnel', function(){
 // adding personnel data****************************************************
 $(document).on('click', '#createPersonnelBtn', function(event) {
   event.preventDefault();//prevent the form from submitting
-  // console.log("Add Button clicked");
+
   $("#createPersonnelModal").modal("hide");
 
   let personnelData = {
@@ -392,9 +369,7 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
       type: "createPersonnel", 
       ...personnelData 
   });
-  
-  // Debug: Log the final request data
-  // console.log("Request data:", requestData);
+
 
   $.ajax({
       url: './../api/personnelAPI.php',
@@ -402,7 +377,6 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
       data: requestData,
       contentType: 'application/json',
       success: function(data) {
-        console.log(data);
           if (data.message) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
@@ -437,8 +411,6 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
 let selectedPersonnelID
 $(document).on('click', '.updatePersonnelBtn', function() {
   selectedPersonnelID = $(this).data('id');
-  console.log("I got click");
-  console.log(selectedPersonnelID);
 
   $.ajax({
     url: './../api/personnelAPI.php',
@@ -448,14 +420,12 @@ $(document).on('click', '.updatePersonnelBtn', function() {
 
         let personnelDepartment = data.departmentID;
 
-        console.log("personnel department", personnelDepartment);
         $("#editPersonnelFirstName").val(data.firstName);
         $("#editPersonnelLastName").val(data.lastName);
         $("#editPersonnelJobTitle").val(data.jobTitle);
         $("#editPersonnelEmailAddress").val(data.email);
         
         fetchAllDepartment().then(departmentData => {
-        // console.log(departmentData); // Log the department data for debugging
 
         let departmentDropdown = $("#editPersonnelDepartment");
         departmentDropdown.empty(); // Clear existing options
@@ -471,11 +441,8 @@ $(document).on('click', '.updatePersonnelBtn', function() {
       .catch(error => {
         console.error(error);
       });
-
-
     }
   })
-  console.log("personnelID",selectedPersonnelID)
 return selectedPersonnelID
 });
 
@@ -483,7 +450,7 @@ return selectedPersonnelID
 //updating personnel by id function
 $(document).on('click', '#updatePersonnelBtn', function(event) {
   event.preventDefault();
-  console.log("Button clicked");
+
   $('#editPersonnelModal').modal('hide');
   let personnelData = {
       id: selectedPersonnelID,
@@ -502,17 +469,11 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       return; 
   }
 
-  // Debug: Log the data being sent
-  console.log("Personnel Data before sending:", personnelData);
-  console.log("Selected ID:", selectedPersonnelID);
-
   let requestData = JSON.stringify({ 
       type: "updatePersonnel", 
       ...personnelData 
   });
   
-  // Debug: Log the final request data
-  console.log("Request data:", requestData);
 
   $.ajax({
       url: './../api/personnelAPI.php',
@@ -520,7 +481,6 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       data: requestData,
       contentType: 'application/json',
       success: function(data) {
-        console.log(data);
           if (data.message) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
@@ -552,10 +512,7 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
 
 let selectedPersonnelDeleteID;
 $(document).on('click', '.deletePersonnelBtn', function(){
-  console.log("delete btn click in personnel")
   selectedPersonnelDeleteID = $(this).data('id');
-  console.log(selectedPersonnelDeleteID);
-
 
   $('#confirmDeletePersonnelBtn').on('click', function(){
     $('#deletePersonnelModal').modal('hide');
@@ -564,7 +521,6 @@ $(document).on('click', '.deletePersonnelBtn', function(){
       method: "GET",
       data: { type: "deletePersonnelByID", id: selectedPersonnelDeleteID },
       success: function(data) {
-        console.log(data);
           if (data.message) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
@@ -594,7 +550,6 @@ $(document).on('click', '.deletePersonnelBtn', function(){
 
 $(document).on("keyup", ".searchInpPersonnel",function (event) {
   event.preventDefault();
-  console.log("search btn clicked");
   let searchValue = $(this).val();
   if (searchValue !== '') {
     $("#personnelTableBody").empty();
@@ -606,7 +561,6 @@ $(document).on("keyup", ".searchInpPersonnel",function (event) {
       data: { type: "searchPersonnel", searchValue: searchValue },
       dataType: 'json', // Ensure the response is parsed as JSON
       success: function(data) {
-        // console.log(data);
         // Iterate over the data and create table rows
         data.forEach(function(personnel) {
           var row = `
@@ -675,7 +629,6 @@ $(document).on('click', '.addBtnDepartment', function(){
 // creating department data****************************************************
 $(document).on('click', '#createDepartmentBtn', function(event) {
   event.preventDefault();//prevent the form from submitting
-  // console.log("Add Button clicked");
   $("#createDepartmentModal").modal("hide");
   
   let departmentData = {
@@ -739,23 +692,18 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
 let selectedDepartmentlID;
 $(document).on('click', '.updateDepartmentBtn', function() {
   selectedDepartmentlID = $(this).data('id');
-  console.log("I got in department id:", selectedDepartmentlID);
-
-  
 
   $.ajax({
     url: './../api/personnelAPI.php',
     method: "GET",
     data : {type: "getDepartmentByID", id: selectedDepartmentlID},
     success: function (data) {
-        // console.log(data);
+   
         let departmentLocation = data.locationID;
 
-        // console.log("department location", departmentLocation);
         $("#updateDepartment").val(data.name);
         
         fetchAllLocation().then(locationData => {
-        // console.log(locationData); // Log the location data for debugging
 
         let locationDropdown = $("#updateDepartmentLocation");
         locationDropdown.empty(); // Clear existing options
@@ -785,7 +733,6 @@ $(document).on('click', '.updateDepartmentBtn', function() {
       
     }
   })
-  console.log("selectedDepartmentlID",selectedDepartmentlID);
 return selectedDepartmentlID;
 });
   
@@ -847,11 +794,8 @@ $('#updateDepartmentBtn').on('click', function(event) {
 
 
 $(document).on('click', '.deleteDepartmentBtn', function(){
-  console.log("delete btn click in department")
 
   selectedDepartmentDeleteID = $(this).data('id');
-  console.log(selectedDepartmentDeleteID);
-
 
   $('#confirmDeleteDepartmentBtn').on('click', function() {
     $('#deleteDepartmentModal').modal('hide');
@@ -889,19 +833,17 @@ $(document).on('click', '.deleteDepartmentBtn', function(){
 // searching department
 $(document).on("keyup", ".searchInputDepartment",function (event) {
   event.preventDefault();
-  console.log("department search btn clicked");
   let searchValue = $(this).val();
   if (searchValue !== '') {
     $("#departmentTableBody").empty();
-    // $("#departmentTableBody").empty();
-    // $("#locationTableBody").empty();
+
     $.ajax({
       url: './../api/personnelAPI.php',
       method: "GET",
       data: { type: "searchDepartment", searchValue: searchValue },
-      dataType: 'json', // Ensure the response is parsed as JSON
+      dataType: 'json',
       success: function(data) {
-        // console.log(data);
+
         // Iterate over the data and create table rows
         data.forEach(function(department) {
           var row = `
@@ -943,7 +885,7 @@ $(document).on("keyup", ".searchInputDepartment",function (event) {
 // creating location data****************************************************
 $(document).on('click', '#createLocationBtn', function(event) {
   event.preventDefault();//prevent the form from submitting
-  // console.log("Add Button clicked");
+
   $("#createLocationModal").modal("hide");
   
   let locationData = {
@@ -964,9 +906,7 @@ $(document).on('click', '#createLocationBtn', function(event) {
       type: "createLocation", 
       ...locationData 
   });
-  
-  // Debug: Log the final request data
-  // console.log("Request data:", requestData);
+
 
   $.ajax({
       url: './../api/personnelAPI.php',
@@ -1006,19 +946,13 @@ $(document).on('click', '#createLocationBtn', function(event) {
 let selectedLocationID;
 $(document).on('click', '.updateLocationBtn', function() {
   selectedLocationID = $(this).data('id');
-  console.log("btn clicked in location id:", selectedLocationID);
-
-  
 
   $.ajax({
     url: './../api/personnelAPI.php',
     method: "GET",
     data : {type: "getLocationByID", id: selectedLocationID},
     success: function (data) {
-        // console.log(data);
-        // let departmentLocation = data.id;
 
-        // console.log("department location", departmentLocation);
         $("#updateLocation").val(data.name);
     },
     error: function(jqXHR, textStatus, errorThrown) {
@@ -1056,9 +990,6 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
       type: "updateLocation",
       ...locationData
   });
-  
-  // Debug: Log the final request data
-  console.log("Request data:", requestData);
 
   $.ajax({
       url: './../api/personnelAPI.php',
@@ -1094,11 +1025,8 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
 
 // deleting location 
 $(document).on('click', '.deleteLocationBtn', function(){
-  console.log("delete btn click in location")
 
   selectedLocationDeleteID = $(this).data('id');
-  console.log(selectedLocationDeleteID);
-
 
   $('#confirmDeleteLocationBtn').on('click',function(){
     $('#deleteLocationModal').modal('hide');
@@ -1137,20 +1065,19 @@ $(document).on('click', '.deleteLocationBtn', function(){
 // searchng location
 $(document).on("keyup", ".searchInputLocation",function (event) {
   event.preventDefault();
-  console.log("Location search input active");
+
   let searchValue = $(this).val();
-  console.log("search value",searchValue);
+
   if (searchValue !== '') {
     $("#locationTableBody").empty();
-    // $("#departmentTableBody").empty();
-    // $("#locationTableBody").empty();
+
     $.ajax({
       url: './../api/personnelAPI.php',
       method: "GET",
       data: { type: "searchLocation", searchValue: searchValue },
       dataType: 'json', // Ensure the response is parsed as JSON
       success: function(data) {
-        // console.log(data);
+
         // Iterate over the data and create table rows
         data.forEach(function(location) {
           var row = `
