@@ -608,7 +608,7 @@ $(document).on('click', '.addBtnDepartment', function(){
 
     let locationDropdown = $("#createDepartmentLocation");
     locationDropdown.empty(); // Clear existing options
-    locationDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
+    locationDropdown.append(`<option disabled value="">Select Location</option>`); // Add default option
 
     // Iterate over the department data and append options
     locationData.forEach(location => {
