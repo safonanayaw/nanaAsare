@@ -1,7 +1,7 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
 require_once '../config/Database.php';
 require_once '../models/Personnel.php';
@@ -143,7 +143,7 @@ try {
                             echo json_encode(["message" => "Department deleted successfully"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["message" => "Failed to delete department"]);
+                            echo json_encode(["message" => "Sorry cannot Delete this department, because is referrenced in personnel data."]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -197,7 +197,7 @@ try {
                             echo json_encode(["message" => "Location deleted successfully"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["message" => "Failed to delete location"]);
+                            echo json_encode(["message" => "Sorry cannot Delete this department, because is referrenced in department data."]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -233,7 +233,7 @@ try {
                 case 'createDepartment':
                     $result = $departmentModel->createDepartment($jsonData);
                     if($result){
-                    echo json_encode(["message" => "Department data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Department data added to database successfully"]);   
                     }else{
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to add department detail to database"]);
@@ -243,7 +243,7 @@ try {
                 case 'createLocation':
                     $result = $locationModel->createLocation($jsonData);
                     if($result){
-                    echo json_encode(["message" => "Location data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Location data added to database successfully"]);   
                     }else{
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to add location detail to database"]);

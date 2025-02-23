@@ -1,3 +1,4 @@
+
 html,
 body {
   background-color: #f9f6ee;
@@ -28,8 +29,8 @@ tr {
 thead th {
   position: sticky;
   top: 0;
-  background-color: white; /* Ensure the background color matches your table */
-  z-index: 1; /* Ensure it stays above the table rows */
+  background-color: white; 
+  z-index: 1; 
 }
 
 /* Responsive Table CSS */
@@ -43,12 +44,12 @@ thead th {
 /* Make the table stack on mobile */
 @media screen and (max-width: 767px) {
   /* Hide the table header on mobile */
-    #personnel-tab-pane thead {
+    #personnel-tab-pane thead, #departments-tab-pane thead, #locations-tab-pane thead {
     display: none;
   }
   
   /* Convert rows to blocks */
-  #personnel-tab-pane tbody tr {
+  #personnel-tab-pane tbody tr, #departments-tab-pane tbody tr,#locations-tab-pane tbody tr {
     display: block;
     margin-bottom: 1rem;
     border: 1px solid #dee2e6;
@@ -57,7 +58,7 @@ thead th {
   }
   
   /* Style each cell as a row with grid layout */
-    #personnel-tab-pane tbody td {
+    #personnel-tab-pane tbody td, #departments-tab-pane tbody td, #locations-tab-pane tbody td {
     display: grid;
     grid-template-columns: 40% 60%;
     padding: 0.5rem 0.75rem;
@@ -65,20 +66,33 @@ thead th {
     border-bottom: 1px solid #dee2e6;
   }
   
-    #personnel-tab-pane tbody td:last-child {
+    #personnel-tab-pane tbody td:last-child, #departments-tab-pane tbody td:last-child, #locations-tab-pane tbody td:last-child {
     border-bottom: none;
   }
   
   /* Add header labels using pseudo-elements */
-  #personnel-tab-pane tbody td:nth-child(1):before { content: "ID#: "; font-weight: bold; }
+  #personnel-tab-pane tbody td:nth-child(1):before, #departments-tab-pane tbody td:nth-child(1):before { content: "ID#: "; font-weight: bold; }
   #personnel-tab-pane tbody td:nth-child(2):before { content: "Name: "; font-weight: bold; }
   #personnel-tab-pane tbody td:nth-child(3):before { content: "Job Title: "; font-weight: bold; }
+
+  #departments-tab-pane tbody td:nth-child(2):before { content: "Department: "; font-weight: bold; }
+
+  #departments-tab-pane tbody td:nth-child(3):before { content: "Location: "; font-weight: bold; }
+
+  #departments-tab-pane tbody td:nth-child(4):before { content: "Actions: "; font-weight: bold; }
+
+  #locations-tab-pane tbody td:nth-child(1):before { content: "ID#: "; font-weight: bold; }
+
+  #locations-tab-pane tbody td:nth-child(2):before { content: "City: "; font-weight: bold; }
+
+  #locations-tab-pane tbody td:nth-child(3):before { content: "Actions: "; font-weight: bold; }
+
   #personnel-tab-pane tbody td:nth-child(4):before { content: "Department: "; font-weight: bold; }
   #personnel-tab-pane tbody td:nth-child(5):before { content: "Email: "; font-weight: bold; }
   #personnel-tab-pane tbody td:nth-child(6):before { content: "Actions: "; font-weight: bold; }
   
   /* Special handling for action buttons */
-    #personnel-tab-pane tbody td:last-child {
+    #personnel-tab-pane tbody td:last-child, #departments-tab-pane tbody td:last-child, #locations-tab-pane tbody td:last-child {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
@@ -86,12 +100,12 @@ thead th {
   }
   
   /* Restore display for all cells */
-    #personnel-tab-pane .d-none {
+    #personnel-tab-pane .d-none, #departments-tab-pane .d-none, #locations-tab-pane .d-none {
     display: grid !important;
   }
   
   /* Fix the last cell that contains buttons */
-    #personnel-tab-pane td:last-child.d-none {
+    #personnel-tab-pane td:last-child.d-none, #departments-tab-pane td:last-child.d-none, #locations-tab-pane td:last-child.d-none {
     display: flex !important;
   }
 }
@@ -99,18 +113,20 @@ thead th {
 /* Medium screens (tablets) */
 @media screen and (min-width: 768px) and (max-width: 991px) {
   /* Keep the default table layout but ensure all columns are visible */
-    #personnel-tab-pane .d-none {
+    #personnel-tab-pane .d-none, #departments-tab-pane .d-none, #locations-tab-pane .d-none {
     display: table-cell !important;
   }
   
   /* Make the table slightly more compact */
     #personnel-tab-pane th,
-    #personnel-tab-pane td {
+    #personnel-tab-pane td,  #departments-tab-pane th,
+    #departments-tab-pane td, #locations-tab-pane th,
+    #locations-tab-pane td {
     padding: 0.5rem 0.75rem;
   }
   
   /* Set a minimum width for the table to prevent tiny columns */
-    #personnel-tab-pane .table {
+    #personnel-tab-pane .table, #departments-tab-pane .table, #locations-tab-pane .table {
     min-width: 750px;
   }
 }
@@ -118,13 +134,15 @@ thead th {
 /* Large screens (desktops) */
 @media screen and (min-width: 992px) {
   /* Ensure all columns are visible */
-    #personnel-tab-pane .d-none {
+    #personnel-tab-pane .d-none, #departments-tab-pane .d-none, #locations-tab-pane .d-none {
     display: table-cell !important;
   }
   
   /* Allow the table to breathe more */
     #personnel-tab-pane th,
-    #personnel-tab-pane td {
+    #personnel-tab-pane td,  #departments-tab-pane th,
+    #departments-tab-pane td, #locations-tab-pane th,
+    #locations-tab-pane td {
     padding: 0.75rem;
   }
   
@@ -132,9 +150,19 @@ thead th {
   #personnel-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
   #personnel-tab-pane th:nth-child(2) { width: 20%; } /* Name */
   #personnel-tab-pane th:nth-child(3) { width: 17%; } /* Job Title */
-  #personnel-tab-pane th:nth-child(4) { width: 15%; } /* Department */
+  #personnel-tab-pane th:nth-child(4) { width: 15%; } /* departments */
   #personnel-tab-pane th:nth-child(5) { width: 25%; } /* Email */
   #personnel-tab-pane th:nth-child(6) { width: 15%; } /* Actions */
+
+  #departments-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
+  #departments-tab-pane th:nth-child(2) { width: 15%; } /* department */  
+  #departments-tab-pane th:nth-child(3) { width: 15%; } /* location */
+
+  #locations-tab-pane th:nth-child(1) { width: 8%; }  /* ID */
+  #locations-tab-pane th:nth-child(2) { width: 20%; } /* City */
+  #locations-tab-pane th:nth-child(6) { width: 15%; } /* Actions */
+
+
 }
 
 /* Ensure text doesn't wrap awkwardly */
@@ -144,7 +172,7 @@ thead th {
 
 /* Make buttons more touch-friendly on mobile */
 @media screen and (max-width: 767px) {
-    #personnel-tab-pane .btn-sm {
+    #personnel-tab-pane .btn-sm, #departments-tab-pane .btn-sm, #locations-tab-pane .btn-sm {
     padding: 0.375rem 0.75rem;
     font-size: 1rem;
   }

@@ -84,7 +84,7 @@ function populateDepartmentData(){
               <button type="button" class="btn btn-primary btn-sm updateDepartmentBtn" data-bs-toggle="modal" data-bs-target="#UpdateDepartmentModal" data-id="${department.id}">
                 <i class="fa-solid fa-pencil fa-fw"></i>
               </button>
-                <button id="deleteDepartmentBtn" type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDepartmentModal" data-id="${department.id}">
+                <button id="deleteDepartmentBtn" type="button" class="btn deleteDepartmentBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDepartmentModal" data-id="${department.id}">
                 <i class="fa-solid fa-trash fa-fw"></i>
               </button>
             </td>
@@ -364,29 +364,34 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          // console.log("Success response:", response);
-          // populatePersonnelData();
-          //refresh the page after 
-          location.reload();
-        $("#personnelBtn").click();
-          alert(`Personnel added successfully`);
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to add personnel. Check console for details.");
+      success: function(data) {
+        console.log(data);
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnPersonnel").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
   });
 });
-})
 
-// adding personnel data****************************************************
+
+// adding personnel data ends**********************************************
 
 
 //populate modal with personnel id data when updatePersonnelBtn is clicked
@@ -467,23 +472,28 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          console.log("Success response:", response);
-          // populatePersonnelData();
-        //refresh the page after 
-        location.reload();
-        $("#personnelBtn").click();
-          alert(`Personnel with ID: ${selectedPersonnelID} updated successfully`);
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to update personnel. Check console for details.");
+      success: function(data) {
+        console.log(data);
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnPersonnel").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
   });
 });
@@ -503,21 +513,27 @@ $(document).on('click', '.deletePersonnelBtn', function(){
       method: "GET",
       data: { type: "deletePersonnelByID", id: selectedPersonnelDeleteID },
       success: function(data) {
-        // console.log(data);
-        populatePersonnelData();
-        alert(`Personnel with ID: ${selectedPersonnelDeleteID} deleted successfully`);
-        //refresh the page after 
-        location.reload();
-        $("#personnelBtn").click();
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error details:', {
-          status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
-        });
+        console.log(data);
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnPersonnel").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
     });
 
@@ -587,10 +603,8 @@ $(document).on("keyup", ".searchInpPersonnel",function (event) {
 
 //populate department location dropdown when add department btn is click
 $(document).on('click', '.addBtnDepartment', function(){
-  // $("#createDepartmentModal").empty();
-  // console.log("create DEPARTMENT btn click");
+
   fetchAllLocation().then(locationData => {
-    // console.log(departmentData); // Log the department data for debugging
 
     let locationDropdown = $("#createDepartmentLocation");
     locationDropdown.empty(); // Clear existing options
@@ -618,38 +632,38 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
       locationID: parseInt($("#createDepartmentLocation").val())
   };
 
-
-
   let requestData = JSON.stringify({ 
       type: "createDepartment", 
       ...locationData 
   });
   
-  // Debug: Log the final request data
-  // console.log("Request data:", requestData);
 
   $.ajax({
       url: './../api/personnelAPI.php',
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          // console.log("Success response:", response);
-          // populatePersonnelData();
-          //refresh the page after 
-          // location.reload();
-          $("#departmentsBtn").click();
-          alert(`Department added successfully`);
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to add department. Check console for details.");
+      success: function(data) {
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnDepartment").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
   });
   
@@ -723,81 +737,82 @@ $('#updateDepartmentBtn').on('click', function(event) {
       locationID: $("#updateDepartmentLocation").val()
   };
 
-  // Debug: Log the data being sent
-  console.log("Department Data before sending:", departmentData);
-  console.log("Selected ID:", selectedDepartmentlID);
 
   let requestData = JSON.stringify({ 
       type: "updateDepartment",
       ...departmentData
   });
   
-  // Debug: Log the final request data
-  console.log("Request data:", requestData);
 
   $.ajax({
       url: './../api/personnelAPI.php',
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          console.log("Success response:", response);
-          
-        //refresh the page after 
-        $("#departmentsBtn").click();
-          alert(`Department with ID: ${selectedDepartmentlID} updated successfully`);
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to update department. Check console for details.");
+      success: function(data) {
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnDepartment").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
   });
 });
 
 
-$(document).on('click', '.deletePersonnelBtn', function(){
+$(document).on('click', '.deleteDepartmentBtn', function(){
   console.log("delete btn click in department")
 
   selectedDepartmentDeleteID = $(this).data('id');
   console.log(selectedDepartmentDeleteID);
 
 
-  $('#confirmDeleteDepartmentBtn').on('click',function(){
+  $('#confirmDeleteDepartmentBtn').on('click', function() {
     $('#deleteDepartmentModal').modal('hide');
-    location.reload();
     $.ajax({
-      url: './../api/personnelAPI.php',
-      method: "GET",
-      data: { type: "deleteDepartmentByID", id: selectedDepartmentDeleteID },
-      success: function(data) {
-        // console.log(data);
-        populateDepartmentData();
-        alert(`Department with ID: ${selectedDepartmentDeleteID} deleted successfully`);
-        
-        //refresh the page after 
-        location.reload();
-        $("#departmentBtn").click();
-
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error details:', {
-          status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
-        });
-        
-      }
+        url: './../api/personnelAPI.php',
+        type: "json",
+        method: "GET",
+        data: { type: "deleteDepartmentByID", id: selectedDepartmentDeleteID },
+        success: function(data) {
+            if (data.message) {
+                $("#notificationMessage").text(data.message);
+                $("#refreshBtnDepartment").click();
+                $("#notificationModal").modal("show");
+            } else {
+                throw new Error("Unexpected response format");
+            }
+          },
+          error: function(jqXHR) {
+            try {
+              var response = JSON.parse(jqXHR.responseText);
+              if (response.message) {
+                  $("#notificationMessage").text(response.message);
+              } else {
+                  $("#notificationMessage").text("An unexpected error occurred.");
+              }
+          } catch (e) {
+              $("#notificationMessage").text("An unexpected error occurred.");
+          }     
+          $("#notificationModal").modal("show");
+        }
     });
-
-  })
+  });
 });
 
 // searching department
@@ -879,24 +894,28 @@ $(document).on('click', '#createLocationBtn', function(event) {
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          // console.log("Success response:", response);
-          // populatePersonnelData();
-          //refresh the page after 
-          // location.reload();
-          $("#LocationBtn").click();
-          alert(`Location added successfully`);
+      success: function(data) {
+        if (data.message) {
+            $("#notificationMessage").text(data.message);
+            $("#refreshBtnLocation").click();
+            $("#notificationModal").modal("show");
+        } else {
+            throw new Error("Unexpected response format");
+        }
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to add department. Check console for details.");
-      }
+      error: function(jqXHR) {
+        try {
+          var response = JSON.parse(jqXHR.responseText);
+          if (response.message) {
+              $("#notificationMessage").text(response.message);
+          } else {
+              $("#notificationMessage").text("An unexpected error occurred.");
+          }
+      } catch (e) {
+          $("#notificationMessage").text("An unexpected error occurred.");
+      }     
+      $("#notificationModal").modal("show");
+    }
   });
   
 });
@@ -933,7 +952,6 @@ $(document).on('click', '.updateLocationBtn', function() {
       
     }
   })
-  console.log("selectedLocationDeleteID",selectedLocationID);
 return selectedLocationID;
 });
 
@@ -945,10 +963,6 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
       id: selectedLocationID,
       name: $("#updateLocation").val()
   };
-
-  // Debug: Log the data being sent
-  console.log("Location Data before sending:", locationData);
-  console.log("Selected ID:", selectedLocationID);
 
   let requestData = JSON.stringify({ 
       type: "updateLocation",
@@ -963,23 +977,28 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
       method: 'POST',
       data: requestData,
       contentType: 'application/json',
-      success: function(response) {
-          console.log("Success response:", response);
-          
-        //refresh the page after 
-        $("#locationBtn").click();
-          alert(`Location with ID: ${selectedLocationID} updated successfully`);
+      success: function(data) {
+        if (data.message) {
+            $("#notificationMessage").text(data.message);
+            $("#refreshBtnLocation").click();
+            $("#notificationModal").modal("show");
+        } else {
+            throw new Error("Unexpected response format");
+        }
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-          console.error('Error details:', {
-              status: jqXHR.status,
-              statusText: jqXHR.statusText,
-              responseText: jqXHR.responseText,
-              textStatus: textStatus,
-              errorThrown: errorThrown
-          });
-          alert("Failed to update location. Check console for details.");
-      }
+      error: function(jqXHR) {
+        try {
+          var response = JSON.parse(jqXHR.responseText);
+          if (response.message) {
+              $("#notificationMessage").text(response.message);
+          } else {
+              $("#notificationMessage").text("An unexpected error occurred.");
+          }
+      } catch (e) {
+          $("#notificationMessage").text("An unexpected error occurred.");
+      }     
+      $("#notificationModal").modal("show");
+    }
   });
 });
 
@@ -998,25 +1017,27 @@ $(document).on('click', '.deleteLocationBtn', function(){
       url: './../api/personnelAPI.php',
       method: "GET",
       data: { type: "deleteLocationByID", id: selectedLocationDeleteID },
-      success: function(data) {
-        console.log(data);
-        $("#locationBtn").click();
-        alert(`Location with ID: ${selectedLocationDeleteID} deleted successfully`);
-        
-        //refresh the page after 
-        
-        
-
-      },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error details:', {
-          status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
-        });
-        
+        success: function(data) {
+          if (data.message) {
+              $("#notificationMessage").text(data.message);
+              $("#refreshBtnLocation").click();
+              $("#notificationModal").modal("show");
+          } else {
+              throw new Error("Unexpected response format");
+          }
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
       }
     });
 
@@ -1076,3 +1097,7 @@ $(document).on("keyup", ".searchInputLocation",function (event) {
     populateLocationData();
   }
 });
+
+});
+
+locations

@@ -98,10 +98,28 @@ class Department{
     }
 
     public function deleteDepartmentByID($id){
-        $query = "DELETE FROM " . $this->departmentTable . " WHERE id = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        try{
+            //check if department is reference by any personnel
+            $query = "SELECT COUNT(*) as count FROM " . $this->personnelTable . " WHERE departmentID = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if($result['count'] > 0){
+                return false;
+            }
+
+            $query = "DELETE FROM " . $this->departmentTable . " WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+            
+        }catch(Exception $e){
+            error_log("Error deleting department", $e->getMessage());
+            return false;
+        }
+
     }
 
 

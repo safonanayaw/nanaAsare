@@ -111,10 +111,28 @@ class Location{
     }
 
     public function deleteLocationByID($id){
-        $query = "DELETE FROM " . $this->locationTable . " WHERE id = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        try {
+            // Check if the location is referenced by any department
+            $query = "SELECT COUNT(*) as count FROM " . $this->departmentTable . " WHERE locationID = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+            if ($result['count'] > 0) {
+                return false; // Cannot delete $id since locationID is referenced by department
+            }
+    
+            // Proceed to delete the location
+            $query = "DELETE FROM " . $this->locationTable . " WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            // Log the exception
+            error_log("Error deleting location: ", $e->getMessage());
+            return false;
+        }
     }
 
 
