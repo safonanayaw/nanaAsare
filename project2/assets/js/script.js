@@ -1,3 +1,12 @@
+function showLoader() {
+  $("#preloader").addClass("active");
+}
+//hide loader
+function hideLoader() {
+  $("#preloader").removeClass("active");
+}
+showLoader();
+
 //fetch and populate personnel data
 function populatePersonnelData(){
   $("#searchInputAndBtns").empty();
@@ -220,6 +229,23 @@ $(document).ready(function (){
     $("#locationsBtn").click();
     console.log("you clicked me location");
   });
+
+  //setTimeout for spinner when btn is clicked********
+  $(document).on('click', '#personnelBtn',function(){
+    showLoader();
+    setTimeout(hideLoader, 1000);
+  });
+  
+  $(document).on('click', '#departmentsBtn',function(){
+    showLoader();
+    setTimeout(hideLoader, 1000);
+  });
+  
+  $(document).on('click', '#locationsBtn',function(){
+    showLoader();
+    setTimeout(hideLoader, 1000);
+  });
+  //setTimeout for spinner when btn is clicked********
   //???????????????? add reloader spinner************???????
 
   // show or hide search and btn container
@@ -310,9 +336,14 @@ $(document).ready(function (){
 
 
 
-$("#refreshBtn").on('click', function(){
-  location.reload();
-})
+
+// $(document).on('click', '#refreshBtnPersonnel',function(){
+//   location.reload();
+
+//   setTimeout(function(){
+//     $("#personnelBtn").click();
+//   }, 3000);
+// });
 
 //populate department when add personnel btn is click
 $(document).on('click', '#addBtnPersonnel', function(){
@@ -494,6 +525,8 @@ $(document).on('click', '#updatePersonnelBtn', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnPersonnel").click();
               $("#notificationModal").modal("show");
+
+              
               //reset the form
               $("#editPersonnelForm")[0].reset();
           } else {
@@ -1154,7 +1187,7 @@ $(document).on("keyup", ".searchInputLocation",function (event) {
     populateLocationData();
   }
 });
+setTimeout(hideLoader, 2000);
 
 });
 
-locations
