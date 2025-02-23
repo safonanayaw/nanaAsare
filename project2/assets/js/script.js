@@ -219,7 +219,7 @@ $(document).ready(function (){
 
   //setTimeout for spinner when btn is clicked********
   $(document).on('click', '#personnelBtn',function(){
-    
+
     showLoader();
     setTimeout(hideLoader, 1000);
   });
