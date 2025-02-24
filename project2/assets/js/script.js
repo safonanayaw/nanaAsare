@@ -19,7 +19,7 @@ function populatePersonnelData(){
       <button id="refreshBtnPersonnel" type="button" class="btn btn-primary refreshBtnPersonnel">
         <i class="fa-solid fa-refresh fa-fw"></i>
       </button>
-      <button id="filterBtnPersonnel" type="button" class="btn btn-primary filterBtnPersonnel">
+      <button id="filterBtnPersonnel" data-bs-target="#filterModalPersonnel" type="button" class="btn btn-primary filterBtnPersonnel">
         <i class="fa-solid fa-filter fa-fw"></i>
       </button>          
       <button id="addBtnPersonnel" type="button" class="btn btn-primary addBtnPersonnel" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
@@ -249,7 +249,7 @@ $(document).ready(function (){
           <button id="refreshBtnPersonnel" type="button" class="btn btn-primary refreshBtnPersonnel">
             <i class="fa-solid fa-refresh fa-fw"></i>
           </button>
-          <button id="filterBtnPersonnel" type="button" class="btn btn-primary filterBtnPersonnel">
+          <button id="filterBtnPersonnel" type="button" data-bs-target="#filterModalPersonnel" class="btn btn-primary filterBtnPersonnel">
             <i class="fa-solid fa-filter fa-fw"></i>
           </button>          
           <button id="addBtnPersonnel" type="button" class="btn btn-primary addBtnPersonnel" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
@@ -257,12 +257,6 @@ $(document).ready(function (){
           </button>
         </div>
       </div>`);
-
-    // $(".searchInpPersonnel").show();
-    // $(".filterBtnPersonnel").show();
-    // $(".addBtnPersonnel").show();
-    // $(".refreshBtnPersonnel").show();
-
   });
 
 
@@ -322,6 +316,67 @@ $(document).ready(function (){
 
   });
 
+  // personnel filter starts here**********************************************************
+
+  $(document).on('click', '#filterBtnPersonnel', function(){
+    console.log("filter modal showed");
+    // fetch and populate department filter 
+    fetchAllDepartment().then(departmentData => {
+      let departmentFilterDropdown = $("#selectDepartmentOption");
+      departmentFilterDropdown.empty();
+      departmentData.forEach(department => {
+        departmentFilterDropdown.append(`
+            <li>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="${department.id}" id="option1">
+                  <label class="form-check-label" for="option1">${department.name}</label>
+              </div>
+          </li>`
+        )
+      })
+      
+    }).catch(error => {
+      console.error(error);
+    });
+
+    //fetch and populate location filter
+    fetchAllLocation().then(locationData => {
+      let locationFilterDropdown = $("#selectLocationOption");
+      locationFilterDropdown.empty();
+      locationData.forEach(location=>{
+        locationFilterDropdown.append(`
+          <li>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="${location.id}" id="option1">
+                  <label class="form-check-label" for="option1">${location.name}</label>
+              </div>
+          </li>`
+        )
+      })
+    }).catch(error => {
+      console.error(error);
+    });
+    $("#filterModalPersonnel").modal("show");
+
+    $('#applyFilterBtn').on('click', function() {
+      // Get all selected options
+      let selectedOptions = [];
+      $('.dropdown-menu .form-check-input:checked').each(function() {
+          selectedOptions.push($(this).val());
+      });
+
+      // Log the selected options (for debugging)
+      console.log("Selected Options:", selectedOptions);
+
+      // Perform filtering logic here
+      // Example: Filter a table or list based on the selected options
+
+      // Close the modal
+      $('#filterModalPersonnel').modal('hide');
+  })
+})
+
+// personnel filter ends here**********************************************************
 
 //populate department when add personnel btn is click
 $(document).on('click', '#addBtnPersonnel', function(){
@@ -1117,4 +1172,3 @@ $(document).on("keyup", ".searchInputLocation",function (event) {
 setTimeout(hideLoader, 2000);
 
 });
-

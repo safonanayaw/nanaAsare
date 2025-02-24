@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Directory</title>
-    <!-- Include Bootstrap CSS -->
+   
     <link rel="stylesheet" href="../assets/css/bootstrap-5.3.3-dist/css/bootstrap.min.css" />
-    <!-- Include Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+   
+    <link href="../assets/fontawesome/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="../assets/image/companyDirectoryFavicon.png"/>
-    <!-- Include custom CSS if any -->
+    
     <link href="../assets/css/style.css" rel="stylesheet">
 </head>
 
@@ -490,6 +490,51 @@
   </div>
 </div>
 
+
+ <!-- Filter Modal -->
+<div class="modal fade" id="filterModalPersonnel" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="filterModalLabel">Filter Personnel</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <!-- Dropdown with Checkboxes -->
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                  By Department
+                </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <div id="selectDepartmentOption" class="row">
+
+                        <!-- department filter checkbox comes here -->
+                      
+                      </div>
+                  </ul>
+
+
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                  By Locations
+                </button>
+                  
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <div id="selectLocationOption" class="row">
+                        <!-- location filter checkbox comes here -->
+                  </div>
+                </ul>
+
+
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="applyFilterBtn">Apply Filter</button>
+          </div>
+      </div>
+  </div>
+</div>
+
     <footer class="border-top text-center fw-bold">
       <p class="fw-light my-3">Company Directory version 1.0</p>
     </footer>
@@ -497,7 +542,7 @@
 
 
 
-<!-- Include Bootstrap JS and dependencies -->
+
 <script src="../assets/js/jquery-3.6.0.min.js"></script>
 <script src="../assets/css/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/script.js"></script>
