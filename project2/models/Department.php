@@ -47,7 +47,7 @@ class Department{
         $query = "SELECT " . $this->departmentTable . ".*, " . $this->locationTable . ".name AS departmentLocation 
         FROM " . $this->departmentTable . " 
         JOIN " . $this->locationTable . " 
-        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id";
+        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id ORDER BY " . $this->departmentTable . ".id ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -132,7 +132,7 @@ class Department{
             JOIN " . $this->locationTable . " 
             ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
             WHERE " . $this->departmentTable . ".name LIKE :searchValue 
-            OR " . $this->locationTable . ".name LIKE :searchValue";
+            OR " . $this->locationTable . ".name LIKE :searchValue ORDER BY " . $this->departmentTable . ".id ASC";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';

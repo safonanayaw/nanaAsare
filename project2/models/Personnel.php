@@ -50,7 +50,7 @@ class Personnel{
         $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
           FROM " . $this->personnelTable . " 
           JOIN " . $this->departmentTable . " 
-          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id";
+          ON " . $this->personnelTable . " .departmentID = " . $this->departmentTable . ".id ORDER BY " . $this->personnelTable . ".id ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -128,7 +128,7 @@ class Personnel{
             OR " . $this->personnelTable . ".lastName LIKE :searchValue 
             OR " . $this->personnelTable . ".jobTitle LIKE :searchValue 
             OR " . $this->personnelTable . ".email LIKE :searchValue 
-            OR " . $this->departmentTable . ".name LIKE :searchValue";
+            OR " . $this->departmentTable . ".name LIKE :searchValue ORDER BY " . $this->personnelTable . ".id ASC";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';
@@ -148,7 +148,7 @@ class Personnel{
         $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
           FROM " . $this->personnelTable . " 
           JOIN " . $this->departmentTable . " 
-          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id" . " WHERE departmentID IN ($placeholders)";
+          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id" . " WHERE departmentID IN ($placeholders) ORDER BY " . $this->personnelTable . ".id ASC";
         
         $stmt = $this->conn->prepare($query);
 

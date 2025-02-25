@@ -40,7 +40,7 @@ class Location{
 
     public function readLocation() {
         try {
-            $query = "SELECT * FROM " . $this->locationTable;
+            $query = "SELECT * FROM " . $this->locationTable . " ORDER BY " . $this->locationTable . ".id ASC";
             $stmt = $this->conn->prepare($query);
     
             // Execute the query and check for errors
@@ -139,7 +139,7 @@ class Location{
     public function searchLocation($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT * FROM " . $this->locationTable . " WHERE name LIKE :searchValue";
+            $query = "SELECT * FROM " . $this->locationTable . " WHERE name LIKE :searchValue ORDER BY " . $this->locationTable . ".id ASC";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';
