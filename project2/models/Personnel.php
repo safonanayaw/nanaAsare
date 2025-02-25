@@ -139,6 +139,26 @@ class Personnel{
             return false;
         }
     }
+
+    public function searchPersonnelByDepartmentIDs($departmentIDs){
+        // convert array to comma separated string
+        $placeholders = implode(',',array_fill(0, count($departmentIDs), '?'));
+        // $query = "SELECT * FROM " . $this->personnelTable . " WHERE departmentID IN ($placeholders)";
+
+        $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
+          FROM " . $this->personnelTable . " 
+          JOIN " . $this->departmentTable . " 
+          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id" . " WHERE departmentID IN ($placeholders)";
+        
+        $stmt = $this->conn->prepare($query);
+
+        foreach($departmentIDs as $key => $value){
+            $stmt->bindValue($key + 1, $value, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 //personnel database queries functions ends here ********************
 
 

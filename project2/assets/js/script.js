@@ -319,7 +319,7 @@ $(document).ready(function (){
   // personnel filter starts here**********************************************************
 
   $(document).on('click', '#filterBtnPersonnel', function(){
-    console.log("filter modal showed");
+
     // fetch and populate department filter 
     fetchAllDepartment().then(departmentData => {
       let departmentFilterDropdown = $("#selectDepartmentOption");
@@ -365,14 +365,69 @@ $(document).ready(function (){
           selectedOptions.push($(this).val());
       });
 
-      // Log the selected options (for debugging)
-      console.log("Selected Options:", selectedOptions);
 
-      // Perform filtering logic here
-      // Example: Filter a table or list based on the selected options
+      if (selectedOptions.length === 0) {
+        $("#notificationMessage").text("Sorry No filter options checked, try again");
+        $("#notificationModal").modal("show");
+        return; // Stop further execution
+    }
 
+      let filterData = JSON.stringify({
+        type: "filterPersonnel",
+        departmentIDs: selectedOptions
+      });
+      $("#personnelTableBody").empty();
       // Close the modal
       $('#filterModalPersonnel').modal('hide');
+      $.ajax({
+        url: "./../api/personnelAPI.php",
+        method: "POST",
+        contentType: "application/json",
+        data: filterData,
+        success: function (data){
+          // console.log("response data", data);
+          // Iterate over the data and create table rows
+        data.forEach(function(personnel) {
+          var row = `
+                <tr>
+                    <td class="align-middle text-nowrap d-none d-sm-table-cell">${personnel.id}</td>
+                    <td class="align-middle text-nowrap">
+                        <span>${personnel.firstName}, ${personnel.lastName}</span>
+                        <div class="d-md-none small text-muted mt-1">
+                            <div>${personnel.jobTitle}</div>
+                            <div>${personnel.departmentName}</div>
+                        </div>
+                    </td>
+                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
+                    <td class="align-middle text-nowrap d-none d-lg-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
+                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
+                    <td class="text-end text-nowrap">
+                        <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
+                            <i class="fa-solid fa-pencil fa-fw"></i>
+                        </button>
+                        <button type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${personnel.id}">
+                            <i class="fa-solid fa-trash fa-fw"></i>
+                        </button>
+                    </td>
+                </tr>
+          `;
+          $('#personnelTableBody').append(row);
+        });
+        },
+        error: function(jqXHR) {
+          try {
+            var response = JSON.parse(jqXHR.responseText);
+            if (response.message) {
+                $("#notificationMessage").text(response.message);
+            } else {
+                $("#notificationMessage").text("An unexpected error occurred.");
+            }
+        } catch (e) {
+            $("#notificationMessage").text("An unexpected error occurred.");
+        }     
+        $("#notificationModal").modal("show");
+      }
+      })
   })
 })
 

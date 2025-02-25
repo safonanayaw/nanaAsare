@@ -119,6 +119,7 @@ try {
                     }
                     break;
 
+
                 case 'deletePersonnelByID':
                     if (isset($_GET['id'])) {
                         $id = $_GET['id'];
@@ -279,6 +280,48 @@ try {
                         echo json_encode(["success" => false, "message" => "Failed to update location"]);
                     }
                     break;
+
+                    case 'filterPersonnel':
+            
+                        if (isset($jsonData['departmentIDs'])) {
+                            $departmentIDs = $jsonData['departmentIDs']; 
+                    
+                            // Sanitize input
+                            $sanitizeIDs = array_map('intval', $departmentIDs);
+                            $sanitizeIDs = array_unique($sanitizeIDs);
+                    
+                            if (empty($sanitizeIDs)) {
+                                echo json_encode(["success" => false, "message" => "No department filter options provided"]);
+                                exit;
+                            }
+                    
+                            try {
+                                $result = $personnelModel->searchPersonnelByDepartmentIDs($sanitizeIDs);
+                                if ($result) {
+                                    echo json_encode($result);
+                                } else {
+                                    http_response_code(404); // Not Found
+                                    echo json_encode(["success" => false, "message" => "No results found"]);
+                                }
+                            } catch (Exception $e) {
+                                http_response_code(500); // Internal Server Error
+                                echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
+                            }
+                        } else {
+                            http_response_code(400); // Bad Request
+                            echo json_encode(["message" => "Search parameter is required"]);
+                        }
+                        break;
+
+                        $result = $personnelModel->searchPersonnelByDepartmentIDs($sanitizeIDs);
+                        if ($result) {
+                            echo json_encode(["success" => true, "message" => "Location updated successfully"]);
+                        } else {
+                            http_response_code(500);
+                            echo json_encode(["success" => false, "message" => "Failed to update location"]);
+                        }
+                        break;
+
 
                 default:
                     http_response_code(400);
