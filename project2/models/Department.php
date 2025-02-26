@@ -127,7 +127,7 @@ class Department{
         if ($searchValue) {
 
             $query = "SELECT " . $this->departmentTable . ".*, " .
-            $this->locationTable . ".name AS locationName 
+            $this->locationTable . ".name AS departmentLocation 
             FROM " . $this->departmentTable . " 
             JOIN " . $this->locationTable . " 
             ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 

@@ -1,110 +1,41 @@
-function showLoader() {
-  $("#preloader").addClass("active");
-}
-//hide loader
-function hideLoader() {
-  $("#preloader").removeClass("active");
-}
-showLoader();
+import { updateHeadDiv, populatePersonnelTable, populateDepartmentTable, populateLocationTable } from "./functions.js";
+
+updateHeadDiv();
+
+
 
 //fetch and populate personnel data
 function populatePersonnelData(){
-  $("#searchInputAndBtns").empty();
-
-  $("#searchInputAndBtns").html(`<div class="col-md-6 col-8">
-    <input id="searchInpPersonnel" class="form-control searchInpPersonnel" placeholder="search">
-  </div>
-  <div class="col-md-6 col-4 text-end">
-    <div class="btn-group btn-group-sm btn-group-md-normal" role="group" aria-label="buttons">
-      <button id="refreshBtnPersonnel" type="button" class="btn btn-primary refreshBtnPersonnel">
-        <i class="fa-solid fa-refresh fa-fw"></i>
-      </button>
-      <button id="filterBtnPersonnel" data-bs-target="#filterModalPersonnel" type="button" class="btn btn-primary filterBtnPersonnel">
-        <i class="fa-solid fa-filter fa-fw"></i>
-      </button>          
-      <button id="addBtnPersonnel" type="button" class="btn btn-primary addBtnPersonnel" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
-        <i class="fa-solid fa-plus fa-fw"></i>
-      </button>
-    </div>
-  </div>`);
-
   $.ajax({
-    url: './../api/personnelAPI.php',
-    method: 'GET',
-    dataType: 'json',
-    data: {type: "getAllPersonnel"},
-    success: function(data) {
-      // Clear the existing table body
-      $('#personnelTableBody').empty();
-
-      // Iterate over the data and create table rows
-      data.forEach(function(personnel) {
-        var row = `
-          <tr>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.id}</td>
-            <td class="align-middle text-nowrap">${personnel.firstName}, ${personnel.lastName}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
-            <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
-                <i class="fa-solid fa-pencil fa-fw"></i>
-              </button>
-              <button id="deletePersonnelBtn" type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${personnel.id}">
-                <i class="fa-solid fa-trash fa-fw"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-        $('#personnelTableBody').append(row);
-      });
-
-
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('Error: ' + textStatus, errorThrown); // Handle any errors
-    }
-  });
-}
+      url: './../api/personnelAPI.php',
+      method: 'GET',
+      dataType: 'json',
+      data: {type: "getAllPersonnel"},
+      success: function(data) {
+          populatePersonnelTable(data);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+      }
+    });
+};
 
 
 //fetch and populate personnel data
 function populateDepartmentData(){
-  $.ajax({
-    url: './../api/personnelAPI.php',
-    method: 'GET',
-    dataType: 'json',
-    data: {type: "getDepartment"},
-    success: function(data) {
-      // Clear the existing table body
-      $('#departmentTableBody').empty();
-
-      // Iterate over the data and create table rows
-      data.forEach(function(department) {
-        var row = `
-          <tr>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.id}</td>
-            <td class="align-middle text-nowrap">${department.name}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.departmentLocation}</td>
-
-            <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updateDepartmentBtn" data-bs-toggle="modal" data-bs-target="#UpdateDepartmentModal" data-id="${department.id}">
-                <i class="fa-solid fa-pencil fa-fw"></i>
-              </button>
-                <button id="deleteDepartmentBtn" type="button" class="btn deleteDepartmentBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDepartmentModal" data-id="${department.id}">
-                <i class="fa-solid fa-trash fa-fw"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-        $('#departmentTableBody').append(row);
-      });
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('Error: ' + textStatus, errorThrown); // Handle any errors
-    }
-  });
-}
+    $.ajax({
+      url: './../api/personnelAPI.php',
+      method: 'GET',
+      dataType: 'json',
+      data: {type: "getDepartment"},
+      success: function(data) {
+        populateDepartmentTable(data);
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+      }
+    });
+  }
 
 
 //fetch and populate personnel data
@@ -115,30 +46,7 @@ function populateLocationData(){
     dataType: 'json',
     data: {type: "getLocation"},
     success: function(data) {
-      // Clear the existing table body
-    
-      $('#locationTableBody').empty();
-
-      // Iterate over the data and create table rows
-      data.forEach(function(location) {
-        var row = `
-          <tr>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${location.id}</td>
-            <td class="align-middle text-nowrap">${location.name}</td>
-
-
-            <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updateLocationBtn" data-bs-toggle="modal" data-bs-target="#UpdateLocationModal" data-id="${location.id}">
-                <i class="fa-solid fa-pencil fa-fw"></i>
-              </button>
-              <button id="deleteLocationBtn" type="button" class="btn deleteLocationBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteLocationModal" data-id="${location.id}">
-              <i class="fa-solid fa-trash fa-fw"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-        $('#locationTableBody').append(row);
-      });
+      populateLocationTable(data);
     },
     error: function(jqXHR, textStatus, errorThrown) {
       console.error('Error: ' + textStatus, errorThrown); // Handle any errors
@@ -201,124 +109,31 @@ function fetchAllLocation() {
 
 $(document).ready(function (){
 
-  //???????????????? add reloader spinner************???????
-  // refresh btn for personnel
-  $(document).on('click', '#refreshBtnPersonnel', function(){
-    $("#personnelBtn").click();
-  });
-
-   // refresh btn for department
-   $(document).on('click', '#refreshBtnDepartment', function(){
-    $("#departmentsBtn").click();
-  });
-
-   // refresh btn for location
-   $(document).on('click', '#refreshBtnLocation', function(){
-    $("#locationsBtn").click();
-  });
-
-  //setTimeout for spinner when btn is clicked********
-  $(document).on('click', '#personnelBtn',function(){
-
-    showLoader();
-    setTimeout(hideLoader, 1000);
-  });
   
-  $(document).on('click', '#departmentsBtn',function(){
-    showLoader();
-    setTimeout(hideLoader, 1000);
-  });
-  
-  $(document).on('click', '#locationsBtn',function(){
-    showLoader();
-    setTimeout(hideLoader, 1000);
-  });
   //setTimeout for spinner when btn is clicked********
   //???????????????? add reloader spinner************???????
 
   // show or hide search and btn container
   $("#personnelBtn").on('click', function(){
     populatePersonnelData();
-    $("#searchInputAndBtns").empty();
-
-    $("#searchInputAndBtns").html(`<div class="col-md-6 col-8">
-        <input id="searchInpPersonnel" class="form-control searchInpPersonnel" placeholder="search">
-      </div>
-      <div class="col-md-6 col-4 text-end">
-        <div class="btn-group btn-group-sm btn-group-md-normal" role="group" aria-label="buttons">
-          <button id="refreshBtnPersonnel" type="button" class="btn btn-primary refreshBtnPersonnel">
-            <i class="fa-solid fa-refresh fa-fw"></i>
-          </button>
-          <button id="filterBtnPersonnel" type="button" data-bs-target="#filterModalPersonnel" class="btn btn-primary filterBtnPersonnel">
-            <i class="fa-solid fa-filter fa-fw"></i>
-          </button>          
-          <button id="addBtnPersonnel" type="button" class="btn btn-primary addBtnPersonnel" data-bs-toggle="modal" data-bs-target="#createPersonnelModal">
-            <i class="fa-solid fa-plus fa-fw"></i>
-          </button>
-        </div>
-      </div>`);
+    updateHeadDiv();
   });
 
 
   $("#departmentsBtn").on('click', function(){
     populateDepartmentData();
-    $("#searchInputAndBtns").empty();
-    $("#searchInputAndBtns").html(`<div class="col-md-6 col-8">
-          <input id="searchInpDepartment" class="form-control searchInputDepartment" placeholder="search">
-        </div>
-        <div class="col-md-6 col-4 text-end">
-          <div class="btn-group btn-group-sm btn-group-md-normal" role="group" aria-label="buttons">
-            <button id="refreshBtnDepartment" type="button" class="btn btn-primary refreshBtnDepartment">
-              <i class="fa-solid fa-refresh fa-fw"></i>
-            </button>
-            <button id="filterBtnDepartment" type="button" class="btn btn-primary filterBtnDepartment">
-              <i class="fa-solid fa-filter fa-fw"></i>
-            </button>          
-            <button id="addBtnDepartment" type="button" class="btn btn-primary addBtnDepartment" data-bs-toggle="modal" data-bs-target="#createDepartmentModal">
-              <i class="fa-solid fa-plus fa-fw"></i>
-            </button>
-          </div>
-        </div>`);
-
-    $(".searchInputDepartment").show();
-    $(".refreshBtnDepartment").show();
-    $(".filterBtnDepartment").hide();
-    $(".addBtnDepartment").show();
-
-
+    updateHeadDiv("searchBtnDepartment", "refreshBtnDepartment", "filterBtnDepartment", "addBtnDepartment", "#createDepartmentModal");
   });
   
   
   $("#locationsBtn").on('click', function(){
     populateLocationData();
-    $("#searchInputAndBtns").empty();
-    $("#searchInputAndBtns").html(`<div class="col-md-6 col-8">
-          <input id="searchInpLocation" class="form-control searchInputLocation" placeholder="search">
-        </div>
-        <div class="col-md-6 col-4 text-end">
-          <div class="btn-group btn-group-sm btn-group-md-normal" role="group" aria-label="buttons">
-            <button id="refreshBtnLocation" type="button" class="btn btn-primary refreshBtnLocation">
-              <i class="fa-solid fa-refresh fa-fw"></i>
-            </button>
-            <button id="filterBtnLocation" type="button" class="btn btn-primary filterBtnLocation">
-              <i class="fa-solid fa-filter fa-fw"></i>
-            </button>          
-            <button id="addBtnLocation" type="button" class="btn btn-primary addBtnLocation" data-bs-toggle="modal" data-bs-target="#createLocationModal">
-              <i class="fa-solid fa-plus fa-fw"></i>
-            </button>
-          </div>
-        </div>`);
-
-    $(".searchInpLocation").hide();
-    $(".filterBtnLocation").hide();
-    $(".addBtnLocation").show();
-    $(".refreshBtnLocation").show();
-
+    updateHeadDiv("searchBtnLocation", "refreshBtnLocation", "filterBtnLocation", "addBtnLocation", "#createLocationModal")
   });
 
   // personnel filter starts here**********************************************************
 
-  $(document).on('click', '#filterBtnPersonnel', function(){
+  $(document).on('click', '#filterBtn', function(){
 
     // fetch and populate department filter 
     fetchAllDepartment().then(departmentData => {
@@ -379,40 +194,14 @@ $(document).ready(function (){
       $("#personnelTableBody").empty();
       // Close the modal
       $('#filterModalPersonnel').modal('hide');
+      //fetch the personnel data base on filter options
       $.ajax({
         url: "./../api/personnelAPI.php",
         method: "POST",
         contentType: "application/json",
         data: filterData,
         success: function (data){
-          // console.log("response data", data);
-          // Iterate over the data and create table rows
-        data.forEach(function(personnel) {
-          var row = `
-                <tr>
-                    <td class="align-middle text-nowrap d-none d-sm-table-cell">${personnel.id}</td>
-                    <td class="align-middle text-nowrap">
-                        <span>${personnel.firstName}, ${personnel.lastName}</span>
-                        <div class="d-md-none small text-muted mt-1">
-                            <div>${personnel.jobTitle}</div>
-                            <div>${personnel.departmentName}</div>
-                        </div>
-                    </td>
-                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
-                    <td class="align-middle text-nowrap d-none d-lg-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
-                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
-                    <td class="text-end text-nowrap">
-                        <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
-                            <i class="fa-solid fa-pencil fa-fw"></i>
-                        </button>
-                        <button type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${personnel.id}">
-                            <i class="fa-solid fa-trash fa-fw"></i>
-                        </button>
-                    </td>
-                </tr>
-          `;
-          $('#personnelTableBody').append(row);
-        });
+          populatePersonnelTable(data);
         },
         error: function(jqXHR) {
           try {
@@ -518,10 +307,10 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
 
 
 //populate modal with personnel id data when updatePersonnelBtn is clicked
-let selectedPersonnelID
-$(document).on('click', '.updatePersonnelBtn', function() {
-  selectedPersonnelID = $(this).data('id');
 
+let selectedPersonnelID;
+$("#editPersonnelModal").on("show.bs.modal", function (e) {
+  selectedPersonnelID = $(e.relatedTarget).attr("data-id");
   $.ajax({
     url: './../api/personnelAPI.php',
     method: "GET",
@@ -553,26 +342,38 @@ $(document).on('click', '.updatePersonnelBtn', function() {
       });
     }
   })
-return selectedPersonnelID
 });
 
 
 //updating personnel by id function
-$(document).on('click', '#updatePersonnelBtn', function(event) {
+$("#editPersonnelForm").on("submit", function (event) {
   event.preventDefault();
 
   $('#editPersonnelModal').modal('hide');
-  let personnelData = {
-      id: selectedPersonnelID,
-      firstName: $("#editPersonnelFirstName").val(),
-      lastName: $("#editPersonnelLastName").val(),
-      jobTitle: $("#editPersonnelJobTitle").val(),
-      email: $("#editPersonnelEmailAddress").val(),
-      departmentID: $("#editPersonnelDepartment").val()
-  };
+    // Create a FormData object from the form element
+    let form = document.getElementById('editPersonnelForm');
+    let formData = new FormData(form);
+
+    // convert form data into json object
+    let personnelData = {};
+    formData.forEach((value, key) => {
+      personnelData[key] = value;
+    });
+
+    console.log(personnelData);
+
+    personnelData.id = selectedPersonnelID;
+  // let personnelData = {
+  //     id: selectedPersonnelID,
+  //     firstName: $("#editPersonnelFirstName").val(),
+  //     lastName: $("#editPersonnelLastName").val(),
+  //     jobTitle: $("#editPersonnelJobTitle").val(),
+  //     email: $("#editPersonnelEmailAddress").val(),
+  //     departmentID: $("#editPersonnelDepartment").val()
+  // };
 
     // Validate form data
-    if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
+    if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(parseInt(personnelData.departmentID))) {
       // Show error message if any field is empty or invalid
       $("#notificationMessage").text("Please fill out all fields correctly.");
       $("#notificationModal").modal("show");
@@ -658,7 +459,7 @@ $(document).on('click', '.deletePersonnelBtn', function(){
 });
 
 
-$(document).on("keyup", ".searchInpPersonnel",function (event) {
+$(document).on("keyup", "#searchBtn",function (event) {
   event.preventDefault();
   let searchValue = $(this).val();
   if (searchValue !== '') {
@@ -671,33 +472,7 @@ $(document).on("keyup", ".searchInpPersonnel",function (event) {
       data: { type: "searchPersonnel", searchValue: searchValue },
       dataType: 'json', // Ensure the response is parsed as JSON
       success: function(data) {
-        // Iterate over the data and create table rows
-        data.forEach(function(personnel) {
-          var row = `
-                <tr>
-                    <td class="align-middle text-nowrap d-none d-sm-table-cell">${personnel.id}</td>
-                    <td class="align-middle text-nowrap">
-                        <span>${personnel.firstName}, ${personnel.lastName}</span>
-                        <div class="d-md-none small text-muted mt-1">
-                            <div>${personnel.jobTitle}</div>
-                            <div>${personnel.departmentName}</div>
-                        </div>
-                    </td>
-                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.jobTitle}</td>
-                    <td class="align-middle text-nowrap d-none d-lg-table-cell" data-id="${personnel.departmentID}">${personnel.departmentName}</td>
-                    <td class="align-middle text-nowrap d-none d-md-table-cell">${personnel.email}</td>
-                    <td class="text-end text-nowrap">
-                        <button type="button" class="btn btn-primary btn-sm updatePersonnelBtn" data-bs-toggle="modal" data-bs-target="#editPersonnelModal" data-id="${personnel.id}">
-                            <i class="fa-solid fa-pencil fa-fw"></i>
-                        </button>
-                        <button type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePersonnelModal" data-id="${personnel.id}">
-                            <i class="fa-solid fa-trash fa-fw"></i>
-                        </button>
-                    </td>
-                </tr>
-          `;
-          $('#personnelTableBody').append(row);
-        });
+        populatePersonnelTable(data);
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('Error details:', {
@@ -941,7 +716,7 @@ $(document).on('click', '.deleteDepartmentBtn', function(){
 });
 
 // searching department
-$(document).on("keyup", ".searchInputDepartment",function (event) {
+$(document).on("keyup", "#searchBtnDepartment",function (event) {
   event.preventDefault();
   let searchValue = $(this).val();
   if (searchValue !== '') {
@@ -953,27 +728,7 @@ $(document).on("keyup", ".searchInputDepartment",function (event) {
       data: { type: "searchDepartment", searchValue: searchValue },
       dataType: 'json',
       success: function(data) {
-
-        // Iterate over the data and create table rows
-        data.forEach(function(department) {
-          var row = `
-          <tr>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.id}</td>
-            <td class="align-middle text-nowrap">${department.name}</td>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${department.locationName}</td>
-
-            <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updateDepartmentBtn" data-bs-toggle="modal" data-bs-target="#UpdateDepartmentModal" data-id="${department.id}">
-                <i class="fa-solid fa-pencil fa-fw"></i>
-              </button>
-                <button id="deleteDepartmentBtn" type="button" class="btn deletePersonnelBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDepartmentModal" data-id="${department.id}">
-                <i class="fa-solid fa-trash fa-fw"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-        $('#departmentTableBody').append(row);
-        });
+        populateDepartmentTable(data);
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('Error details:', {
@@ -1173,7 +928,7 @@ $(document).on('click', '.deleteLocationBtn', function(){
 });
 
 // searchng location
-$(document).on("keyup", ".searchInputLocation",function (event) {
+$(document).on("keyup", "#searchBtnLocation",function (event) {
   event.preventDefault();
 
   let searchValue = $(this).val();
@@ -1187,27 +942,7 @@ $(document).on("keyup", ".searchInputLocation",function (event) {
       data: { type: "searchLocation", searchValue: searchValue },
       dataType: 'json', // Ensure the response is parsed as JSON
       success: function(data) {
-
-        // Iterate over the data and create table rows
-        data.forEach(function(location) {
-          var row = `
-          <tr>
-            <td class="align-middle text-nowrap d-none d-md-table-cell">${location.id}</td>
-            <td class="align-middle text-nowrap">${location.name}</td>
-
-
-            <td class="text-start text-nowrap">
-              <button type="button" class="btn btn-primary btn-sm updateLocationBtn" data-bs-toggle="modal" data-bs-target="#UpdateLocationModal" data-id="${location.id}">
-                <i class="fa-solid fa-pencil fa-fw"></i>
-              </button>
-              <button id="deleteLocationBtn" type="button" class="btn deleteLocationBtn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteLocationModal" data-id="${location.id}">
-              <i class="fa-solid fa-trash fa-fw"></i>
-              </button>
-            </td>
-          </tr>
-        `;
-        $('#locationTableBody').append(row);
-        });
+        populateLocationTable(data);
       },
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('Error details:', {
@@ -1224,6 +959,4 @@ $(document).on("keyup", ".searchInputLocation",function (event) {
     populateLocationData();
   }
 });
-setTimeout(hideLoader, 2000);
-
 });
