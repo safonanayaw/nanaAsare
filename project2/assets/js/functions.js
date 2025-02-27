@@ -94,7 +94,7 @@ export function populatePersonnelTable(data) {
       // First cell: First and Last Name
       var tdName = document.createElement("td");
       tdName.className = "align-middle text-nowrap";
-      tdName.textContent = personnel.firstName + " " + personnel.lastName;
+      tdName.textContent = personnel.lastName + ", " + personnel.firstName;
       row.appendChild(tdName);
       
       // Second cell: Job Title
@@ -194,7 +194,8 @@ export function populateDepartmentTable(data){
       editBtn.className = "btn btn-primary btn-sm";
       editBtn.setAttribute("data-bs-toggle", "modal");
       editBtn.setAttribute("data-bs-target", "#editDepartmentModal");
-      editBtn.setAttribute("data-id", "1"); // using a placeholder value as in the original code
+      editBtn.setAttribute("data-id", department.id); 
+
       var editIcon = document.createElement("i");
       editIcon.className = "fa-solid fa-pencil fa-fw";
       editBtn.appendChild(editIcon);
@@ -204,7 +205,10 @@ export function populateDepartmentTable(data){
       var deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "btn btn-primary btn-sm deleteDepartmentBtn";
-      deleteBtn.setAttribute("data-id", "1"); // using a placeholder value as in the original code
+    //   editBtn.setAttribute("data-bs-toggle", "modal");
+    //   editBtn.setAttribute("data-bs-target", "");
+      deleteBtn.setAttribute("data-id", department.id); 
+
       var deleteIcon = document.createElement("i");
       deleteIcon.className = "fa-solid fa-trash fa-fw";
       deleteBtn.appendChild(deleteIcon);

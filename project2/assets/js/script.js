@@ -110,8 +110,20 @@ function fetchAllLocation() {
 $(document).ready(function (){
 
   
-  //setTimeout for spinner when btn is clicked********
-  //???????????????? add reloader spinner************???????
+// refresh btn for tables start************
+  $(document).on('click', '#refreshBtn', function(){
+    $("#personnelBtn").click();
+  });
+
+  $(document).on('click', '#refreshBtnDepartment', function(){
+    $("#departmentsBtn").click();
+  });
+
+  $(document).on('click', '#refreshBtnLocation', function(){
+    $("#locationsBtn").click();
+  });
+  // refresh btn for tables ends************
+
 
   // show or hide search and btn container
   $("#personnelBtn").on('click', function(){
@@ -122,7 +134,7 @@ $(document).ready(function (){
 
   $("#departmentsBtn").on('click', function(){
     populateDepartmentData();
-    updateHeadDiv("searchBtnDepartment", "refreshBtnDepartment", "filterBtnDepartment", "addBtnDepartment", "#createDepartmentModal");
+    updateHeadDiv("searchBtnDepartment", "refreshBtnDepartment", "filterBtnDepartment", "addBtnDepartment", "#addDepartmentModal");
   });
   
   
@@ -223,11 +235,11 @@ $(document).ready(function (){
 // personnel filter ends here**********************************************************
 
 //populate department when add personnel btn is click
-$(document).on('click', '#addBtnPersonnel', function(){
+$(document).on('click', '#addBtn', function(){
 
   fetchAllDepartment().then(departmentData => {
 
-    let departmentDropdown = $("#createPersonnelDepartmentID");
+    let departmentDropdown = $("#addPersonnelDepartment");
     departmentDropdown.empty();
     departmentDropdown.append(`<option disabled value="">Select department</option>`); 
 
@@ -242,18 +254,20 @@ $(document).on('click', '#addBtnPersonnel', function(){
 });
 
 // adding personnel data****************************************************
-$(document).on('click', '#createPersonnelBtn', function(event) {
-  event.preventDefault();//prevent the form from submitting
+$('#addPersonnelForm').on('submit', function (event) {
+  event.preventDefault();
 
   $("#createPersonnelModal").modal("hide");
 
-  let personnelData = {
-      firstName: $("#createPersonnelFirstName").val(),
-      lastName: $("#createPersonnelLastName").val(),
-      jobTitle: $("#createPersonnelJobTitle").val(),
-      email: $("#createPersonnelEmailAddress").val(),
-      departmentID: parseInt($("#createPersonnelDepartmentID").val())
-  };
+  let form = document.getElementById("addPersonnelForm");
+  let formData = new FormData(form);
+
+  let personnelData = {};
+  formData.forEach((value, key)=>{
+    personnelData[key] = value;
+  });
+
+  console.log(personnelData);
 
   // Validate form data
   if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
@@ -281,7 +295,7 @@ $(document).on('click', '#createPersonnelBtn', function(event) {
               $("#refreshBtnPersonnel").click();
               $("#notificationModal").modal("show");
               //reset the form
-              $("#createPersonnelForm")[0].reset();
+              $("#addPersonnelForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -350,7 +364,7 @@ $("#editPersonnelForm").on("submit", function (event) {
   event.preventDefault();
 
   $('#editPersonnelModal').modal('hide');
-    // Create a FormData object from the form element
+
     let form = document.getElementById('editPersonnelForm');
     let formData = new FormData(form);
 
@@ -363,14 +377,6 @@ $("#editPersonnelForm").on("submit", function (event) {
     console.log(personnelData);
 
     personnelData.id = selectedPersonnelID;
-  // let personnelData = {
-  //     id: selectedPersonnelID,
-  //     firstName: $("#editPersonnelFirstName").val(),
-  //     lastName: $("#editPersonnelLastName").val(),
-  //     jobTitle: $("#editPersonnelJobTitle").val(),
-  //     email: $("#editPersonnelEmailAddress").val(),
-  //     departmentID: $("#editPersonnelDepartment").val()
-  // };
 
     // Validate form data
     if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(parseInt(personnelData.departmentID))) {
@@ -394,10 +400,10 @@ $("#editPersonnelForm").on("submit", function (event) {
       success: function(data) {
           if (data.message) {
               $("#notificationMessage").text(data.message);
-              $("#refreshBtnPersonnel").click();
+              $("#refreshBtn").click();
               $("#notificationModal").modal("show");
 
-              
+  
               //reset the form
               $("#editPersonnelForm")[0].reset();
           } else {
@@ -422,19 +428,47 @@ $("#editPersonnelForm").on("submit", function (event) {
 
 
 let selectedPersonnelDeleteID;
-$(document).on('click', '.deletePersonnelBtn', function(){
-  selectedPersonnelDeleteID = $(this).data('id');
+$("#areYouSurePersonnelModal").on("show.bs.modal", function (e) {
+  selectedPersonnelDeleteID = $(e.relatedTarget).attr("data-id");
+  $.ajax({
+    url: './../api/personnelAPI.php',
+    method: "GET",
+    data : {type: "getPersonnelByID", id: selectedPersonnelDeleteID},
+    success: function (data) {
+      if(data){
+              $('#areYouSurePersonnelID').val(data.id);
+          $("#areYouSurePersonnelName").text(
+            data.firstName +
+              " " +
+              data.lastName
+          );
+          $("#areYouSurePersonnelModal").modal("show");
+      } else {
+          $("#areYouSurePersonnelModal .modal-title").replaceWith(
+            "Error retrieving data"
+          );
+        }
+    }
+  })
+  return selectedPersonnelDeleteID;
+});
 
-  $('#confirmDeletePersonnelBtn').on('click', function(){
-    $('#deletePersonnelModal').modal('hide');
+
+
+
+$("#areYouSurePersonnelForm").on('submit', function(event){
+  $("#areYouSurePersonnelModal").modal("hide");
+  event.preventDefault();
     $.ajax({
       url: './../api/personnelAPI.php',
       method: "GET",
       data: { type: "deletePersonnelByID", id: selectedPersonnelDeleteID },
       success: function(data) {
           if (data.message) {
+              $("#refreshBtn").click();
+
               $("#notificationMessage").text(data.message);
-              $("#refreshBtnPersonnel").click();
+             
               $("#notificationModal").modal("show");
           } else {
               throw new Error("Unexpected response format");
@@ -455,7 +489,6 @@ $(document).on('click', '.deletePersonnelBtn', function(){
       }
     });
 
-  })
 });
 
 
@@ -492,11 +525,11 @@ $(document).on("keyup", "#searchBtn",function (event) {
 
 
 //populate department location dropdown when add department btn is click
-$(document).on('click', '.addBtnDepartment', function(){
+$(document).on('click', '#addBtnDepartment', function(){
 
   fetchAllLocation().then(locationData => {
 
-    let locationDropdown = $("#createDepartmentLocation");
+    let locationDropdown = $("#addDepartmentLocation");
     locationDropdown.empty(); // Clear existing options
     locationDropdown.append(`<option disabled value="">Select Location</option>`); // Add default option
 
@@ -512,14 +545,26 @@ $(document).on('click', '.addBtnDepartment', function(){
 
 
 // creating department data****************************************************
-$(document).on('click', '#createDepartmentBtn', function(event) {
+$("#addDepartmentForm").on('submit', function(event) {
   event.preventDefault();//prevent the form from submitting
-  $("#createDepartmentModal").modal("hide");
+  $("#addDepartmentModal").modal("hide");
   
-  let departmentData = {
-      name: $("#createDepartment").val(),
-      locationID: parseInt($("#createDepartmentLocation").val())
-  };
+
+  let form = document.getElementById("addDepartmentForm");
+  let formData = new FormData(form);
+
+  let departmentData = {};
+  formData.forEach((value, key) => {
+    departmentData[key] = value;
+  });
+
+  console.log("department data",departmentData);
+
+
+  // let departmentData = {
+  //     name: $("#createDepartment").val(),
+  //     locationID: parseInt($("#createDepartmentLocation").val())
+  // };
 
   //validate form data
   if(!departmentData.name || isNaN(departmentData.locationID)){
@@ -547,7 +592,7 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
               $("#refreshBtnDepartment").click();
               $("#notificationModal").modal("show");
               //reset the form after success
-              $("#createDepartmentForm")[0].reset();
+              $("#addDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -573,10 +618,10 @@ $(document).on('click', '#createDepartmentBtn', function(event) {
 
 
 // updating department data****************************************************
-//populate modal with deparment id data when updatedepartmentBtn is clicked
+//populate modal with deparment id data when editDepartmentBtn is clicked
 let selectedDepartmentlID;
-$(document).on('click', '.updateDepartmentBtn', function() {
-  selectedDepartmentlID = $(this).data('id');
+$('#editDepartmentModal').on("show.bs.modal", function (e) {
+  selectedDepartmentlID = $(e.relatedTarget).attr("data-id");
 
   $.ajax({
     url: './../api/personnelAPI.php',
@@ -586,11 +631,11 @@ $(document).on('click', '.updateDepartmentBtn', function() {
    
         let departmentLocation = data.locationID;
 
-        $("#updateDepartment").val(data.name);
+        $("#editDepartment").val(data.name);
         
         fetchAllLocation().then(locationData => {
 
-        let locationDropdown = $("#updateDepartmentLocation");
+        let locationDropdown = $("#editDepartmentLocation");
         locationDropdown.empty(); // Clear existing options
         locationDropdown.append(`<option disabled value="">Select department</option>`); // Add default option
 
@@ -599,7 +644,7 @@ $(document).on('click', '.updateDepartmentBtn', function() {
         locationDropdown.append(`<option selected value="${location.id}">${location.name}</option>`);
         });
         //change location option to selected department
-        $("#updateDepartmentLocation").val(departmentLocation).change();
+        $("#editDepartmentLocation").val(departmentLocation).change();
       })
       .catch(error => {
         console.error(error);
@@ -621,15 +666,23 @@ $(document).on('click', '.updateDepartmentBtn', function() {
 return selectedDepartmentlID;
 });
   
-$('#updateDepartmentBtn').on('click', function(event) {
+$('#editDepartmentForm').on('submit', function(event) {
   event.preventDefault();
 
-  $('#UpdateDepartmentModal').modal('hide');
-  let departmentData = {
-      id: selectedDepartmentlID,
-      name: $("#updateDepartment").val(),
-      locationID: $("#updateDepartmentLocation").val()
-  };
+
+  let form = document.getElementById("editDepartmentForm");
+
+  let departmentData = {};
+  let formData = new FormData(form);
+  formData.forEach((value, key)=>{
+    departmentData[key] = value;
+  });
+
+  departmentData.id = selectedDepartmentlID;
+  console.log("department data", departmentData);
+
+
+  $('#editDepartmentModal').modal('hide');
 
     //validate form data
     if(!departmentData.name || isNaN(departmentData.locationID)){
@@ -656,7 +709,7 @@ $('#updateDepartmentBtn').on('click', function(event) {
               $("#notificationMessage").text(data.message);
               $("#refreshBtnDepartment").click();
               $("#notificationModal").modal("show");
-              $("#updateDepartmentForm")[0].reset();
+              $("#editDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -678,19 +731,58 @@ $('#updateDepartmentBtn').on('click', function(event) {
 });
 
 
-$(document).on('click', '.deleteDepartmentBtn', function(){
 
-  selectedDepartmentDeleteID = $(this).data('id');
 
-  $('#confirmDeleteDepartmentBtn').on('click', function() {
-    $('#deleteDepartmentModal').modal('hide');
+
+let selectedDepartmentDeleteID;
+$(document).on("click", ".deleteDepartmentBtn", function () {
+  selectedDepartmentDeleteID = $(this).attr("data-id");
+  console.log("you click me ", selectedDepartmentDeleteID);
+  $.ajax({
+    url: './../api/personnelAPI.php',
+    method: "GET",
+    data: { type: "checkDepartmentDeleteID", id: selectedDepartmentDeleteID },
+    success: function (data) {
+      console.log(data);
+      if (data.success) {
+        if (data.message.count > 0) {
+          $("#cantDeleteDeptName").text(data.message.departmentName);
+          $("#personnelCount").text(data.message.count);
+          $("#cantDeleteDepartmentModal").modal("show");
+        } else {
+          $("#areYouSureDeptName").text(data.message.departmentName);
+          $("#areYouSureDeleteDepartmentModal").modal("show");
+        }
+      } else {
+        console.error("Error: ", data.message);
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error('Error details:', {
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        responseText: jqXHR.responseText,
+        textStatus: textStatus,
+        errorThrown: errorThrown
+      });
+    }
+  });
+  return selectedDepartmentDeleteID;
+});
+
+
+$("#deleteDepartmentForm").on('submit', function(event){
+  console.log("id to delete,", selectedDepartmentDeleteID)
+event.preventDefault();
+    // $('#deleteDepartmentModal').modal('hide');
     $.ajax({
         url: './../api/personnelAPI.php',
         type: "json",
         method: "GET",
         data: { type: "deleteDepartmentByID", id: selectedDepartmentDeleteID },
         success: function(data) {
-            if (data.message) {
+            if (data.success) {
+
                 $("#notificationMessage").text(data.message);
                 $("#refreshBtnDepartment").click();
                 $("#notificationModal").modal("show");
@@ -712,7 +804,7 @@ $(document).on('click', '.deleteDepartmentBtn', function(){
           $("#notificationModal").modal("show");
         }
     });
-  });
+
 });
 
 // searching department

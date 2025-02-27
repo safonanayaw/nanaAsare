@@ -97,18 +97,28 @@ class Department{
         }
     }
 
-    public function deleteDepartmentByID($id){
+    public function checkDepartmentDeleteID($id){
         try{
-            //check if department is reference by any personnel
-            $query = "SELECT COUNT(*) as count FROM " . $this->personnelTable . " WHERE departmentID = :id";
+            // Check and count if department is referenced by any personnel
+            $query = "SELECT d.name as departmentName, COUNT(p.id) as count 
+                      FROM " . $this->departmentTable . " d 
+                      LEFT JOIN " . $this->personnelTable . " p ON d.id = p.departmentID 
+                      WHERE d.id = :id 
+                      GROUP BY d.name";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":id", $id, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ['result' => $result];
+    
+        } catch(Exception $e){
+            error_log("Error fetching department data: " . $e->getMessage());
+            return false;
+        }
+    }
 
-            if($result['count'] > 0){
-                return false;
-            }
+    public function deleteDepartmentByID($id){
+        try{
 
             $query = "DELETE FROM " . $this->departmentTable . " WHERE id = :id";
             $stmt = $this->conn->prepare($query);

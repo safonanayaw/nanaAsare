@@ -125,10 +125,10 @@ try {
                         $id = $_GET['id'];
                         $result = $personnelModel->deletePersonnelByID($id);
                         if ($result) {
-                            echo json_encode(["success" => true, "message" => "Personnel deleted successfully"]);
+                            echo json_encode(["success" => true, "message" => "Employee entry deleted"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["success" => false,"message" => "Failed to delete personnel"]);
+                            echo json_encode(["success" => false,"message" => "Failed to delete employee"]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -136,21 +136,37 @@ try {
                     }
                     break;  
 
+                    case 'checkDepartmentDeleteID':
+                        if (isset($_GET['id'])) {
+                            $id = $_GET['id'];
+                            $result = $departmentModel->checkDepartmentDeleteID($id);
+                            if ($result) {
+                                echo json_encode(["success" => true, "message" => $result['result']]);
+                            } else {
+                                http_response_code(500); // Internal Server Error
+                                echo json_encode(["success" => false, "message" => "Error fetching department data"]);
+                            }
+                        } else {
+                            http_response_code(400); // Bad Request
+                            echo json_encode(["message" => "ID parameter is required"]);
+                        }
+                        break;
+
                 case 'deleteDepartmentByID':
                     if (isset($_GET['id'])) {
                         $id = $_GET['id'];
                         $result = $departmentModel->deleteDepartmentByID($id);
                         if ($result) {
-                            echo json_encode(["success" => true,"message" => "Department deleted successfully"]);
+                            echo json_encode(["success" => true, "message" => "Department deleted"]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["success" => false,"message" => "Sorry cannot Delete this department, because is referenced in personnel data."]);
+                            echo json_encode(["success" => false, "message" => "Failed to delete department"]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
                         echo json_encode(["message" => "ID parameter is required"]);
                     }
-                    break; 
+                    break;
 
                 case 'getDepartment':
                     $result = $departmentModel->readDepartment();
@@ -195,7 +211,7 @@ try {
                         $id = $_GET['id'];
                         $result = $locationModel->deleteLocationByID($id);
                         if ($result) {
-                            echo json_encode(["success" => true, "message" => "Location deleted successfully"]);
+                            echo json_encode(["success" => true, "message" => "Location deleted "]);
                         } else {
                             http_response_code(500); // Internal Server Error
                             echo json_encode(["message" => "Sorry cannot Delete this department, because is referenced in department data."]);
@@ -224,57 +240,57 @@ try {
                 case 'createPersonnel':
                     $result = $personnelModel->createPersonnel($jsonData);
                     if($result){
-                    echo json_encode(["success" => true, "message" => "Personnel data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Employee entry added"]);   
                     }else{
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to add personnel detail to database"]);
+                        echo json_encode(["success" => false, "message" => "Failed to add employee entry"]);
                     }
                     break;
 
                 case 'createDepartment':
                     $result = $departmentModel->createDepartment($jsonData);
                     if($result){
-                    echo json_encode(["success" => true, "message" => "Department data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Department entry added"]);   
                     }else{
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to add department detail to database"]);
+                        echo json_encode(["success" => false, "message" => "Failed to add department entry"]);
                     }
                     break;
 
                 case 'createLocation':
                     $result = $locationModel->createLocation($jsonData);
                     if($result){
-                    echo json_encode(["success" => true, "message" => "Location data added to database successfully"]);   
+                    echo json_encode(["success" => true, "message" => "Location entry added"]);   
                     }else{
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to add location detail to database"]);
+                        echo json_encode(["success" => false, "message" => "Failed to add location entry"]);
                     }
                     break;
 
                 case 'updatePersonnel':
                     $result = $personnelModel->updatePersonnel($jsonData);
                     if ($result) {
-                        echo json_encode(["success" => true, "message" => "Personnel updated successfully"]);
+                        echo json_encode(["success" => true, "message" => "Employee entry updated"]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to update personnel"]);
+                        echo json_encode(["success" => false, "message" => "Failed to update employee"]);
                     }
                     break;
 
                 case 'updateDepartment':
                     $result = $departmentModel->updateDepartment($jsonData);
                     if ($result) {
-                        echo json_encode(["success" => true, "message" => "department updated successfully"]);
+                        echo json_encode(["success" => true, "message" => "Department updated "]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to update personnel"]);
+                        echo json_encode(["success" => false, "message" => "Failed to update employee"]);
                     }
                     break;
 
                 case 'updateLocation':
                     $result = $locationModel->updateLocation($jsonData);
                     if ($result) {
-                        echo json_encode(["success" => true, "message" => "Location updated successfully"]);
+                        echo json_encode(["success" => true, "message" => "Location updated "]);
                     } else {
                         http_response_code(500);
                         echo json_encode(["success" => false, "message" => "Failed to update location"]);
@@ -315,7 +331,7 @@ try {
 
                         $result = $personnelModel->searchPersonnelByDepartmentIDs($sanitizeIDs);
                         if ($result) {
-                            echo json_encode(["success" => true, "message" => "Location updated successfully"]);
+                            echo json_encode(["success" => true, "message" => "Location updated "]);
                         } else {
                             http_response_code(500);
                             echo json_encode(["success" => false, "message" => "Failed to update location"]);
