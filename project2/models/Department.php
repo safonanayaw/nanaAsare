@@ -44,10 +44,15 @@ class Department{
 
 
     public function readDepartment(){
-        $query = "SELECT " . $this->departmentTable . ".*, " . $this->locationTable . ".name AS departmentLocation 
+        $query = "SELECT " 
+        . $this->departmentTable . ".id, " 
+        . $this->departmentTable . ".name, " 
+        . $this->departmentTable . ".locationID, " 
+        . $this->locationTable . ".name AS departmentLocation 
         FROM " . $this->departmentTable . " 
         JOIN " . $this->locationTable . " 
-        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id ORDER BY " . $this->departmentTable . ".id ASC";
+        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
+        ORDER BY " . $this->departmentTable . ".name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -55,7 +60,12 @@ class Department{
 
 
     public function readDepartmentByID($id){
-        $query = "SELECT * FROM " . $this->departmentTable . " WHERE id = :id";
+        $query = "SELECT " 
+        . $this->departmentTable . ".id, " 
+        . $this->departmentTable . ".name, " 
+        . $this->departmentTable . ".locationID 
+        FROM " . $this->departmentTable . " 
+        WHERE " . $this->departmentTable . ".id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -101,10 +111,10 @@ class Department{
         try{
             // Check and count if department is referenced by any personnel
             $query = "SELECT d.name as departmentName, COUNT(p.id) as count 
-                      FROM " . $this->departmentTable . " d 
-                      LEFT JOIN " . $this->personnelTable . " p ON d.id = p.departmentID 
-                      WHERE d.id = :id 
-                      GROUP BY d.name";
+            FROM " . $this->departmentTable . " d 
+            LEFT JOIN " . $this->personnelTable . " p ON d.id = p.departmentID 
+            WHERE d.id = :id 
+            GROUP BY d.name";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":id", $id, PDO::PARAM_INT);
             $stmt->execute();
@@ -136,13 +146,17 @@ class Department{
     public function searchDepartment($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT " . $this->departmentTable . ".*, " .
-            $this->locationTable . ".name AS departmentLocation 
+            $query = "SELECT " 
+            . $this->departmentTable . ".id, "
+            . $this->departmentTable . ".name, "
+            . $this->departmentTable . ".locationID, "
+            . $this->locationTable . ".name AS departmentLocation 
             FROM " . $this->departmentTable . " 
             JOIN " . $this->locationTable . " 
             ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
             WHERE " . $this->departmentTable . ".name LIKE :searchValue 
-            OR " . $this->locationTable . ".name LIKE :searchValue ORDER BY " . $this->departmentTable . ".id ASC";
+            OR " . $this->locationTable . ".name LIKE :searchValue 
+            ORDER BY " . $this->departmentTable . ".name ASC";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';

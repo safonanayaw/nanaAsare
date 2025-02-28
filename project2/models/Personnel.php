@@ -47,17 +47,33 @@ class Personnel{
     }
 
     public function readPersonnel() {
-        $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
-          FROM " . $this->personnelTable . " 
-          JOIN " . $this->departmentTable . " 
-          ON " . $this->personnelTable . " .departmentID = " . $this->departmentTable . ".id ORDER BY " . $this->personnelTable . ".id ASC";
+        $query = "SELECT " 
+        . $this->personnelTable . ".id, "
+        . $this->personnelTable . ".firstName, "
+        . $this->personnelTable . ".lastName, "
+        . $this->personnelTable . ".jobTitle, "
+        . $this->personnelTable . ".email, "
+        . $this->personnelTable . ".departmentID, "
+        . $this->departmentTable . ".name AS departmentName 
+        FROM " . $this->personnelTable . " 
+        JOIN " . $this->departmentTable . " 
+        ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+        ORDER BY " . $this->personnelTable . ".lastName ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function readPersonnelByID($id){
-        $query = "SELECT * FROM " . $this->personnelTable . " WHERE id = :id";
+        $query = "SELECT " 
+        . $this->personnelTable . ".id, "
+        . $this->personnelTable . ".firstName, "
+        . $this->personnelTable . ".lastName, "
+        . $this->personnelTable . ".jobTitle, "
+        . $this->personnelTable . ".email, "
+        . $this->personnelTable . ".departmentID 
+        FROM " . $this->personnelTable . " 
+        WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -119,16 +135,23 @@ class Personnel{
     public function searchPersonnel($searchValue) {
         if ($searchValue) {
 
-            $query = "SELECT " . $this->personnelTable . ".*, " .
-            $this->departmentTable . ".name AS departmentName 
-            FROM " . $this->personnelTable . " 
-            JOIN " . $this->departmentTable . " 
-            ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
-            WHERE " . $this->personnelTable . ".firstName LIKE :searchValue 
-            OR " . $this->personnelTable . ".lastName LIKE :searchValue 
-            OR " . $this->personnelTable . ".jobTitle LIKE :searchValue 
-            OR " . $this->personnelTable . ".email LIKE :searchValue 
-            OR " . $this->departmentTable . ".name LIKE :searchValue ORDER BY " . $this->personnelTable . ".id ASC";
+        $query = "SELECT " 
+        . $this->personnelTable . ".id, "
+        . $this->personnelTable . ".firstName, "
+        . $this->personnelTable . ".lastName, "
+        . $this->personnelTable . ".jobTitle, "
+        . $this->personnelTable . ".email, "
+        . $this->personnelTable . ".departmentID, "
+        . $this->departmentTable . ".name AS departmentName 
+        FROM " . $this->personnelTable . " 
+        JOIN " . $this->departmentTable . " 
+        ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+        WHERE " . $this->personnelTable . ".firstName LIKE :searchValue 
+        OR " . $this->personnelTable . ".lastName LIKE :searchValue 
+        OR " . $this->personnelTable . ".jobTitle LIKE :searchValue 
+        OR " . $this->personnelTable . ".email LIKE :searchValue 
+        OR " . $this->departmentTable . ".name LIKE :searchValue 
+        ORDER BY " . $this->personnelTable . ".lastName ASC";
             
             $stmt = $this->conn->prepare($query);
             $searchTerm = '%' . $searchValue . '%';
@@ -140,25 +163,53 @@ class Personnel{
         }
     }
 
-    public function searchPersonnelByDepartmentIDs($departmentIDs){
-        // convert array to comma separated string
-        $placeholders = implode(',',array_fill(0, count($departmentIDs), '?'));
-        // $query = "SELECT * FROM " . $this->personnelTable . " WHERE departmentID IN ($placeholders)";
 
-        $query = "SELECT " . $this->personnelTable . ".*, " . $this->departmentTable . ".name AS departmentName 
-          FROM " . $this->personnelTable . " 
-          JOIN " . $this->departmentTable . " 
-          ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id" . " WHERE departmentID IN ($placeholders) ORDER BY " . $this->personnelTable . ".id ASC";
+        public function searchPersonnelByFilters($departmentIDs, $locationIDs){
+            $conditions = [];
+            $params = [];
         
-        $stmt = $this->conn->prepare($query);
-
-        foreach($departmentIDs as $key => $value){
-            $stmt->bindValue($key + 1, $value, PDO::PARAM_INT);
+            if (!empty($departmentIDs)) {
+                $placeholders = implode(',', array_fill(0, count($departmentIDs), '?'));
+                $conditions[] = $this->personnelTable . ".departmentID IN ($placeholders)";
+                $params = array_merge($params, $departmentIDs);
+            }
+        
+            if (!empty($locationIDs)) {
+                $placeholders = implode(',', array_fill(0, count($locationIDs), '?'));
+                $conditions[] = $this->departmentTable . ".locationID IN ($placeholders)";
+                $params = array_merge($params, $locationIDs);
+            }
+        
+            $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
+        
+            $query = "SELECT " 
+                . $this->personnelTable . ".id, "
+                . $this->personnelTable . ".firstName, "
+                . $this->personnelTable . ".lastName, "
+                . $this->personnelTable . ".jobTitle, "
+                . $this->personnelTable . ".email, "
+                . $this->personnelTable . ".departmentID, "
+                . $this->departmentTable . ".name AS departmentName, "
+                . $this->departmentTable . ".locationID, "
+                . $this->locationTable . ".name AS locationName 
+                FROM " . $this->personnelTable . " 
+                JOIN " . $this->departmentTable . " 
+                ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+                JOIN " . $this->locationTable . " 
+                ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
+                $whereClause 
+                ORDER BY " . $this->personnelTable . ".lastName ASC";
+        
+            $stmt = $this->conn->prepare($query);
+        
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key + 1, $value, PDO::PARAM_INT);
+            }
+        
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+        
 //personnel database queries functions ends here ********************
 
 

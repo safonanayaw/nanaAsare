@@ -1,4 +1,4 @@
-import { updateHeadDiv, populatePersonnelTable, populateDepartmentTable, populateLocationTable } from "./functions.js";
+import { updateHeadDiv, populatePersonnelTable, populateDepartmentTable, populateLocationTable, populateFilterDepartment, populateFilterLocation } from "./functions.js";
 
 updateHeadDiv();
 
@@ -46,6 +46,7 @@ function populateLocationData(){
     dataType: 'json',
     data: {type: "getLocation"},
     success: function(data) {
+
       populateLocationTable(data);
     },
     error: function(jqXHR, textStatus, errorThrown) {
@@ -129,108 +130,117 @@ $(document).ready(function (){
   $("#personnelBtn").on('click', function(){
     populatePersonnelData();
     updateHeadDiv();
+    $("#filterBtn").attr("disabled", false);
   });
 
 
   $("#departmentsBtn").on('click', function(){
     populateDepartmentData();
     updateHeadDiv("searchBtnDepartment", "refreshBtnDepartment", "filterBtnDepartment", "addBtnDepartment", "#addDepartmentModal");
+    $("#filterBtnDepartment").attr("disabled", true);
   });
   
   
   $("#locationsBtn").on('click', function(){
     populateLocationData();
-    updateHeadDiv("searchBtnLocation", "refreshBtnLocation", "filterBtnLocation", "addBtnLocation", "#createLocationModal")
+    updateHeadDiv("searchBtnLocation", "refreshBtnLocation", "filterBtnLocation", "addBtnLocation", "#addLocationModal");
+    $("#filterBtnLocation").attr("disabled", true);
   });
 
-  // personnel filter starts here**********************************************************
+  
+  // Add a close button or mechanism to close the dropdown
+  $(document).ready(function() {
+    $('#dropdownDeptButton, #dropdownLocButton').on('show.bs.dropdown', function () {
+      $('#filterModalPersonnel .custom-modal-height ').addClass('expanded-modal');
+    });
+  
+    $('#filterModalPersonnel').on('hide.bs.modal', function () {
+      $('#filterModalPersonnel .custom-modal-height ').removeClass('expanded-modal');
+    });
 
-  $(document).on('click', '#filterBtn', function(){
+    window.addEventListener('error', function(e) {
+      if (e.message.includes("backdrop")) {
+        e.preventDefault();
+        return true;
+      }
+    }, true);
 
-    // fetch and populate department filter 
+    document.addEventListener("DOMContentLoaded", function () {
+      var filterModal = document.getElementById("filterModalPersonnel");
+  
+      if (filterModal) {
+          var dropdownElements = [].slice.call(filterModal.querySelectorAll('.dropdown-toggle'));
+          dropdownElements.map(function (dropdownToggleEl) {
+              return new bootstrap.Dropdown(dropdownToggleEl);
+          });
+      }
+  });
+  });
+
+  $(document).on('click', '#filterBtn', function() {
     fetchAllDepartment().then(departmentData => {
-      let departmentFilterDropdown = $("#selectDepartmentOption");
-      departmentFilterDropdown.empty();
-      departmentData.forEach(department => {
-        departmentFilterDropdown.append(`
-            <li>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="${department.id}" id="option1">
-                  <label class="form-check-label" for="option1">${department.name}</label>
-              </div>
-          </li>`
-        )
-      })
-      
-    }).catch(error => {
-      console.error(error);
+      populateFilterDepartment(departmentData);
     });
 
-    //fetch and populate location filter
     fetchAllLocation().then(locationData => {
-      let locationFilterDropdown = $("#selectLocationOption");
-      locationFilterDropdown.empty();
-      locationData.forEach(location=>{
-        locationFilterDropdown.append(`
-          <li>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="${location.id}" id="option1">
-                  <label class="form-check-label" for="option1">${location.name}</label>
-              </div>
-          </li>`
-        )
-      })
-    }).catch(error => {
-      console.error(error);
+      populateFilterLocation(locationData)
     });
+
     $("#filterModalPersonnel").modal("show");
 
     $('#applyFilterBtn').on('click', function() {
-      // Get all selected options
-      let selectedOptions = [];
-      $('.dropdown-menu .form-check-input:checked').each(function() {
-          selectedOptions.push($(this).val());
-      });
+        let selectedDeptIDs = [];
+        let selectedLocIDs = [];
 
+        $('.dept-checkbox:checked').each(function() {
+            selectedDeptIDs.push($(this).val());
+        });
 
-      if (selectedOptions.length === 0) {
-        $("#notificationMessage").text("Sorry No filter options checked, try again");
-        $("#notificationModal").modal("show");
-        return; // Stop further execution
-    }
+        $('.loc-checkbox:checked').each(function() {
+            selectedLocIDs.push($(this).val());
+        });
 
-      let filterData = JSON.stringify({
-        type: "filterPersonnel",
-        departmentIDs: selectedOptions
-      });
-      $("#personnelTableBody").empty();
-      // Close the modal
-      $('#filterModalPersonnel').modal('hide');
-      //fetch the personnel data base on filter options
-      $.ajax({
-        url: "./../api/personnelAPI.php",
-        method: "POST",
-        contentType: "application/json",
-        data: filterData,
-        success: function (data){
-          populatePersonnelTable(data);
-        },
-        error: function(jqXHR) {
-          try {
-            var response = JSON.parse(jqXHR.responseText);
-            if (response.message) {
-                $("#notificationMessage").text(response.message);
-            } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+        if (selectedDeptIDs.length === 0 && selectedLocIDs.length === 0) {
+            $("#filterModalPersonnel").modal("hide");
+            $("#notificationMessage").text("Please select at least one filter option.");
+            $("#notificationModal").modal("show");
+            return;
+        }
+
+        let filterData = JSON.stringify({
+            type: "filterPersonnel",
+            departmentIDs: selectedDeptIDs,
+            locationIDs: selectedLocIDs
+        });
+
+        $("#personnelTableBody").empty();
+        $('#filterModalPersonnel').modal('hide');
+
+        $.ajax({
+            url: "./../api/personnelAPI.php",
+            method: "POST",
+            contentType: "application/json",
+            data: filterData,
+            success: function(data) {
+                populatePersonnelTable(data);
+            },
+            error: function(jqXHR) {
+                try {
+                    var response = JSON.parse(jqXHR.responseText);
+                    if (response.message) {
+                        $("#notificationMessage").text(response.message);
+                    } else {
+                        $("#notificationMessage").text("An unexpected error occurred.");
+                    }
+                } catch (e) {
+                    $("#notificationMessage").text("An unexpected error occurred.");
+                }
+                $("#notificationModal").modal("show");
             }
-        } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
-        }     
-        $("#notificationModal").modal("show");
-      }
-      })
-  })
-})
+        });
+    });
+});
+
 
 // personnel filter ends here**********************************************************
 
@@ -267,7 +277,6 @@ $('#addPersonnelForm').on('submit', function (event) {
     personnelData[key] = value;
   });
 
-  console.log(personnelData);
 
   // Validate form data
   if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
@@ -374,7 +383,6 @@ $("#editPersonnelForm").on("submit", function (event) {
       personnelData[key] = value;
     });
 
-    console.log(personnelData);
 
     personnelData.id = selectedPersonnelID;
 
@@ -452,8 +460,6 @@ $("#areYouSurePersonnelModal").on("show.bs.modal", function (e) {
   })
   return selectedPersonnelDeleteID;
 });
-
-
 
 
 $("#areYouSurePersonnelForm").on('submit', function(event){
@@ -558,13 +564,6 @@ $("#addDepartmentForm").on('submit', function(event) {
     departmentData[key] = value;
   });
 
-  console.log("department data",departmentData);
-
-
-  // let departmentData = {
-  //     name: $("#createDepartment").val(),
-  //     locationID: parseInt($("#createDepartmentLocation").val())
-  // };
 
   //validate form data
   if(!departmentData.name || isNaN(departmentData.locationID)){
@@ -679,7 +678,6 @@ $('#editDepartmentForm').on('submit', function(event) {
   });
 
   departmentData.id = selectedDepartmentlID;
-  console.log("department data", departmentData);
 
 
   $('#editDepartmentModal').modal('hide');
@@ -737,13 +735,11 @@ $('#editDepartmentForm').on('submit', function(event) {
 let selectedDepartmentDeleteID;
 $(document).on("click", ".deleteDepartmentBtn", function () {
   selectedDepartmentDeleteID = $(this).attr("data-id");
-  console.log("you click me ", selectedDepartmentDeleteID);
   $.ajax({
     url: './../api/personnelAPI.php',
     method: "GET",
     data: { type: "checkDepartmentDeleteID", id: selectedDepartmentDeleteID },
     success: function (data) {
-      console.log(data);
       if (data.success) {
         if (data.message.count > 0) {
           $("#cantDeleteDeptName").text(data.message.departmentName);
@@ -772,7 +768,6 @@ $(document).on("click", ".deleteDepartmentBtn", function () {
 
 
 $("#deleteDepartmentForm").on('submit', function(event){
-  console.log("id to delete,", selectedDepartmentDeleteID)
 event.preventDefault();
     // $('#deleteDepartmentModal').modal('hide');
     $.ajax({
@@ -840,15 +835,16 @@ $(document).on("keyup", "#searchBtnDepartment",function (event) {
 
 
 // creating location data****************************************************
-$(document).on('click', '#createLocationBtn', function(event) {
+$("#addLocationForm").on('submit', function(event) {
   event.preventDefault();//prevent the form from submitting
 
-  $("#createLocationModal").modal("hide");
-  
-  let locationData = {
-      name: $("#createLocation").val()
-  };
-
+  $("#addLocationModal").modal("hide");
+  let locationData = {};
+   let form = document.getElementById("addLocationForm");
+  let formData = new FormData(form);
+  formData.forEach((value, key) => {
+    locationData[key] = value;
+  })
     //validate form data
     if(!locationData.name){
       //show error message if any fileds is empty
@@ -875,7 +871,7 @@ $(document).on('click', '#createLocationBtn', function(event) {
             $("#notificationMessage").text(data.message);
             $("#refreshBtnLocation").click();
             $("#notificationModal").modal("show");
-            $("#createLocationForm")[0].reset();
+            $("#addLocationForm")[0].reset();
         } else {
             throw new Error("Unexpected response format");
         }
@@ -901,8 +897,8 @@ $(document).on('click', '#createLocationBtn', function(event) {
 // updating location data****************************************************
 //populate modal with location id data when updatelocationBtn is clicked
 let selectedLocationID;
-$(document).on('click', '.updateLocationBtn', function() {
-  selectedLocationID = $(this).data('id');
+$("#editLocationModal").on('show.bs.modal', function(e) {
+  selectedLocationID = $(e.relatedTarget).attr('data-id');
 
   $.ajax({
     url: './../api/personnelAPI.php',
@@ -910,7 +906,7 @@ $(document).on('click', '.updateLocationBtn', function() {
     data : {type: "getLocationByID", id: selectedLocationID},
     success: function (data) {
 
-        $("#updateLocation").val(data.name);
+        $("#editLocation").val(data.name);
     },
     error: function(jqXHR, textStatus, errorThrown) {
       console.error('Error details:', {
@@ -926,14 +922,18 @@ $(document).on('click', '.updateLocationBtn', function() {
 return selectedLocationID;
 });
 
-$('#updateLocationBtnConfirm').on('click', function(event) {
+$('#editLocationForm').on('submit', function(event) {
   event.preventDefault();
 
-  $('#UpdateLocationModal').modal('hide');
-  let locationData = {
-      id: selectedLocationID,
-      name: $("#updateLocation").val()
-  };
+  let locationData = {};
+  $('#editLocationModal').modal('hide');
+  let form = document.getElementById("editLocationForm");
+  let formData = new FormData(form);
+  formData.forEach((value, key) => {
+    locationData[key] = value;
+  });
+
+  locationData.id = selectedLocationID;
 
     //validate form data
     if(!locationData.name){
@@ -959,7 +959,7 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
             $("#refreshBtnLocation").click();
             $("#notificationModal").modal("show");
             // Reset the form field
-            $("#updateLocationForm")[0].reset();
+            $("#editLocationForm")[0].reset();
         } else {
             throw new Error("Unexpected response format");
         }
@@ -980,44 +980,80 @@ $('#updateLocationBtnConfirm').on('click', function(event) {
   });
 });
 
-// deleting location 
-$(document).on('click', '.deleteLocationBtn', function(){
+// ************************************* 
 
-  selectedLocationDeleteID = $(this).data('id');
-
-  $('#confirmDeleteLocationBtn').on('click',function(){
-    $('#deleteLocationModal').modal('hide');
-    // location.reload();
-    $.ajax({
-      url: './../api/personnelAPI.php',
-      method: "GET",
-      data: { type: "deleteLocationByID", id: selectedLocationDeleteID },
-        success: function(data) {
-          if (data.message) {
-              $("#notificationMessage").text(data.message);
-              $("#refreshBtnLocation").click();
-              $("#notificationModal").modal("show");
-          } else {
-              throw new Error("Unexpected response format");
-          }
-        },
-        error: function(jqXHR) {
-          try {
-            var response = JSON.parse(jqXHR.responseText);
-            if (response.message) {
-                $("#notificationMessage").text(response.message);
-            } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
-            }
-        } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
-        }     
-        $("#notificationModal").modal("show");
+let selectedLocationDeleteID;
+$(document).on("click", ".deleteLocationBtn", function () {
+  selectedLocationDeleteID = $(this).attr("data-id");
+  $.ajax({
+    url: './../api/personnelAPI.php',
+    method: "GET",
+    data: { type: "checkLocationDeleteID", id: selectedLocationDeleteID },
+    success: function (data) {
+      if (data.success) {
+        if (data.message.count > 0) {
+          $("#cantDeleteLoctName").text(data.message.locationName);
+          $("#locationCount").text(data.message.count);
+          $("#cantDeleteLocationModal").modal("show");
+        } else {
+          $("#areYouSureLocName").text(data.message.locationName);
+          $("#areYouSureDeleteLocationModal").modal("show");
+        }
+      } else {
+        console.error("Error: ", data.message);
       }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error('Error details:', {
+        status: jqXHR.status,
+        statusText: jqXHR.statusText,
+        responseText: jqXHR.responseText,
+        textStatus: textStatus,
+        errorThrown: errorThrown
+      });
+    }
+  });
+  return selectedLocationDeleteID;
+});
+
+
+$("#deleteLocationForm").on('submit', function(event){
+
+event.preventDefault();
+    // $('#deleteDepartmentModal').modal('hide');
+    $.ajax({
+        url: './../api/personnelAPI.php',
+        type: "json",
+        method: "GET",
+        data: { type: "deleteLocationByID", id: selectedLocationDeleteID },
+        success: function(data) {
+            if (data.success) {
+
+                $("#notificationMessage").text(data.message);
+                $("#refreshBtnLocation").click();
+                $("#notificationModal").modal("show");
+            } else {
+                throw new Error("Unexpected response format");
+            }
+          },
+          error: function(jqXHR) {
+            try {
+              var response = JSON.parse(jqXHR.responseText);
+              if (response.message) {
+                  $("#notificationMessage").text(response.message);
+              } else {
+                  $("#notificationMessage").text("An unexpected error occurred.");
+              }
+          } catch (e) {
+              $("#notificationMessage").text("An unexpected error occurred.");
+          }     
+          $("#notificationModal").modal("show");
+        }
     });
 
-  })
 });
+
+// ************************************* 
 
 // searchng location
 $(document).on("keyup", "#searchBtnLocation",function (event) {
@@ -1034,6 +1070,7 @@ $(document).on("keyup", "#searchBtnLocation",function (event) {
       data: { type: "searchLocation", searchValue: searchValue },
       dataType: 'json', // Ensure the response is parsed as JSON
       success: function(data) {
+        
         populateLocationTable(data);
       },
       error: function(jqXHR, textStatus, errorThrown) {

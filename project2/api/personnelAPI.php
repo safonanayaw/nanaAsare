@@ -158,7 +158,7 @@ try {
                         $result = $departmentModel->deleteDepartmentByID($id);
                         if ($result) {
                             echo json_encode(["success" => true, "message" => "Department deleted"]);
-                        } else {
+                        } else  {
                             http_response_code(500); // Internal Server Error
                             echo json_encode(["success" => false, "message" => "Failed to delete department"]);
                         }
@@ -206,6 +206,22 @@ try {
                     }
                     break;
 
+                case 'checkLocationDeleteID':
+                    if (isset($_GET['id'])) {
+                        $id = $_GET['id'];
+                        $result = $locationModel->checkLocationDeleteID($id);
+                        if ($result) {
+                            echo json_encode(["success" => true, "message" => $result['result']]);
+                        } else {
+                            http_response_code(500); // Internal Server Error
+                            echo json_encode(["success" => false, "message" => "Error fetching department data"]);
+                        }
+                    } else {
+                        http_response_code(400); // Bad Request
+                        echo json_encode(["message" => "ID parameter is required"]);
+                    }
+                    break;
+
                 case 'deleteLocationByID':
                     if (isset($_GET['id'])) {
                         $id = $_GET['id'];
@@ -214,7 +230,7 @@ try {
                             echo json_encode(["success" => true, "message" => "Location deleted "]);
                         } else {
                             http_response_code(500); // Internal Server Error
-                            echo json_encode(["message" => "Sorry cannot Delete this department, because is referenced in department data."]);
+                            echo json_encode(["success" => false, "message" => "Failed to delete location"]);
                         }
                     } else {
                         http_response_code(400); // Bad Request
@@ -273,7 +289,7 @@ try {
                         echo json_encode(["success" => true, "message" => "Employee entry updated"]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to update employee"]);
+                        echo json_encode(["success" => false, "message" => "Failed to update employee, no changes made check entries again"]);
                     }
                     break;
 
@@ -283,60 +299,52 @@ try {
                         echo json_encode(["success" => true, "message" => "Department updated "]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to update employee"]);
+                        echo json_encode(["success" => false, "message" => "Failed to update department, no changes made check entry again"]);
                     }
                     break;
 
-                case 'updateLocation':
-                    $result = $locationModel->updateLocation($jsonData);
-                    if ($result) {
-                        echo json_encode(["success" => true, "message" => "Location updated "]);
-                    } else {
-                        http_response_code(500);
-                        echo json_encode(["success" => false, "message" => "Failed to update location"]);
-                    }
-                    break;
+            case 'updateLocation':
+                $result = $locationModel->updateLocation($jsonData);
+                if ($result) {
+                    echo json_encode(["success" => true, "message" => "Location updated "]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(["success" => false, "message" => "Failed to update location, no changes made check entry again"]);
+                }
+                break;
 
-                    case 'filterPersonnel':
-            
-                        if (isset($jsonData['departmentIDs'])) {
-                            $departmentIDs = $jsonData['departmentIDs']; 
-                    
-                            // Sanitize input
-                            $sanitizeIDs = array_map('intval', $departmentIDs);
-                            $sanitizeIDs = array_unique($sanitizeIDs);
-                    
-                            if (empty($sanitizeIDs)) {
-                                echo json_encode(["success" => false, "message" => "No department filter options provided"]);
-                                exit;
-                            }
-                    
-                            try {
-                                $result = $personnelModel->searchPersonnelByDepartmentIDs($sanitizeIDs);
-                                if ($result) {
-                                    echo json_encode($result);
-                                } else {
-                                    http_response_code(404); // Not Found
-                                    echo json_encode(["success" => false, "message" => "No results found"]);
-                                }
-                            } catch (Exception $e) {
-                                http_response_code(500); // Internal Server Error
-                                echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
-                            }
-                        } else {
-                            http_response_code(400); // Bad Request
-                            echo json_encode(["message" => "Search parameter is required"]);
+                case 'filterPersonnel':
+                    if (isset($jsonData['departmentIDs']) || isset($jsonData['locationIDs'])) {
+                        $departmentIDs = isset($jsonData['departmentIDs']) ? $jsonData['departmentIDs'] : [];
+                        $locationIDs = isset($jsonData['locationIDs']) ? $jsonData['locationIDs'] : [];
+                
+                        // Sanitize inputs
+                        $sanitizeDeptIDs = array_map('intval', array_unique($departmentIDs));
+                        $sanitizeLocIDs = array_map('intval', array_unique($locationIDs));
+                
+                        if (empty($sanitizeDeptIDs) && empty($sanitizeLocIDs)) {
+                            echo json_encode(["success" => false, "message" => "No filter options provided"]);
+                            exit;
                         }
-                        break;
-
-                        $result = $personnelModel->searchPersonnelByDepartmentIDs($sanitizeIDs);
-                        if ($result) {
-                            echo json_encode(["success" => true, "message" => "Location updated "]);
-                        } else {
+                
+                        try {
+                            $result = $personnelModel->searchPersonnelByFilters($sanitizeDeptIDs, $sanitizeLocIDs);
+                            if ($result) {
+                                echo json_encode($result);
+                            } else {
+                                http_response_code(404);
+                                echo json_encode(["success" => false, "message" => "Sorry no results found for filter entries"]);
+                            }
+                        } catch (Exception $e) {
                             http_response_code(500);
-                            echo json_encode(["success" => false, "message" => "Failed to update location"]);
+                            echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
                         }
-                        break;
+                    } else {
+                        http_response_code(400);
+                        echo json_encode(["message" => "Search parameter is required"]);
+                    }
+                    break;
+
 
 
                 default:

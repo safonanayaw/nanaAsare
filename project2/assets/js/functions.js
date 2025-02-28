@@ -82,11 +82,10 @@ export function populatePersonnelTable(data) {
     // Get and clear the existing table body
     var tableBody = document.getElementById("personnelTableBody");
     tableBody.innerHTML = "";
-  
-    // Create a DocumentFragment to accumulate the new rows
+
     var frag = document.createDocumentFragment();
   
-    // Iterate over the data and create table rows
+
     data.forEach(function(personnel) {
       // Create a new table row
       var row = document.createElement("tr");
@@ -123,6 +122,7 @@ export function populatePersonnelTable(data) {
       var editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "btn btn-primary btn-sm";
+      editBtn.style.marginRight = "5px";
       editBtn.setAttribute("data-bs-toggle", "modal");
       editBtn.setAttribute("data-bs-target", "#editPersonnelModal");
       editBtn.setAttribute("data-id", personnel.id);
@@ -192,6 +192,7 @@ export function populateDepartmentTable(data){
       var editBtn = document.createElement("button");
       editBtn.type = "button";
       editBtn.className = "btn btn-primary btn-sm";
+      editBtn.style.marginRight = "5px";
       editBtn.setAttribute("data-bs-toggle", "modal");
       editBtn.setAttribute("data-bs-target", "#editDepartmentModal");
       editBtn.setAttribute("data-id", department.id); 
@@ -227,11 +228,11 @@ export function populateDepartmentTable(data){
 };
 
 export function populateLocationTable(data){
-    // Get and clear the existing table body
+
     var tableBody = document.getElementById("locationTableBody");
     tableBody.innerHTML = "";
 
-    // Create a DocumentFragment to hold the new rows
+
     var frag = document.createDocumentFragment();
 
     // Iterate over the data and create table rows
@@ -253,7 +254,10 @@ export function populateLocationTable(data){
     var editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.className = "btn btn-primary btn-sm";
+    editBtn.style.marginRight = "5px";
     editBtn.setAttribute("data-id", location.id);
+    editBtn.setAttribute("data-bs-toggle", "modal");
+    editBtn.setAttribute("data-bs-target", "#editLocationModal");
     var editIcon = document.createElement("i");
     editIcon.className = "fa-solid fa-pencil fa-fw";
     editBtn.appendChild(editIcon);
@@ -262,7 +266,7 @@ export function populateLocationTable(data){
     // Create the delete button
     var deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
-    deleteBtn.className = "btn btn-primary btn-sm";
+    deleteBtn.className = "btn btn-primary btn-sm deleteLocationBtn";
     deleteBtn.setAttribute("data-id", location.id);
     var deleteIcon = document.createElement("i");
     deleteIcon.className = "fa-solid fa-trash fa-fw";
@@ -280,3 +284,90 @@ export function populateLocationTable(data){
     tableBody.appendChild(frag);
 }
 
+export function populateFilterDepartment(data){
+
+    let departmentFilterDropdown = document.getElementById("selectDepartmentOption");
+    departmentFilterDropdown.innerHTML = '';
+
+    // Create a DocumentFragment for departments
+    let departmentFrag = document.createDocumentFragment();
+
+    data.forEach(department => {
+        // Create list item
+        let li = document.createElement("li");
+
+        // Create form-check div
+        let div = document.createElement("div");
+        div.className = "form-check";
+
+        // Create input checkbox
+        let input = document.createElement("input");
+        input.className = "form-check-input dept-checkbox";
+        input.type = "checkbox";
+        input.value = department.id;
+        input.id = "dept" + department.id;
+
+        // Create label
+        let label = document.createElement("label");
+        label.className = "form-check-label";
+        label.htmlFor = "dept" + department.id;
+        label.textContent = department.name;
+
+        // Append input and label to div
+        div.appendChild(input);
+        div.appendChild(label);
+
+        // Append div to list item
+        li.appendChild(div);
+
+        // Append list item to DocumentFragment
+        departmentFrag.appendChild(li);
+    });
+
+    // Append the DocumentFragment to the dropdown
+    departmentFilterDropdown.append(departmentFrag);
+
+}
+
+export function populateFilterLocation(data){
+    let locationFilterDropdown = document.getElementById("selectLocationOption");
+        locationFilterDropdown.innerHTML = '';
+
+        // Create a DocumentFragment for locations
+        let locationFrag = document.createDocumentFragment();
+
+        data.forEach(location => {
+            // Create list item
+            let li = document.createElement("li");
+
+            // Create form-check div
+            let div = document.createElement("div");
+            div.className = "form-check";
+
+            // Create input checkbox
+            let input = document.createElement("input");
+            input.className = "form-check-input loc-checkbox";
+            input.type = "checkbox";
+            input.value = location.id;
+            input.id = "loc" + location.id;
+
+            // Create label
+            let label = document.createElement("label");
+            label.className = "form-check-label";
+            label.htmlFor = "loc" + location.id;
+            label.textContent = location.name;
+
+            // Append input and label to div
+            div.appendChild(input);
+            div.appendChild(label);
+
+            // Append div to list item
+            li.appendChild(div);
+
+            // Append list item to DocumentFragment
+            locationFrag.appendChild(li);
+        });
+
+        // Append the DocumentFragment to the dropdown
+        locationFilterDropdown.append(locationFrag);
+}
