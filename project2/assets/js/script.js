@@ -14,8 +14,8 @@ function populatePersonnelData(){
       success: function(data) {
           populatePersonnelTable(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+      error: function(jqXHR) {
+        console.error('Error: ' + jqXHR); 
       }
     });
 };
@@ -31,8 +31,8 @@ function populateDepartmentData(){
       success: function(data) {
         populateDepartmentTable(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+      error: function(jqXHR) {
+        console.error('Error: ' + jqXHR); 
       }
     });
   }
@@ -49,8 +49,8 @@ function populateLocationData(){
 
       populateLocationTable(data);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('Error: ' + textStatus, errorThrown); // Handle any errors
+    error: function(jqXHR, textStatus) {
+      console.error('Error: ' + textStatus); // Handle any errors
     }
   });
 }
@@ -76,8 +76,8 @@ function fetchAllDepartment() {
       success: function(data) {
         resolve(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-        reject('Error: ' + textStatus, errorThrown);
+      error: function(jqXHR, textStatus) {
+        reject('Error: ' + textStatus);
       }
     });
   });
@@ -94,13 +94,13 @@ function fetchAllLocation() {
       success: function(data) {
         resolve(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus) {
         console.error('Error details:', {
           status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
+          // statusText: jqXHR.statusText,
+          // responseText: jqXHR.responseText,
+          // textStatus: textStatus,
+          // errorThrown: errorThrown
         });
         reject('Error: ' + textStatus + ', ' + errorThrown);
       }
@@ -513,14 +513,8 @@ $(document).on("keyup", "#searchBtn",function (event) {
       success: function(data) {
         populatePersonnelTable(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.error('Error details:', {
-          status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
-        });
+      error: function(jqXHR, textStatus) {
+        console.error('Error details');
         $("#personnelTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Personnel</h3>`);
       }
     });
@@ -651,13 +645,13 @@ $('#editDepartmentModal').on("show.bs.modal", function (e) {
 
 
     },
-    error: function(jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus) {
       console.error('Error details:', {
         status: jqXHR.status,
-        statusText: jqXHR.statusText,
-        responseText: jqXHR.responseText,
-        textStatus: textStatus,
-        errorThrown: errorThrown
+        // statusText: jqXHR.statusText,
+        // responseText: jqXHR.responseText,
+        // textStatus: textStatus,
+        // errorThrown: errorThrown
       });
       
     }
@@ -753,13 +747,13 @@ $(document).on("click", ".deleteDepartmentBtn", function () {
         console.error("Error: ", data.message);
       }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
+    error: function (jqXHR, textStatus) {
       console.error('Error details:', {
         status: jqXHR.status,
-        statusText: jqXHR.statusText,
-        responseText: jqXHR.responseText,
-        textStatus: textStatus,
-        errorThrown: errorThrown
+        // statusText: jqXHR.statusText,
+        // responseText: jqXHR.responseText,
+        // textStatus: textStatus,
+        // errorThrown: errorThrown
       });
     }
   });
@@ -817,13 +811,10 @@ $(document).on("keyup", "#searchBtnDepartment",function (event) {
       success: function(data) {
         populateDepartmentTable(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus) {
         console.error('Error details:', {
           status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
+
         });
         $("#departmentTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Department</h3>`);
       }
@@ -908,13 +899,13 @@ $("#editLocationModal").on('show.bs.modal', function(e) {
 
         $("#editLocation").val(data.name);
     },
-    error: function(jqXHR, textStatus, errorThrown) {
+    error: function(jqXHR, textStatus) {
       console.error('Error details:', {
         status: jqXHR.status,
-        statusText: jqXHR.statusText,
-        responseText: jqXHR.responseText,
-        textStatus: textStatus,
-        errorThrown: errorThrown
+        // statusText: jqXHR.statusText,
+        // responseText: jqXHR.responseText,
+        // textStatus: textStatus,
+        // errorThrown: errorThrown
       });
       
     }
@@ -1003,13 +994,13 @@ $(document).on("click", ".deleteLocationBtn", function () {
         console.error("Error: ", data.message);
       }
     },
-    error: function (jqXHR, textStatus, errorThrown) {
+    error: function (jqXHR, textStatus) {
       console.error('Error details:', {
         status: jqXHR.status,
-        statusText: jqXHR.statusText,
-        responseText: jqXHR.responseText,
-        textStatus: textStatus,
-        errorThrown: errorThrown
+        // statusText: jqXHR.statusText,
+        // responseText: jqXHR.responseText,
+        // textStatus: textStatus,
+        // errorThrown: errorThrown
       });
     }
   });
@@ -1073,13 +1064,10 @@ $(document).on("keyup", "#searchBtnLocation",function (event) {
         
         populateLocationTable(data);
       },
-      error: function(jqXHR, textStatus, errorThrown) {
+      error: function(jqXHR, textStatus) {
         console.error('Error details:', {
           status: jqXHR.status,
-          statusText: jqXHR.statusText,
-          responseText: jqXHR.responseText,
-          textStatus: textStatus,
-          errorThrown: errorThrown
+
         });
         $("#locationTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Location</h3>`);
       }

@@ -99,13 +99,13 @@ export function populatePersonnelTable(data) {
       // Second cell: Job Title
       var tdJob = document.createElement("td");
       tdJob.className = "align-middle text-nowrap d-none d-md-table-cell";
-      tdJob.textContent = personnel.jobTitle;
+      tdJob.textContent = personnel.departmentName;
       row.appendChild(tdJob);
       
       // Third cell: Department Name
       var tdDept = document.createElement("td");
       tdDept.className = "align-middle text-nowrap d-none d-md-table-cell";
-      tdDept.textContent = personnel.departmentName;
+      tdDept.textContent = personnel.locationName;
       row.appendChild(tdDept);
       
       // Fourth cell: Email

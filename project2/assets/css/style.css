@@ -68,6 +68,17 @@ tr {
     #personnel-tab-pane thead, #departments-tab-pane thead, #locations-tab-pane thead {
     display: none;
   }
+
+  .custom-modal-height{
+    margin-left: 70px;
+    width: 80%;
+  }
+  /* CSS for expanding the modal */
+  .expanded-modal {
+    height: 70%;
+    width: 70%;
+    /* overflow-y: auto; */
+  }
   
   /* Convert rows to blocks */
   #personnel-tab-pane tbody tr, #departments-tab-pane tbody tr,#locations-tab-pane tbody tr {

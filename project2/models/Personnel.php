@@ -54,15 +54,19 @@ class Personnel{
         . $this->personnelTable . ".jobTitle, "
         . $this->personnelTable . ".email, "
         . $this->personnelTable . ".departmentID, "
-        . $this->departmentTable . ".name AS departmentName 
+        . $this->departmentTable . ".name AS departmentName, "
+        . $this->locationTable . ".name AS locationName 
         FROM " . $this->personnelTable . " 
         JOIN " . $this->departmentTable . " 
         ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+        JOIN " . $this->locationTable . "
+        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id
         ORDER BY " . $this->personnelTable . ".lastName ASC";
+        
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    } 
 
     public function readPersonnelByID($id){
         $query = "SELECT " 
@@ -142,15 +146,19 @@ class Personnel{
         . $this->personnelTable . ".jobTitle, "
         . $this->personnelTable . ".email, "
         . $this->personnelTable . ".departmentID, "
-        . $this->departmentTable . ".name AS departmentName 
+        . $this->departmentTable . ".name AS departmentName, "
+        . $this->locationTable . ".name AS locationName 
         FROM " . $this->personnelTable . " 
         JOIN " . $this->departmentTable . " 
         ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+        JOIN " . $this->locationTable . "
+        ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
         WHERE " . $this->personnelTable . ".firstName LIKE :searchValue 
         OR " . $this->personnelTable . ".lastName LIKE :searchValue 
         OR " . $this->personnelTable . ".jobTitle LIKE :searchValue 
         OR " . $this->personnelTable . ".email LIKE :searchValue 
-        OR " . $this->departmentTable . ".name LIKE :searchValue 
+        OR " . $this->departmentTable . ".name LIKE :searchValue
+        OR " . $this->locationTable . ".name LIKE :searchValue 
         ORDER BY " . $this->personnelTable . ".lastName ASC";
             
             $stmt = $this->conn->prepare($query);
