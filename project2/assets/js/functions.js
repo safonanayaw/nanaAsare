@@ -284,90 +284,39 @@ export function populateLocationTable(data){
     tableBody.appendChild(frag);
 }
 
-export function populateFilterDepartment(data){
+export function populateFilterDepartment(data) {
+  let departmentSelect = document.getElementById("selectDepartmentOption");
+  departmentSelect.innerHTML = "";
 
-    let departmentFilterDropdown = document.getElementById("selectDepartmentOption");
-    departmentFilterDropdown.innerHTML = '';
+  // Create default option
+  let defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "All";
+  departmentSelect.appendChild(defaultOption);
 
-    // Create a DocumentFragment for departments
-    let departmentFrag = document.createDocumentFragment();
-
-    data.forEach(department => {
-        // Create list item
-        let li = document.createElement("li");
-
-        // Create form-check div
-        let div = document.createElement("div");
-        div.className = "form-check";
-
-        // Create input checkbox
-        let input = document.createElement("input");
-        input.className = "form-check-input dept-checkbox";
-        input.type = "checkbox";
-        input.value = department.id;
-        input.id = "dept" + department.id;
-
-        // Create label
-        let label = document.createElement("label");
-        label.className = "form-check-label";
-        label.htmlFor = "dept" + department.id;
-        label.textContent = department.name;
-
-        // Append input and label to div
-        div.appendChild(input);
-        div.appendChild(label);
-
-        // Append div to list item
-        li.appendChild(div);
-
-        // Append list item to DocumentFragment
-        departmentFrag.appendChild(li);
-    });
-
-    // Append the DocumentFragment to the dropdown
-    departmentFilterDropdown.append(departmentFrag);
-
+  data.forEach(department => {
+      let option = document.createElement("option");
+      option.value = department.id;
+      option.textContent = department.name;
+      departmentSelect.appendChild(option);
+  });
 }
 
-export function populateFilterLocation(data){
-    let locationFilterDropdown = document.getElementById("selectLocationOption");
-        locationFilterDropdown.innerHTML = '';
+export function populateFilterLocation(data) {
+  let locationSelect = document.getElementById("selectLocationOption");
+  locationSelect.innerHTML = "";
 
-        // Create a DocumentFragment for locations
-        let locationFrag = document.createDocumentFragment();
+  // Create default option
+  let defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "All";
+  locationSelect.appendChild(defaultOption);
 
-        data.forEach(location => {
-            // Create list item
-            let li = document.createElement("li");
-
-            // Create form-check div
-            let div = document.createElement("div");
-            div.className = "form-check";
-
-            // Create input checkbox
-            let input = document.createElement("input");
-            input.className = "form-check-input loc-checkbox";
-            input.type = "checkbox";
-            input.value = location.id;
-            input.id = "loc" + location.id;
-
-            // Create label
-            let label = document.createElement("label");
-            label.className = "form-check-label";
-            label.htmlFor = "loc" + location.id;
-            label.textContent = location.name;
-
-            // Append input and label to div
-            div.appendChild(input);
-            div.appendChild(label);
-
-            // Append div to list item
-            li.appendChild(div);
-
-            // Append list item to DocumentFragment
-            locationFrag.appendChild(li);
-        });
-
-        // Append the DocumentFragment to the dropdown
-        locationFilterDropdown.append(locationFrag);
+  data.forEach(location => {
+      let option = document.createElement("option");
+      option.value = location.id;
+      option.textContent = location.name;
+      locationSelect.appendChild(option);
+  });
 }
+

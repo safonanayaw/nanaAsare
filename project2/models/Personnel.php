@@ -172,51 +172,50 @@ class Personnel{
     }
 
 
-        public function searchPersonnelByFilters($departmentIDs, $locationIDs){
-            $conditions = [];
-            $params = [];
-        
-            if (!empty($departmentIDs)) {
-                $placeholders = implode(',', array_fill(0, count($departmentIDs), '?'));
-                $conditions[] = $this->personnelTable . ".departmentID IN ($placeholders)";
-                $params = array_merge($params, $departmentIDs);
-            }
-        
-            if (!empty($locationIDs)) {
-                $placeholders = implode(',', array_fill(0, count($locationIDs), '?'));
-                $conditions[] = $this->departmentTable . ".locationID IN ($placeholders)";
-                $params = array_merge($params, $locationIDs);
-            }
-        
-            $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
-        
-            $query = "SELECT " 
-                . $this->personnelTable . ".id, "
-                . $this->personnelTable . ".firstName, "
-                . $this->personnelTable . ".lastName, "
-                . $this->personnelTable . ".jobTitle, "
-                . $this->personnelTable . ".email, "
-                . $this->personnelTable . ".departmentID, "
-                . $this->departmentTable . ".name AS departmentName, "
-                . $this->departmentTable . ".locationID, "
-                . $this->locationTable . ".name AS locationName 
-                FROM " . $this->personnelTable . " 
-                JOIN " . $this->departmentTable . " 
-                ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
-                JOIN " . $this->locationTable . " 
-                ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
-                $whereClause 
-                ORDER BY " . $this->personnelTable . ".lastName ASC";
-        
-            $stmt = $this->conn->prepare($query);
-        
-            foreach ($params as $key => $value) {
-                $stmt->bindValue($key + 1, $value, PDO::PARAM_INT);
-            }
-        
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function searchPersonnelByFilters($departmentIDs, $locationIDs){
+        $conditions = [];
+        $params = [];
+    
+        if (!empty($departmentIDs)) {
+            $conditions[] = $this->personnelTable . ".departmentID = ?";
+            $params[] = $departmentIDs[0]; 
         }
+    
+        if (!empty($locationIDs)) {
+            $conditions[] = $this->departmentTable . ".locationID = ?";
+            $params[] = $locationIDs[0];
+        }
+    
+        $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
+    
+        $query = "SELECT " 
+            . $this->personnelTable . ".id, "
+            . $this->personnelTable . ".firstName, "
+            . $this->personnelTable . ".lastName, "
+            . $this->personnelTable . ".jobTitle, "
+            . $this->personnelTable . ".email, "
+            . $this->personnelTable . ".departmentID, "
+            . $this->departmentTable . ".name AS departmentName, "
+            . $this->departmentTable . ".locationID, "
+            . $this->locationTable . ".name AS locationName 
+            FROM " . $this->personnelTable . " 
+            JOIN " . $this->departmentTable . " 
+            ON " . $this->personnelTable . ".departmentID = " . $this->departmentTable . ".id 
+            JOIN " . $this->locationTable . " 
+            ON " . $this->departmentTable . ".locationID = " . $this->locationTable . ".id 
+            $whereClause 
+            ORDER BY " . $this->personnelTable . ".lastName ASC";
+    
+        $stmt = $this->conn->prepare($query);
+        
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key + 1, $value, PDO::PARAM_INT);
+        }
+    
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
         
 //personnel database queries functions ends here ********************
 

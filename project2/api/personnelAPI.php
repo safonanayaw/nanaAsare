@@ -318,26 +318,16 @@ try {
                         $departmentIDs = isset($jsonData['departmentIDs']) ? $jsonData['departmentIDs'] : [];
                         $locationIDs = isset($jsonData['locationIDs']) ? $jsonData['locationIDs'] : [];
                 
-                        // Sanitize inputs
-                        $sanitizeDeptIDs = array_map('intval', array_unique($departmentIDs));
-                        $sanitizeLocIDs = array_map('intval', array_unique($locationIDs));
-                
-                        if (empty($sanitizeDeptIDs) && empty($sanitizeLocIDs)) {
-                            echo json_encode(["success" => false, "message" => "No filter options provided"]);
-                            exit;
-                        }
+                        // Convert to integers and ensure only one selection is used
+                        $sanitizeDeptIDs = !empty($departmentIDs) ? [(int)$departmentIDs[0]] : [];
+                        $sanitizeLocIDs = !empty($locationIDs) ? [(int)$locationIDs[0]] : [];
                 
                         try {
                             $result = $personnelModel->searchPersonnelByFilters($sanitizeDeptIDs, $sanitizeLocIDs);
-                            if ($result) {
-                                echo json_encode($result);
-                            } else {
-                                http_response_code(404);
-                                echo json_encode(["success" => false, "message" => "Sorry no results found for filter entries"]);
-                            }
+                            echo json_encode($result ?: ["success" => false, "message" => "No results found"]);
                         } catch (Exception $e) {
                             http_response_code(500);
-                            echo json_encode(["message" => "An error occurred while searching", "error" => $e->getMessage()]);
+                            echo json_encode(["message" => "Error occurred", "error" => $e->getMessage()]);
                         }
                     } else {
                         http_response_code(400);

@@ -177,30 +177,56 @@ $(document).ready(function (){
   });
   });
 
-  $(document).on('click', '#filterBtn', function() {
-    fetchAllDepartment().then(departmentData => {
-      populateFilterDepartment(departmentData);
+  $(document).on("click", "#filterBtn", function () {
+
+    let departmentData = [];
+    let locationData = [];
+    
+    fetchAllDepartment().then(data => {
+        departmentData = data;
+        populateFilterDepartment(departmentData);
+    });
+    
+    fetchAllLocation().then(data => {
+        locationData = data;
+        populateFilterLocation(locationData);
+    });
+    
+    $("#selectDepartmentOption").change(function () {
+        let selectedDeptID = $(this).val();
+    
+        // If a department is selected, update the location dropdown
+        if (selectedDeptID) {
+            let selectedDept = departmentData.find(d => d.id == selectedDeptID);
+            if (selectedDept) {
+                $("#selectLocationOption").val("All");
+            }
+        } else {
+            // If no department is selected, reset location dropdown
+            $("#selectLocationOption").val("All");
+        }
+    });
+    
+    // When location is changed, reset department selection to "All"
+    $("#selectLocationOption").change(function () {
+        let selectedLocID = $(this).val();
+    
+        if (selectedLocID) {
+            $("#selectDepartmentOption").val("All").prop("disabled", false);
+        } else {
+            // If no location is selected, reset department dropdown
+            $("#selectDepartmentOption").val("All").prop("disabled", false);
+        }
     });
 
-    fetchAllLocation().then(locationData => {
-      populateFilterLocation(locationData)
-    });
 
     $("#filterModalPersonnel").modal("show");
 
-    $('#applyFilterBtn').on('click', function() {
-        let selectedDeptIDs = [];
-        let selectedLocIDs = [];
+    $("#applyFilterBtn").off("click").on("click", function () {
+        let selectedDeptID = $("#selectDepartmentOption").val();
+        let selectedLocID = $("#selectLocationOption").val();
 
-        $('.dept-checkbox:checked').each(function() {
-            selectedDeptIDs.push($(this).val());
-        });
-
-        $('.loc-checkbox:checked').each(function() {
-            selectedLocIDs.push($(this).val());
-        });
-
-        if (selectedDeptIDs.length === 0 && selectedLocIDs.length === 0) {
+        if (!selectedDeptID && !selectedLocID) {
             $("#filterModalPersonnel").modal("hide");
             $("#notificationMessage").text("Please select at least one filter option.");
             $("#notificationModal").modal("show");
@@ -209,29 +235,25 @@ $(document).ready(function (){
 
         let filterData = JSON.stringify({
             type: "filterPersonnel",
-            departmentIDs: selectedDeptIDs,
-            locationIDs: selectedLocIDs
+            departmentIDs: selectedDeptID ? [selectedDeptID] : [],
+            locationIDs: selectedLocID ? [selectedLocID] : []
         });
 
         $("#personnelTableBody").empty();
-        $('#filterModalPersonnel').modal('hide');
+        $("#filterModalPersonnel").modal("hide");
 
         $.ajax({
             url: "./../api/personnelAPI.php",
             method: "POST",
             contentType: "application/json",
             data: filterData,
-            success: function(data) {
+            success: function (data) {
                 populatePersonnelTable(data);
             },
-            error: function(jqXHR) {
+            error: function (jqXHR) {
                 try {
-                    var response = JSON.parse(jqXHR.responseText);
-                    if (response.message) {
-                        $("#notificationMessage").text(response.message);
-                    } else {
-                        $("#notificationMessage").text("An unexpected error occurred.");
-                    }
+                    let response = JSON.parse(jqXHR.responseText);
+                    $("#notificationMessage").text(response.message || "An unexpected error occurred.");
                 } catch (e) {
                     $("#notificationMessage").text("An unexpected error occurred.");
                 }
@@ -240,6 +262,7 @@ $(document).ready(function (){
         });
     });
 });
+
 
 
 // personnel filter ends here**********************************************************

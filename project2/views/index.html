@@ -391,35 +391,23 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body filter-modal-body">
-        <!-- Dropdown with Checkboxes for Departments -->
-      <div class="d-flex">
-        <div class="dropdown me-2">
-          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownDeptButton" data-bs-toggle="dropdown" aria-expanded="false">
-            By Department
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownDeptButton">
-            <li>
-              <div id="selectDepartmentOption" class="row">
-                <!-- department filter checkbox comes here -->
-              </div>
-            </li>
-          </ul>
+
+        <div class="d-flex flex-column">
+          <!-- Department Selection -->
+          <label for="selectDepartmentOption" class="form-label">By Department</label>
+          <select class="form-select" id="selectDepartmentOption">
+            <option >All</option>
+            <!-- Departments will be populated dynamically -->
+        </select>
+
+          <!-- Location Selection -->
+          <label for="selectLocationOption" class="form-label mt-3">By Location</label>
+          <select class="form-select" id="selectLocationOption">
+            <option >All</option>
+            <!-- Locations will be populated dynamically -->
+        </select>
         </div>
-        
-        <!-- Location Filter -->
-        <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownLocButton" data-bs-toggle="dropdown" aria-expanded="false">
-            By Locations
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownLocButton">
-            <li>
-              <div id="selectLocationOption" class="row">
-                <!-- Location filter checkboxes are dynamically inserted here -->
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-primary btn-sm myBtn" id="applyFilterBtn">APPLY</button>
@@ -428,6 +416,7 @@
     </div>
   </div>
 </div>
+
 
   <!-- are you sure personnel -->
   <div id="areYouSurePersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
