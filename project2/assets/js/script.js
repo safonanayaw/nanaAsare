@@ -148,15 +148,8 @@ $(document).ready(function (){
   });
 
   
-  // Add a close button or mechanism to close the dropdown
+
   $(document).ready(function() {
-    $('#dropdownDeptButton, #dropdownLocButton').on('show.bs.dropdown', function () {
-      $('#filterModalPersonnel .custom-modal-height ').addClass('expanded-modal');
-    });
-  
-    $('#filterModalPersonnel').on('hide.bs.modal', function () {
-      $('#filterModalPersonnel .custom-modal-height ').removeClass('expanded-modal');
-    });
 
     window.addEventListener('error', function(e) {
       if (e.message.includes("backdrop")) {
@@ -164,108 +157,100 @@ $(document).ready(function (){
         return true;
       }
     }, true);
+  });
 
-    document.addEventListener("DOMContentLoaded", function () {
-      var filterModal = document.getElementById("filterModalPersonnel");
-  
-      if (filterModal) {
-          var dropdownElements = [].slice.call(filterModal.querySelectorAll('.dropdown-toggle'));
-          dropdownElements.map(function (dropdownToggleEl) {
-              return new bootstrap.Dropdown(dropdownToggleEl);
-          });
+
+$(document).ready(function () {
+  let departmentData = [];
+  let locationData = [];
+
+  // Fetch and populate departments and locations
+  fetchAllDepartment().then(data => {
+      departmentData = data;
+      populateFilterDepartment(departmentData);
+  });
+
+  fetchAllLocation().then(data => {
+      locationData = data;
+      populateFilterLocation(locationData);
+  });
+
+  // Function to handle filtering logic
+  function fetchFilteredData() {
+      const selectedDeptID = $("#selectDepartmentOption").val();
+      const selectedLocID = $("#selectLocationOption").val();
+
+      // Check if both are "All"
+      if (selectedDeptID === "All" && selectedLocID === "All") {
+
+          return;
       }
-  });
+
+      // Prepare filter data
+      const filterData = JSON.stringify({
+          type: "filterPersonnel",
+          departmentIDs: selectedDeptID !== "All" ? [selectedDeptID] : [],
+          locationIDs: selectedLocID !== "All" ? [selectedLocID] : []
+      });
+
+      // Clear table and hide modal
+      $("#personnelTableBody").empty();
+      $("#filterPersonnelModal").modal("hide");
+
+      // Send AJAX request
+      $.ajax({
+          url: "./../api/personnelAPI.php",
+          method: "POST",
+          contentType: "application/json",
+          data: filterData,
+          success: populatePersonnelTable,
+          error: handleFilterError
+      });
+  }
+
+  // Error handler for AJAX
+  function handleFilterError(jqXHR) {
+      try {
+          const response = JSON.parse(jqXHR.responseText);
+          console.log(response.message || "An error occurred.");
+      } catch (e) {
+        console.log("An unexpected error occurred.");
+      }
+  }
+
+  // Department change handler
+  $("#selectDepartmentOption").off("change").on("change", function () {
+      const selectedDeptID = $(this).val();
+      
+      if (selectedDeptID && selectedDeptID !== "All") {
+          // Reset location to "All" when department is selected
+          $("#selectLocationOption").val("All");
+      }
+      fetchFilteredData(); // Trigger filter automatically
   });
 
+  // Location change handler
+  $("#selectLocationOption").off("change").on("change", function () {
+      const selectedLocID = $(this).val();
+      
+      if (selectedLocID && selectedLocID !== "All") {
+          // Reset department to "All" when location is selected
+          $("#selectDepartmentOption").val("All");
+      }
+      fetchFilteredData(); // Trigger filter automatically
+  });
+
+  // Show modal when filter button is clicked
   $(document).on("click", "#filterBtn", function () {
-
-    let departmentData = [];
-    let locationData = [];
-    
-    fetchAllDepartment().then(data => {
-        departmentData = data;
-        populateFilterDepartment(departmentData);
-    });
-    
-    fetchAllLocation().then(data => {
-        locationData = data;
-        populateFilterLocation(locationData);
-    });
-    
-    $("#selectDepartmentOption").change(function () {
-        let selectedDeptID = $(this).val();
-    
-        // If a department is selected, update the location dropdown
-        if (selectedDeptID) {
-            let selectedDept = departmentData.find(d => d.id == selectedDeptID);
-            if (selectedDept) {
-                $("#selectLocationOption").val("All");
-            }
-        } else {
-            // If no department is selected, reset location dropdown
-            $("#selectLocationOption").val("All");
-        }
-    });
-    
-    // When location is changed, reset department selection to "All"
-    $("#selectLocationOption").change(function () {
-        let selectedLocID = $(this).val();
-    
-        if (selectedLocID) {
-            $("#selectDepartmentOption").val("All").prop("disabled", false);
-        } else {
-            // If no location is selected, reset department dropdown
-            $("#selectDepartmentOption").val("All").prop("disabled", false);
-        }
-    });
-
-
-    $("#filterModalPersonnel").modal("show");
-
-    $("#applyFilterBtn").off("click").on("click", function () {
-        let selectedDeptID = $("#selectDepartmentOption").val();
-        let selectedLocID = $("#selectLocationOption").val();
-
-        if (!selectedDeptID && !selectedLocID) {
-            $("#filterModalPersonnel").modal("hide");
-            $("#notificationMessage").text("Please select at least one filter option.");
-            $("#notificationModal").modal("show");
-            return;
-        }
-
-        let filterData = JSON.stringify({
-            type: "filterPersonnel",
-            departmentIDs: selectedDeptID ? [selectedDeptID] : [],
-            locationIDs: selectedLocID ? [selectedLocID] : []
-        });
-
-        $("#personnelTableBody").empty();
-        $("#filterModalPersonnel").modal("hide");
-
-        $.ajax({
-            url: "./../api/personnelAPI.php",
-            method: "POST",
-            contentType: "application/json",
-            data: filterData,
-            success: function (data) {
-                populatePersonnelTable(data);
-            },
-            error: function (jqXHR) {
-                try {
-                    let response = JSON.parse(jqXHR.responseText);
-                    $("#notificationMessage").text(response.message || "An unexpected error occurred.");
-                } catch (e) {
-                    $("#notificationMessage").text("An unexpected error occurred.");
-                }
-                $("#notificationModal").modal("show");
-            }
-        });
-    });
+      // Reset filters to "All" when modal opens
+      $("#selectDepartmentOption").val("All");
+      $("#selectLocationOption").val("All");
+      $("#filterModalPersonnel").modal("show");
+  });
 });
-
-
-
 // personnel filter ends here**********************************************************
+
+
 
 //populate department when add personnel btn is click
 $(document).on('click', '#addBtn', function(){
@@ -287,10 +272,13 @@ $(document).on('click', '#addBtn', function(){
 });
 
 // adding personnel data****************************************************
+$("#createPersonnelModal").on("hide.bs.modal", function(){
+//reset the form
+$("#addPersonnelForm")[0].reset();
+});
+
 $('#addPersonnelForm').on('submit', function (event) {
   event.preventDefault();
-
-  $("#createPersonnelModal").modal("hide");
 
   let form = document.getElementById("addPersonnelForm");
   let formData = new FormData(form);
@@ -303,9 +291,8 @@ $('#addPersonnelForm').on('submit', function (event) {
 
   // Validate form data
   if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(personnelData.departmentID)) {
-    // Show error message if any field is empty or invalid
-    $("#notificationMessage").text("Please fill out all fields correctly.");
-    $("#notificationModal").modal("show");
+    // return if any field is empty or invalid
+
     return; // Stop further execution
   }
 
@@ -323,11 +310,8 @@ $('#addPersonnelForm').on('submit', function (event) {
       contentType: 'application/json',
       success: function(data) {
           if (data.message) {
-              $("#notificationMessage").text(data.message);
-              $("#refreshBtnPersonnel").click();
-              $("#notificationModal").modal("show");
-              //reset the form
-              $("#addPersonnelForm")[0].reset();
+            $("#createPersonnelModal").modal("hide");
+            $("#refreshBtnPersonnel").click();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -336,14 +320,13 @@ $('#addPersonnelForm').on('submit', function (event) {
           try {
             var response = JSON.parse(jqXHR.responseText);
             if (response.message) {
-                $("#notificationMessage").text(response.message);
+
             } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+
             }
         } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
         }     
-        $("#notificationModal").modal("show");
       }
   });
 });
@@ -391,11 +374,13 @@ $("#editPersonnelModal").on("show.bs.modal", function (e) {
 });
 
 
+$("#editPersonnelModal").on("hide.bs.modal", function(){
+  //reset the form
+  $("#editPersonnelForm")[0].reset();
+})
 //updating personnel by id function
 $("#editPersonnelForm").on("submit", function (event) {
   event.preventDefault();
-
-  $('#editPersonnelModal').modal('hide');
 
     let form = document.getElementById('editPersonnelForm');
     let formData = new FormData(form);
@@ -411,9 +396,7 @@ $("#editPersonnelForm").on("submit", function (event) {
 
     // Validate form data
     if (!personnelData.firstName || !personnelData.lastName || !personnelData.jobTitle || !personnelData.email || isNaN(parseInt(personnelData.departmentID))) {
-      // Show error message if any field is empty or invalid
-      $("#notificationMessage").text("Please fill out all fields correctly.");
-      $("#notificationModal").modal("show");
+      // return if any field is empty or invalid
       return; 
   }
 
@@ -430,13 +413,8 @@ $("#editPersonnelForm").on("submit", function (event) {
       contentType: 'application/json',
       success: function(data) {
           if (data.message) {
-              $("#notificationMessage").text(data.message);
-              $("#refreshBtn").click();
-              $("#notificationModal").modal("show");
-
-  
-              //reset the form
-              $("#editPersonnelForm")[0].reset();
+              $('#editPersonnelModal').modal('hide');
+              $("#refreshBtn").click();  
           } else {
               throw new Error("Unexpected response format");
           }
@@ -445,14 +423,13 @@ $("#editPersonnelForm").on("submit", function (event) {
           try {
             var response = JSON.parse(jqXHR.responseText);
             if (response.message) {
-                $("#notificationMessage").text(response.message);
+                console.log(response.message);
             } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+                console.log("An unexpected error occurred.");
             }
         } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
         }     
-        $("#notificationModal").modal("show");
       }
   });
 });
@@ -495,10 +472,6 @@ $("#areYouSurePersonnelForm").on('submit', function(event){
       success: function(data) {
           if (data.message) {
               $("#refreshBtn").click();
-
-              $("#notificationMessage").text(data.message);
-             
-              $("#notificationModal").modal("show");
           } else {
               throw new Error("Unexpected response format");
           }
@@ -507,14 +480,13 @@ $("#areYouSurePersonnelForm").on('submit', function(event){
           try {
             var response = JSON.parse(jqXHR.responseText);
             if (response.message) {
-                $("#notificationMessage").text(response.message);
+                console.log(response.message);
             } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+              console.log("An unexpected error occurred.");
             }
         } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
+          console.log("An unexpected error occurred.");
         }     
-        $("#notificationModal").modal("show");
       }
     });
 
@@ -537,7 +509,7 @@ $(document).on("keyup", "#searchBtn",function (event) {
         populatePersonnelTable(data);
       },
       error: function(jqXHR, textStatus) {
-        console.error('Error details');
+
         $("#personnelTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Personnel</h3>`);
       }
     });
@@ -567,11 +539,15 @@ $(document).on('click', '#addBtnDepartment', function(){
 });
 
 
+
+$("#addDepartmentModal").on("hide.bs.modal", function(){
+  //reset the form after success
+  $("#addDepartmentForm")[0].reset();
+})
+
 // creating department data****************************************************
 $("#addDepartmentForm").on('submit', function(event) {
   event.preventDefault();//prevent the form from submitting
-  $("#addDepartmentModal").modal("hide");
-  
 
   let form = document.getElementById("addDepartmentForm");
   let formData = new FormData(form);
@@ -584,9 +560,7 @@ $("#addDepartmentForm").on('submit', function(event) {
 
   //validate form data
   if(!departmentData.name || isNaN(departmentData.locationID)){
-    //show error message if any fileds is empty
-    $("#notificationMessage").text("Please fill out all fields correctly.");
-    $("#notificationModal").modal("show");
+    //return if any fileds is empty
     return;
   }
 
@@ -604,11 +578,8 @@ $("#addDepartmentForm").on('submit', function(event) {
       contentType: 'application/json',
       success: function(data) {
           if (data.message) {
-              $("#notificationMessage").text(data.message);
+              $("#addDepartmentModal").modal("hide");
               $("#refreshBtnDepartment").click();
-              $("#notificationModal").modal("show");
-              //reset the form after success
-              $("#addDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -617,14 +588,13 @@ $("#addDepartmentForm").on('submit', function(event) {
           try {
             var response = JSON.parse(jqXHR.responseText);
             if (response.message) {
-                $("#notificationMessage").text(response.message);
+              console.log(response.message);
             } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+              console.log("An unexpected error occurred.");
             }
         } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
+          console.log("An unexpected error occurred.");
         }     
-        $("#notificationModal").modal("show");
       }
   });
   
@@ -682,9 +652,13 @@ $('#editDepartmentModal').on("show.bs.modal", function (e) {
 return selectedDepartmentlID;
 });
   
+
+$("#editDepartmentModal").on("hide.bs.modal", function(){
+  //reset the form after success
+  $("#editDepartmentForm")[0].reset();
+})
 $('#editDepartmentForm').on('submit', function(event) {
   event.preventDefault();
-
 
   let form = document.getElementById("editDepartmentForm");
 
@@ -696,14 +670,9 @@ $('#editDepartmentForm').on('submit', function(event) {
 
   departmentData.id = selectedDepartmentlID;
 
-
-  $('#editDepartmentModal').modal('hide');
-
     //validate form data
     if(!departmentData.name || isNaN(departmentData.locationID)){
-      //show error message if any fileds is empty
-      $("#notificationMessage").text("Please fill out all fields correctly.");
-      $("#notificationModal").modal("show");
+      //return if any fileds is empty
       return;
     }
 
@@ -721,10 +690,8 @@ $('#editDepartmentForm').on('submit', function(event) {
       contentType: 'application/json',
       success: function(data) {
           if (data.message) {
-              $("#notificationMessage").text(data.message);
+              $('#editDepartmentModal').modal('hide');
               $("#refreshBtnDepartment").click();
-              $("#notificationModal").modal("show");
-              $("#editDepartmentForm")[0].reset();
           } else {
               throw new Error("Unexpected response format");
           }
@@ -733,14 +700,13 @@ $('#editDepartmentForm').on('submit', function(event) {
           try {
             var response = JSON.parse(jqXHR.responseText);
             if (response.message) {
-                $("#notificationMessage").text(response.message);
+              console.log(response.message);
             } else {
-                $("#notificationMessage").text("An unexpected error occurred.");
+              console.log("An unexpected error occurred.");
             }
         } catch (e) {
-            $("#notificationMessage").text("An unexpected error occurred.");
+          console.log("An unexpected error occurred.");
         }     
-        $("#notificationModal").modal("show");
       }
   });
 });
@@ -794,10 +760,7 @@ event.preventDefault();
         data: { type: "deleteDepartmentByID", id: selectedDepartmentDeleteID },
         success: function(data) {
             if (data.success) {
-
-                $("#notificationMessage").text(data.message);
                 $("#refreshBtnDepartment").click();
-                $("#notificationModal").modal("show");
             } else {
                 throw new Error("Unexpected response format");
             }
@@ -806,14 +769,14 @@ event.preventDefault();
             try {
               var response = JSON.parse(jqXHR.responseText);
               if (response.message) {
-                  $("#notificationMessage").text(response.message);
+                console.log(response.message);
               } else {
-                  $("#notificationMessage").text("An unexpected error occurred.");
+                console.log("An unexpected error occurred.");
               }
           } catch (e) {
-              $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
           }     
-          $("#notificationModal").modal("show");
+          
         }
     });
 
@@ -835,10 +798,7 @@ $(document).on("keyup", "#searchBtnDepartment",function (event) {
         populateDepartmentTable(data);
       },
       error: function(jqXHR, textStatus) {
-        console.error('Error details:', {
-          status: jqXHR.status,
 
-        });
         $("#departmentTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Department</h3>`);
       }
     });
@@ -849,10 +809,15 @@ $(document).on("keyup", "#searchBtnDepartment",function (event) {
 
 
 // creating location data****************************************************
+$("#addLocationModal").on("hide.bs.modal", function(){
+  //reset the form after success
+  $("#addLocationForm")[0].reset();
+});
+
 $("#addLocationForm").on('submit', function(event) {
   event.preventDefault();//prevent the form from submitting
 
-  $("#addLocationModal").modal("hide");
+
   let locationData = {};
    let form = document.getElementById("addLocationForm");
   let formData = new FormData(form);
@@ -861,9 +826,7 @@ $("#addLocationForm").on('submit', function(event) {
   })
     //validate form data
     if(!locationData.name){
-      //show error message if any fileds is empty
-      $("#notificationMessage").text("Please fill out all fields correctly.");
-      $("#notificationModal").modal("show");
+      //return if any fileds is empty
       return;
     }
 
@@ -882,10 +845,9 @@ $("#addLocationForm").on('submit', function(event) {
       contentType: 'application/json',
       success: function(data) {
         if (data.message) {
-            $("#notificationMessage").text(data.message);
+            $("#addLocationModal").modal("hide");
             $("#refreshBtnLocation").click();
-            $("#notificationModal").modal("show");
-            $("#addLocationForm")[0].reset();
+            
         } else {
             throw new Error("Unexpected response format");
         }
@@ -894,14 +856,13 @@ $("#addLocationForm").on('submit', function(event) {
         try {
           var response = JSON.parse(jqXHR.responseText);
           if (response.message) {
-              $("#notificationMessage").text(response.message);
+            console.log(response.message);
           } else {
-              $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
           }
       } catch (e) {
-          $("#notificationMessage").text("An unexpected error occurred.");
+        console.log("An unexpected error occurred.");
       }     
-      $("#notificationModal").modal("show");
     }
   });
   
@@ -936,11 +897,16 @@ $("#editLocationModal").on('show.bs.modal', function(e) {
 return selectedLocationID;
 });
 
+
+$("editLocationModal").on("hide.bs.modal", function(){
+  // Reset the form after success
+  $("#editLocationForm")[0].reset();
+});
 $('#editLocationForm').on('submit', function(event) {
   event.preventDefault();
 
   let locationData = {};
-  $('#editLocationModal').modal('hide');
+
   let form = document.getElementById("editLocationForm");
   let formData = new FormData(form);
   formData.forEach((value, key) => {
@@ -951,9 +917,7 @@ $('#editLocationForm').on('submit', function(event) {
 
     //validate form data
     if(!locationData.name){
-      //show error message if any fileds is empty
-      $("#notificationMessage").text("Please fill out all fields correctly.");
-      $("#notificationModal").modal("show");
+      //return if any fileds is empty
       return;
     }
 
@@ -969,11 +933,9 @@ $('#editLocationForm').on('submit', function(event) {
       contentType: 'application/json',
       success: function(data) {
         if (data.message) {
-            $("#notificationMessage").text(data.message);
+            $('#editLocationModal').modal('hide');
             $("#refreshBtnLocation").click();
-            $("#notificationModal").modal("show");
-            // Reset the form field
-            $("#editLocationForm")[0].reset();
+            
         } else {
             throw new Error("Unexpected response format");
         }
@@ -982,14 +944,13 @@ $('#editLocationForm').on('submit', function(event) {
         try {
           var response = JSON.parse(jqXHR.responseText);
           if (response.message) {
-              $("#notificationMessage").text(response.message);
           } else {
-              $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
           }
       } catch (e) {
-          $("#notificationMessage").text("An unexpected error occurred.");
+        console.log("An unexpected error occurred.");
       }     
-      $("#notificationModal").modal("show");
+      
     }
   });
 });
@@ -1043,9 +1004,8 @@ event.preventDefault();
         success: function(data) {
             if (data.success) {
 
-                $("#notificationMessage").text(data.message);
                 $("#refreshBtnLocation").click();
-                $("#notificationModal").modal("show");
+
             } else {
                 throw new Error("Unexpected response format");
             }
@@ -1054,14 +1014,14 @@ event.preventDefault();
             try {
               var response = JSON.parse(jqXHR.responseText);
               if (response.message) {
-                  $("#notificationMessage").text(response.message);
+                console.log(response.message);
               } else {
-                  $("#notificationMessage").text("An unexpected error occurred.");
+                console.log("An unexpected error occurred.");
               }
           } catch (e) {
-              $("#notificationMessage").text("An unexpected error occurred.");
+            console.log("An unexpected error occurred.");
           }     
-          $("#notificationModal").modal("show");
+         
         }
     });
 
@@ -1088,10 +1048,7 @@ $(document).on("keyup", "#searchBtnLocation",function (event) {
         populateLocationTable(data);
       },
       error: function(jqXHR, textStatus) {
-        console.error('Error details:', {
-          status: jqXHR.status,
 
-        });
         $("#locationTableBody").html(`<h3 class="text-danger"> Sorry no results found for "${searchValue}" in Location</h3>`);
       }
     });

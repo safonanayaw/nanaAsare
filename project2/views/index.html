@@ -383,35 +383,48 @@
 
 <!-- Filter Modal -->
 <!-- Fixed Filter Modal -->
-<div id="filterModalPersonnel" class="modal fade" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true" data-bs-backdrop="false">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable custom-modal-height">
-    <div class="modal-content shadow custom-modal-height">
+<div id="filterPersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+  <!--   the last two classes centre the modal and, if the content is too long, ensures  -->
+  <!--   that the header and footer are always on display by making the body scroll -->
+
+  <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+
+    <div class="modal-content modal-sm shadow">
+
       <div class="modal-header bg-primary bg-gradient text-white">
-        <h5 class="modal-title" id="filterModalLabel">Filter Personnel</h5>
+        <h5 class="modal-title">Filter employees</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body filter-modal-body">
 
-        <div class="d-flex flex-column">
-          <!-- Department Selection -->
-          <label for="selectDepartmentOption" class="form-label">By Department</label>
-          <select class="form-select" id="selectDepartmentOption">
-            <option >All</option>
-            <!-- Departments will be populated dynamically -->
-        </select>
+      <div class="modal-body">
 
-          <!-- Location Selection -->
-          <label for="selectLocationOption" class="form-label mt-3">By Location</label>
-          <select class="form-select" id="selectLocationOption">
-            <option >All</option>
-            <!-- Locations will be populated dynamically -->
-        </select>
-        </div>
+
+
+        <form id="filterPersonnelForm">
+          <div class="form-floating mb-3">
+            <!-- Department Selection -->
+            <select class="form-select" id="selectDepartmentOption" placeholder="Department">
+              <option >All</option>
+              <!-- Departments will be populated dynamically -->
+            </select>
+            <label for="filterPersonnelByDepartment">Department</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <!-- Location Selection -->
+            <select class="form-select" id="selectLocationOption" placeholder="Location">
+              <option >All</option>
+              <!-- Locations will be populated dynamically -->
+            </select>
+            <label for="filterPersonnelByDepartment">Location</label>
+          </div>
+        </form>
+
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-primary btn-sm myBtn" id="applyFilterBtn">APPLY</button>
-        <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+        <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CLOSE</button>
       </div>
     </div>
   </div>

@@ -1,9 +1,9 @@
 export function updateHeadDiv(searchBtnID = "searchBtn", refreshBtnID = "refreshBtn", filterBtnID = "filterBtn", addBtnID = "addBtn", addModalBtn = "#createPersonnelModal") {
-    // Get and clear the existing container
+    
     var defaultHeadDiv = document.getElementById("headDiv");
     defaultHeadDiv.innerHTML = "";
 
-    // Create a DocumentFragment
+    
     var frag = document.createDocumentFragment();
 
     // Create the first div (search input)
@@ -67,11 +67,11 @@ export function updateHeadDiv(searchBtnID = "searchBtn", refreshBtnID = "refresh
     addBtn.appendChild(addIcon);
     btnGroupDiv.appendChild(addBtn);
 
-    // Append the button group to its container
+    
     btnContainerDiv.appendChild(btnGroupDiv);
     frag.appendChild(btnContainerDiv);
 
-    // Append the fragment to the actual DOM element
+   
     defaultHeadDiv.appendChild(frag);
 }
 
@@ -79,84 +79,90 @@ export function updateHeadDiv(searchBtnID = "searchBtn", refreshBtnID = "refresh
 
 
 export function populatePersonnelTable(data) {
-    // Get and clear the existing table body
-    var tableBody = document.getElementById("personnelTableBody");
-    tableBody.innerHTML = "";
-
-    var frag = document.createDocumentFragment();
   
+  var tableBody = document.getElementById("personnelTableBody");
+  tableBody.innerHTML = "";
 
-    data.forEach(function(personnel) {
-      // Create a new table row
-      var row = document.createElement("tr");
-      
-      // First cell: First and Last Name
-      var tdName = document.createElement("td");
-      tdName.className = "align-middle text-nowrap";
-      tdName.textContent = personnel.lastName + ", " + personnel.firstName;
-      row.appendChild(tdName);
-      
-      // Second cell: Job Title
-      var tdJob = document.createElement("td");
-      tdJob.className = "align-middle text-nowrap d-none d-md-table-cell";
-      tdJob.textContent = personnel.departmentName;
-      row.appendChild(tdJob);
-      
-      // Third cell: Department Name
-      var tdDept = document.createElement("td");
-      tdDept.className = "align-middle text-nowrap d-none d-md-table-cell";
-      tdDept.textContent = personnel.locationName;
-      row.appendChild(tdDept);
-      
-      // Fourth cell: Email
-      var tdEmail = document.createElement("td");
-      tdEmail.className = "align-middle text-nowrap d-none d-md-table-cell";
-      tdEmail.textContent = personnel.email;
-      row.appendChild(tdEmail);
-      
-      // Fifth cell: Action Buttons
-      var tdButtons = document.createElement("td");
-      tdButtons.className = "text-end text-nowrap";
-      
-      // Create the edit button
-      var editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "btn btn-primary btn-sm";
-      editBtn.style.marginRight = "5px";
-      editBtn.setAttribute("data-bs-toggle", "modal");
-      editBtn.setAttribute("data-bs-target", "#editPersonnelModal");
-      editBtn.setAttribute("data-id", personnel.id);
-      
-      var editIcon = document.createElement("i");
-      editIcon.className = "fa-solid fa-pencil fa-fw";
-      editBtn.appendChild(editIcon);
-      
-      tdButtons.appendChild(editBtn);
-      
-      // Create the delete button
-      var deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "btn btn-primary btn-sm";
-      deleteBtn.setAttribute("data-bs-toggle", "modal");
-      deleteBtn.setAttribute("data-bs-target", "#areYouSurePersonnelModal");
-      deleteBtn.setAttribute("data-id", personnel.id);
-      
-      var deleteIcon = document.createElement("i");
-      deleteIcon.className = "fa-solid fa-trash fa-fw";
-      deleteBtn.appendChild(deleteIcon);
-      
-      tdButtons.appendChild(deleteBtn);
-      
-      // Append the button cell to the row
-      row.appendChild(tdButtons);
-      
-      // Append the complete row to the DocumentFragment
-      frag.appendChild(row);
-    });
-  
-    // Append the entire DocumentFragment to the table body
-    tableBody.appendChild(frag);
-  };
+  var frag = document.createDocumentFragment();
+
+  try {
+      if (Array.isArray(data)) {
+          data.forEach(function(personnel) {
+              // Create a new table row
+              var row = document.createElement("tr");
+
+              // First cell: First and Last Name
+              var tdName = document.createElement("td");
+              tdName.className = "align-middle text-nowrap";
+              tdName.textContent = personnel.lastName + ", " + personnel.firstName;
+              row.appendChild(tdName);
+
+              // Second cell: Job Title
+              var tdJob = document.createElement("td");
+              tdJob.className = "align-middle text-nowrap d-none d-md-table-cell";
+              tdJob.textContent = personnel.departmentName;
+              row.appendChild(tdJob);
+
+              // Third cell: Department Name
+              var tdDept = document.createElement("td");
+              tdDept.className = "align-middle text-nowrap d-none d-md-table-cell";
+              tdDept.textContent = personnel.locationName;
+              row.appendChild(tdDept);
+
+              // Fourth cell: Email
+              var tdEmail = document.createElement("td");
+              tdEmail.className = "align-middle text-nowrap d-none d-md-table-cell";
+              tdEmail.textContent = personnel.email;
+              row.appendChild(tdEmail);
+
+              // Fifth cell: Action Buttons
+              var tdButtons = document.createElement("td");
+              tdButtons.className = "text-end text-nowrap";
+
+              // Create the edit button
+              var editBtn = document.createElement("button");
+              editBtn.type = "button";
+              editBtn.className = "btn btn-primary btn-sm";
+              editBtn.style.marginRight = "5px";
+              editBtn.setAttribute("data-bs-toggle", "modal");
+              editBtn.setAttribute("data-bs-target", "#editPersonnelModal");
+              editBtn.setAttribute("data-id", personnel.id);
+
+              var editIcon = document.createElement("i");
+              editIcon.className = "fa-solid fa-pencil fa-fw";
+              editBtn.appendChild(editIcon);
+
+              tdButtons.appendChild(editBtn);
+
+              // Create the delete button
+              var deleteBtn = document.createElement("button");
+              deleteBtn.type = "button";
+              deleteBtn.className = "btn btn-primary btn-sm";
+              deleteBtn.setAttribute("data-bs-toggle", "modal");
+              deleteBtn.setAttribute("data-bs-target", "#areYouSurePersonnelModal");
+              deleteBtn.setAttribute("data-id", personnel.id);
+
+              var deleteIcon = document.createElement("i");
+              deleteIcon.className = "fa-solid fa-trash fa-fw";
+              deleteBtn.appendChild(deleteIcon);
+
+              tdButtons.appendChild(deleteBtn);
+
+              // Append the button cell to the row
+              row.appendChild(tdButtons);
+
+              frag.appendChild(row);
+          });
+      } else {
+          throw new TypeError("Invalid data format");
+      }
+  } catch (error) {
+     
+      return;
+  }
+
+  tableBody.appendChild(frag);
+}
 
 
 export function populateDepartmentTable(data){
@@ -218,11 +224,10 @@ export function populateDepartmentTable(data){
       // Append the actions cell to the row
       row.appendChild(tdActions);
       
-      // Append the complete row to the DocumentFragment
+
       frag.appendChild(row);
     });
 
-    // Append the entire DocumentFragment to the table body in one operation
     tableBody.appendChild(frag);
 
 };
@@ -235,7 +240,6 @@ export function populateLocationTable(data){
 
     var frag = document.createDocumentFragment();
 
-    // Iterate over the data and create table rows
     data.forEach(function(location) {
     // Create a new table row
     var row = document.createElement("tr");
@@ -273,14 +277,11 @@ export function populateLocationTable(data){
     deleteBtn.appendChild(deleteIcon);
     tdActions.appendChild(deleteBtn);
 
-    // Append the actions cell to the row
     row.appendChild(tdActions);
 
-    // Append the complete row to the DocumentFragment
     frag.appendChild(row);
     });
 
-    // Append the entire DocumentFragment to the table body
     tableBody.appendChild(frag);
 }
 
@@ -290,7 +291,7 @@ export function populateFilterDepartment(data) {
 
   // Create default option
   let defaultOption = document.createElement("option");
-  defaultOption.value = "";
+  defaultOption.value = "All";
   defaultOption.textContent = "All";
   departmentSelect.appendChild(defaultOption);
 
@@ -308,7 +309,7 @@ export function populateFilterLocation(data) {
 
   // Create default option
   let defaultOption = document.createElement("option");
-  defaultOption.value = "";
+  defaultOption.value = "All";
   defaultOption.textContent = "All";
   locationSelect.appendChild(defaultOption);
 
