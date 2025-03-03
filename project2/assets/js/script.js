@@ -204,8 +204,6 @@ $(document).ready(function () {
       const selectedDeptID = $("#filterPersonnelByDepartment").val();
       const selectedLocID = $("#filterPersonnelByLocation").val();
 
-      console.log(selectedDeptID);
-      console.log(selectedLocID);
 
       // Check if both are "All"
       if (selectedDeptID === "All" && selectedLocID === "All") {
@@ -249,11 +247,6 @@ $(document).ready(function () {
   // Department change handler
   $("#filterPersonnelByDepartment").off("change").on("change", function () {
       const selectedDeptID = $(this).val();
-      // var selectedDeptIDone = $("#filterPersonnelByDepartment").val();
-      // var selectedLocID = $("#filterPersonnelByLocation").val();
-
-      // console.log(selectedDeptIDone);
-      // console.log(selectedLocID);
       
       if (selectedDeptID && selectedDeptID !== "All") {
           // Reset location to "All" when department is selected
