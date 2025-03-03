@@ -164,6 +164,30 @@ $(document).ready(function () {
   let departmentData = [];
   let locationData = [];
 
+  // Show filter modal and handle filter values when filter modal is closed
+  $("#filterPersonnelModal").on("show.bs.modal", function () {
+
+    var currentDepartmentSelect = $("#filterPersonnelByDepartment").val();
+    var currentLocationSelect = $("#filterPersonnelByLocation").val();
+
+
+    fetchAllDepartment().then(data => {
+        departmentData = data;
+        populateFilterDepartment(departmentData);
+
+
+        $("#filterPersonnelByDepartment").val(currentDepartmentSelect);
+    });
+
+    fetchAllLocation().then(data => {
+        locationData = data;
+        populateFilterLocation(locationData);
+
+
+        $("#filterPersonnelByLocation").val(currentLocationSelect);
+    });
+  });
+
   // Fetch and populate departments and locations
   fetchAllDepartment().then(data => {
       departmentData = data;
@@ -179,6 +203,9 @@ $(document).ready(function () {
   function fetchFilteredData() {
       const selectedDeptID = $("#filterPersonnelByDepartment").val();
       const selectedLocID = $("#filterPersonnelByLocation").val();
+
+      console.log(selectedDeptID);
+      console.log(selectedLocID);
 
       // Check if both are "All"
       if (selectedDeptID === "All" && selectedLocID === "All") {
@@ -196,6 +223,7 @@ $(document).ready(function () {
       // Clear table and hide modal
       $("#personnelTableBody").empty();
       // $("#filterPersonnelModal").modal("hide");
+
 
       // Send AJAX request
       $.ajax({
@@ -221,6 +249,11 @@ $(document).ready(function () {
   // Department change handler
   $("#filterPersonnelByDepartment").off("change").on("change", function () {
       const selectedDeptID = $(this).val();
+      // var selectedDeptIDone = $("#filterPersonnelByDepartment").val();
+      // var selectedLocID = $("#filterPersonnelByLocation").val();
+
+      // console.log(selectedDeptIDone);
+      // console.log(selectedLocID);
       
       if (selectedDeptID && selectedDeptID !== "All") {
           // Reset location to "All" when department is selected
@@ -248,6 +281,19 @@ $(document).ready(function () {
       $("#filterModalPersonnel").modal("show");
   });
 });
+// the filter modal is not showing the correct values after a filter has already been set; fixing this should only involve adding four lines of code:
+
+// In the filter modal show.bs.modal event, first store the current values of the selects e.g.       
+
+// var currentfilterDepartmentSelect = $('#filterDepartmentSelect').val(); 
+// var currentfilterLocationSelect = $('#filterLocation').val(); 
+
+// Clear down the options, retrieve the data and rebuild the selects 
+
+// Restore the selects to the stored values e.g. 
+
+// $('#filterDepartmentSelect').val(currentfilterDepartmentSelect); 
+// $('#filterLocation').val(currentfilterLocationSelect);
 // personnel filter ends here**********************************************************
 
 
