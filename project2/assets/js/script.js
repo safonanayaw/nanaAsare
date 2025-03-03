@@ -177,8 +177,8 @@ $(document).ready(function () {
 
   // Function to handle filtering logic
   function fetchFilteredData() {
-      const selectedDeptID = $("#selectDepartmentOption").val();
-      const selectedLocID = $("#selectLocationOption").val();
+      const selectedDeptID = $("#filterPersonnelByDepartment").val();
+      const selectedLocID = $("#filterPersonnelByLocation").val();
 
       // Check if both are "All"
       if (selectedDeptID === "All" && selectedLocID === "All") {
@@ -195,7 +195,7 @@ $(document).ready(function () {
 
       // Clear table and hide modal
       $("#personnelTableBody").empty();
-      $("#filterPersonnelModal").modal("hide");
+      // $("#filterPersonnelModal").modal("hide");
 
       // Send AJAX request
       $.ajax({
@@ -219,23 +219,23 @@ $(document).ready(function () {
   }
 
   // Department change handler
-  $("#selectDepartmentOption").off("change").on("change", function () {
+  $("#filterPersonnelByDepartment").off("change").on("change", function () {
       const selectedDeptID = $(this).val();
       
       if (selectedDeptID && selectedDeptID !== "All") {
           // Reset location to "All" when department is selected
-          $("#selectLocationOption").val("All");
+          $("#filterPersonnelByLocation").val("All");
       }
       fetchFilteredData(); // Trigger filter automatically
   });
 
   // Location change handler
-  $("#selectLocationOption").off("change").on("change", function () {
+  $("#filterPersonnelByLocation").off("change").on("change", function () {
       const selectedLocID = $(this).val();
       
       if (selectedLocID && selectedLocID !== "All") {
           // Reset department to "All" when location is selected
-          $("#selectDepartmentOption").val("All");
+          $("#filterPersonnelByDepartment").val("All");
       }
       fetchFilteredData(); // Trigger filter automatically
   });
@@ -243,8 +243,8 @@ $(document).ready(function () {
   // Show modal when filter button is clicked
   $(document).on("click", "#filterBtn", function () {
       // Reset filters to "All" when modal opens
-      $("#selectDepartmentOption").val("All");
-      $("#selectLocationOption").val("All");
+      $("#filterPersonnelByDepartment").val("All");
+      $("#filterPersonnelByLocation").val("All");
       $("#filterModalPersonnel").modal("show");
   });
 });

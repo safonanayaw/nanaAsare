@@ -286,7 +286,7 @@ export function populateLocationTable(data){
 }
 
 export function populateFilterDepartment(data) {
-  let departmentSelect = document.getElementById("selectDepartmentOption");
+  let departmentSelect = document.getElementById("filterPersonnelByDepartment");
   departmentSelect.innerHTML = "";
 
   // Create default option
@@ -304,7 +304,7 @@ export function populateFilterDepartment(data) {
 }
 
 export function populateFilterLocation(data) {
-  let locationSelect = document.getElementById("selectLocationOption");
+  let locationSelect = document.getElementById("filterPersonnelByLocation");
   locationSelect.innerHTML = "";
 
   // Create default option
